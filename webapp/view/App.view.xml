@@ -73,7 +73,7 @@
         <tnt:mainContents>
             <App id="app" />
             <Avatar
-                src=""
+                src="sap-icon://ai"
                 id="airbotToggleBtn"
                 tooltip="Ask AIRBOT"
                 press="onAirbotTogglePress"

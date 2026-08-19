@@ -183,12 +183,12 @@
                 <smartTable:customToolbar>
                     <Toolbar>
                         <ToolbarSpacer />
-                        <SearchField
+                        <!-- <SearchField
                             id="idOrderSearchField"
                             width="20rem"
                             search="onSearch"
                             liveChange="onSearchLiveChange"
-                        />
+                        /> -->
                     </Toolbar>
                 </smartTable:customToolbar>
                 <Table

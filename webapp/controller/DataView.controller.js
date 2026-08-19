@@ -9,6 +9,7 @@ sap.ui.define([
     return Controller.extend("creditedge.controller.DataView", {
 
         formatter: formatter,
+
         onInit: function () {
             const oKpiModel = new JSONModel({
                 totalOrders: 12,
@@ -19,6 +20,7 @@ sap.ui.define([
                 avgSopScore: 2.7
             });
             this.getView().setModel(oKpiModel, "kpiModel");
+            this._sSearchQuery = "";
         },
 
         onBeforeRebindTable: function (oEvent) {
@@ -33,6 +35,59 @@ sap.ui.define([
             mBindingParams.filters.push(
                 // new Filter("OrderNumber", FilterOperator.EQ, "0000002147"),
             );
+
+            const oSearchFilter = this._buildSearchFilter();
+            if (oSearchFilter) {
+                mBindingParams.filters.push(oSearchFilter);
+            }
+        },
+
+        _buildSearchFilter: function () {
+            const sQuery = (this._sSearchQuery || "").trim();
+            if (!sQuery) {
+                return null;
+            }
+
+            const _aSearchableFields = [
+                "OrderNumber",
+                // "Customer",
+                // "AISummaryText",
+                // "BusinessArea"
+            ];
+
+            const aFieldFilters = _aSearchableFields.map((sField) => {
+                return new Filter({
+                    path: sField,
+                    operator: FilterOperator.Contains,
+                    value1: sQuery
+                });
+            });
+
+            return new Filter({
+                filters: aFieldFilters,
+                and: false
+            });
+        },
+
+        onSearch: function (oEvent) {
+            this._sSearchQuery = oEvent.getParameter("query") || oEvent.getParameter("newValue") || "";
+            this._rebindWithSearch();
+        },
+
+        onSearchLiveChange: function (oEvent) {
+            this._sSearchQuery = oEvent.getParameter("newValue") || "";
+            // simple debounce so we don't refetch on every keystroke
+            clearTimeout(this._iSearchDebounce);
+            this._iSearchDebounce = setTimeout(() => {
+                this._rebindWithSearch();
+            }, 400);
+        },
+
+        _rebindWithSearch: function () {
+            const oSmartTable = this.getView().byId("idSmartTable");
+            if (oSmartTable) {
+                oSmartTable.rebindTable(true);
+            }
         },
 
         onViewSwitchChange: function (oEvent) {
@@ -52,8 +107,7 @@ sap.ui.define([
             }
         },
 
-        _loadOrders: function () {
-        },
+        _loadOrders: function () { },
 
         onOrderPress: function (oEvent) {
             const oCtx = oEvent.getSource().getBindingContext();
