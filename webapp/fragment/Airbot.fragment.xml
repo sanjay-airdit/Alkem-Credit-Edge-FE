@@ -1,0 +1,110 @@
+<core:FragmentDefinition
+    xmlns:core="sap.ui.core"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+>
+    <Popover
+        id="airbotPopover"
+        placement="Top"
+        contentWidth="400px"
+        contentHeight="480px"
+        class="airbotPopover"
+        showHeader="true"
+        title="AIRBOT"
+    >
+        <customHeader>
+            <Bar>
+                <contentLeft>
+                    <Avatar
+                        src="sap-icon://ai"
+                        displaySize="XS"
+                        class="sapUiTinyMarginEnd"
+                        badgeValueState="Success"
+                        badgeIcon="sap-icon://sys-enter-2"
+                    />
+                    <Title
+                        text="AIRBOT"
+                        level="H3"
+                    />
+                </contentLeft>
+                <contentRight>
+                    <Button
+                        icon="sap-icon://decline"
+                        type="Transparent"
+                        press="onAirbotClosePress"
+                    />
+                </contentRight>
+            </Bar>
+        </customHeader>
+
+        <VBox
+            class="sapUiSmallMargin"
+            height="100%"
+        >
+            <!-- Message list -->
+            <List
+                id="airbotMessageList"
+                items="{airbot>/messages}"
+                showSeparators="None"
+                class="airbotMessageList"
+            >
+                <CustomListItem>
+                    <HBox
+                        class="sapUiTinyMargin"
+                        alignItems="End"
+                        justifyContent="{= ${airbot>role} === 'user' ? 'End' : 'Start' }"
+                    >
+                        <!-- Bot avatar (left side, only for bot messages) -->
+                        <Avatar
+                            visible="{= ${airbot>role} !== 'user'}"
+                            src="sap-icon://ai"
+                            displaySize="XS"
+                            class="airbotAvatarBot sapUiTinyMarginEnd"
+                        />
+
+                        <f:Card
+                            width="auto"
+                            class="{= ${airbot>role} === 'user' ? 'airbotMsgUser' : 'airbotMsgBot' }"
+                        >
+                            <f:content>
+                                <Text
+                                    class="sapUiTinyMargin"
+                                    text="{airbot>text}"
+                                />
+                            </f:content>
+                        </f:Card>
+
+                        <!-- User avatar (right side, only for user messages) -->
+                        <Avatar
+                            visible="{= ${airbot>role} === 'user'}"
+                            displaySize="XS"
+                            class="airbotAvatarUser sapUiTinyMarginBegin"
+                        />
+                    </HBox>
+                </CustomListItem>
+            </List>
+
+            <BusyIndicator
+                visible="{airbot>/busy}"
+                size="1rem"
+                class="sapUiTinyMarginTop"
+            />
+        </VBox>
+        <footer>
+            <Toolbar>
+                <Input
+                    id="airbotInput"
+                    placeholder="Ask about orders, risk scores..."
+                    submit="onAirbotSend"
+                    width="100%"
+                />
+                <Button
+                    icon="sap-icon://paper-plane"
+                    type="Emphasized"
+                    press="onAirbotSend"
+                    width="10%"
+                />
+            </Toolbar>
+        </footer>
+    </Popover>
+</core:FragmentDefinition>

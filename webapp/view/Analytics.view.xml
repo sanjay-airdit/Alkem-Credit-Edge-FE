@@ -1,0 +1,11 @@
+<mvc:View
+    controllerName="creditedge.controller.Analytics"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:viz="sap.viz.ui5.controls"
+    xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
+    xmlns:viz.data="sap.viz.ui5.data"
+>
+    <Text text="Coming soon..." />
+</mvc:View>

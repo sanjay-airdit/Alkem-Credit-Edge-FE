@@ -1,0 +1,161 @@
+/* Enter your custom styles here */
+.airbotFab {
+    position: fixed !important;
+    bottom: 30px;
+    right: 28px;
+    z-index: 1000;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* ===================== AIRBOT ===================== */
+
+.airbotPopover .sapMPopoverCont {
+    display: flex;
+    flex-direction: column;
+}
+
+.airbotMessageList {
+    flex: 1;
+    overflow-y: auto;
+    background: transparent;
+}
+
+.airbotMessageList .sapMListItem {
+    border: none;
+    background: transparent;
+    padding: 0.25rem 0;
+}
+
+/* Bot message bubble */
+/* Bot message bubble */
+.airbotMsgBot {
+    align-self: flex-start;
+    max-width: 85%;
+    background-color: var(--sapList_Background, #f5f6f7);
+    border: 1px solid var(--sapList_BorderColor, #e5e5e5);
+    border-radius: 0.75rem 0.75rem 0.75rem 0.125rem;
+    box-shadow: none;
+    margin: 0.25rem 0;
+}
+
+/* User message bubble */
+.airbotMsgUser {
+    align-self: flex-end;
+    max-width: 85%;
+    background-color: var(--sapButton_Emphasized_Background, #0854a0);
+    border: none;
+    border-radius: 0.75rem 0.75rem 0.125rem 0.75rem;
+    box-shadow: none;
+    margin: 0.25rem 0;
+}
+
+/* Card's inner content wrapper - this is where the real padding/text lives */
+.airbotMsgBot .sapFCardContent,
+.airbotMsgUser .sapFCardContent {
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+}
+
+/* Card adds a header slot even when unused in some versions - hide defensively */
+.airbotMsgBot .sapFCardHeader,
+.airbotMsgUser .sapFCardHeader {
+    display: none;
+}
+
+.airbotMsgUser .sapMText {
+    color: var(--sapButton_Emphasized_TextColor, #ffffff);
+}
+
+.airbotMsgBot .sapMText {
+    color: var(--sapList_TextColor, #1d2d3e);
+}
+
+/* Bot avatar — matches header logo style */
+.airbotAvatarBot {
+    flex-shrink: 0;
+}
+
+.airbotAvatarBot .sapMAvatarIcon {
+    color: #ffffff;
+}
+
+/* User avatar */
+.airbotAvatarUser {
+    flex-shrink: 0;
+}
+
+.airbotAvatarUser .sapMAvatarText {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Keep avatars aligned with bottom of bubble, prevent squish */
+.airbotMessageList .sapMHBox > .sapMAvatar {
+    flex-shrink: 0;
+}
+
+/* Add to your app's css/style.css and make sure it is loaded (e.g. in manifest.json "sap.ui5" > "resources" > "css") */
+
+.kpiRow {
+    gap: 1rem;
+}
+
+.kpiCard {
+    flex: 1 1 200px;
+    min-width: 180px;
+    min-height: 100px;
+    /* theme-aware surface + border instead of fixed white/grey */
+    border-radius: var(--sapElement_BorderCornerRadius, 6px);
+    border-top: 4px solid var(--sapContent_ForegroundBorderColor, #cccccc);
+    box-shadow: 0 1px 3px;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.kpiTitle {
+    font-weight: 600;
+    /* color: var(--sapTile_TitleTextColor, #333333); */
+}
+
+.kpiValue {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+}
+
+.kpiIcon {
+    font-size: 1.4rem;
+    padding: 0.4rem;
+    border-radius: 50%;
+}
+
+/* Blue - Total Orders (Information) */
+.kpiCard--blue      { border-top-color: var(--sapInformativeColor, #2b6cb0); }
+.kpiValue--blue     { color: var(--sapInformativeColor, #2b6cb0); }
+.kpiIcon--blue      { color: var(--sapInformativeColor, #2b6cb0); background: var(--sapInformativeBackground, #e8f0fb); }
+
+/* Orange - In Hold (Critical) */
+.kpiCard--orange    { border-top-color: var(--sapCriticalColor, #dd8500); }
+.kpiValue--orange   { color: var(--sapCriticalColor, #dd8500); }
+.kpiIcon--orange    { color: var(--sapCriticalColor, #dd8500); background: var(--sapCriticalBackground, #fdf1e0); }
+
+/* Green - Approved (Positive/Success) */
+.kpiCard--green     { border-top-color: var(--sapPositiveColor, #2f8f4e); }
+.kpiValue--green    { color: var(--sapPositiveColor, #2f8f4e); }
+.kpiIcon--green     { color: var(--sapPositiveColor, #2f8f4e); background: var(--sapPositiveBackground, #e6f5ea); }
+
+/* Red - High Risk Orders (Negative/Error) */
+.kpiCard--red       { border-top-color: var(--sapNegativeColor, #a12b2b); }
+.kpiValue--red      { color: var(--sapNegativeColor, #a12b2b); }
+.kpiIcon--red       { color: var(--sapNegativeColor, #a12b2b); background: var(--sapNegativeBackground, #fbe8e8); }
+
+/* Purple - Avg Delay Score (Brand/Accent) */
+.kpiCard--purple    { border-top-color: var(--sapAccentColor6, #5b2d8e); }
+.kpiValue--purple   { color: var(--sapAccentColor6, #5b2d8e); }
+.kpiIcon--purple    { color: var(--sapAccentColor6, #5b2d8e); background: var(--sapContent_Selected_Background, #efe6f7); }
+
+/* Gold - Avg SOP Score (Accent) */
+.kpiCard--gold      { border-top-color: var(--sapAccentColor3, #9c7a1e); }
+.kpiValue--gold     { color: var(--sapAccentColor3, #9c7a1e); }
+.kpiIcon--gold      { color: var(--sapAccentColor3, #9c7a1e); background: var(--sapContent_ImagePlaceholderBackground, #f7f0dd); }

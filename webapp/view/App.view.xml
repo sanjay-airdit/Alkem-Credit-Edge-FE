@@ -1,0 +1,84 @@
+<mvc:View
+    controllerName="creditedge.controller.App"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:tnt="sap.tnt"
+    xmlns:cr="sap.ui.core"
+    height="100%"
+>
+    <VBox
+        id="toastContainer"
+        class="toastscontainer hideToast"
+    >
+        <Text
+            id="toastText"
+            text="Logged In Successfully"
+            class='sapUiSmallMargin'
+        />
+    </VBox>
+
+    <tnt:ToolPage
+        id="toolPage"
+        class='onZoom'
+    >
+        <tnt:header>
+            <tnt:ToolHeader class="ccc">
+                <Image
+                    width="100px"
+                    height="40px"
+                    src="/images/Alkem_logo.png"
+                />
+
+                <ToolbarSpacer />
+
+                <tnt:ToolHeaderUtilitySeparator />
+                <ToolbarSpacer>
+                    <layoutData>
+                        <OverflowToolbarLayoutData
+                            priority="NeverOverflow"
+                            minWidth="20px"
+                        />
+                    </layoutData>
+                </ToolbarSpacer>
+
+                <Button
+                    icon="sap-icon://dark-mode"
+                    tooltip="Toggle Theme"
+                    press="onSetTheme"
+                />
+                <Button
+                    id="notificationBtn"
+                    icon="sap-icon://bell"
+                    tooltip="Notifications"
+                    press="onNotification"
+                />
+
+                <!-- Profile section -->
+                <Avatar
+                    id="myAvatar"
+                    src=""
+                    displaySize="XS"
+                    press="onProfilePress"
+                    tooltip="Profile"
+                >
+                    <layoutData>
+                        <OverflowToolbarLayoutData priority="NeverOverflow" />
+                    </layoutData>
+                </Avatar>
+            </tnt:ToolHeader>
+        </tnt:header>
+
+        <tnt:mainContents>
+            <App id="app" />
+            <Avatar
+                src=""
+                id="airbotToggleBtn"
+                tooltip="Ask AIRBOT"
+                press="onAirbotTogglePress"
+                class="airbotFab"
+            />
+        </tnt:mainContents>
+    </tnt:ToolPage>
+</mvc:View>

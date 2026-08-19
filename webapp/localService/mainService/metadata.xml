@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_AGGREGATION',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Aggregation.V1" Alias="Aggregation"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_ANALYTICS',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.Analytics.v1" Alias="Analytics"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CAPABILITIES',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Capabilities.V1" Alias="Capabilities"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CODELIST',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.CodeList.v1" Alias="SAP__CodeList"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMON',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.Common.v1" Alias="Common"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMUNICATION',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.Communication.v1" Alias="Communication"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_MEASURES',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Measures.V1" Alias="Measures"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_PERSONALDATA',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.PersonalData.v1" Alias="PersonalData"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_UI',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.UI.v1" Alias="UI"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_VALIDATION',Version='0001',SAP__Origin='LOCAL')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Validation.V1" Alias="Validation"/>
+    </edmx:Reference>
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZC_CE_ORDERSONHOLD_CDS" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="ZC_CE_OrdersOnHoldType" sap:label="Orders on hold" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="p_date"/>
+                    <PropertyRef Name="OrderNumber"/>
+                </Key>
+                <Property Name="p_date" Type="Edm.DateTime" Nullable="false" Precision="0" sap:display-format="Date" sap:label="Date"/>
+                <Property Name="OrderNumber" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Sales Document"/>
+                <Property Name="CompanyCode" Type="Edm.String" MaxLength="4" sap:display-format="UpperCase" sap:label="CCode to Be Billed" sap:quickinfo="Company Code to Be Billed"/>
+                <Property Name="CreatedOn" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Created On" sap:quickinfo="Record Created On"/>
+                <Property Name="SalesOrganization" Type="Edm.String" MaxLength="4" sap:display-format="UpperCase" sap:label="Sales Organization"/>
+                <Property Name="DistributionChannel" Type="Edm.String" MaxLength="2" sap:display-format="UpperCase" sap:label="Distribution Channel"/>
+                <Property Name="Division" Type="Edm.String" MaxLength="2" sap:display-format="UpperCase" sap:label="Division"/>
+                <Property Name="BusinessArea" Type="Edm.String" MaxLength="4" sap:display-format="UpperCase" sap:label="Business Area"/>
+                <Property Name="RequestedDeliveryDate" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Requested Deliv.Date" sap:quickinfo="Requested Delivery Date"/>
+                <Property Name="Customer" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Sold-to Party"/>
+                <Property Name="CurrentOrderValue" Type="Edm.Decimal" Precision="16" Scale="3" sap:unit="Currency" sap:label="Net Value" sap:quickinfo="Net Value of the Sales Document in Document Currency"/>
+                <Property Name="CredeitCheckStatus" Type="Edm.String" MaxLength="1" sap:display-format="UpperCase" sap:label="Credit Status" sap:quickinfo="Overall Status of Credit Checks"/>
+                <Property Name="PaymentTrendInDays" Type="Edm.Double"/>
+                <Property Name="OutstandingAmount" Type="Edm.Decimal" Precision="30" Scale="3" sap:unit="Currency"/>
+                <Property Name="TotalBouncedAmount" Type="Edm.Decimal" Precision="24" Scale="3" sap:unit="Currency"/>
+                <Property Name="CreditEsposure" Type="Edm.Decimal" Precision="25" Scale="3" sap:unit="Currency"/>
+                <Property Name="Currency" Type="Edm.String" MaxLength="5" sap:semantics="currency-code"/>
+                <Property Name="SalesAverage" Type="Edm.Decimal" Precision="20" Scale="3"/>
+                <Property Name="CreatedTimeStamp" Type="Edm.Decimal" Precision="15" Scale="0"/>
+                <Property Name="MonthlyPurchase" Type="Edm.Decimal" Precision="17" Scale="3"/>
+                <Property Name="QuarterlyPurchase" Type="Edm.Decimal" Precision="17" Scale="3"/>
+                <Property Name="YearlyPurchase" Type="Edm.Decimal" Precision="17" Scale="3"/>
+                <Property Name="CreditLimit" Type="Edm.Decimal" Precision="16" Scale="3" sap:label="Credit Limit"/>
+                <Property Name="ChecqueCount" Type="Edm.Int32"/>
+                <Property Name="Grade" Type="Edm.String" MaxLength="1"/>
+                <Property Name="SOPValue" Type="Edm.Decimal" Precision="21" Scale="3" sap:unit="Currency"/>
+                <Property Name="AdjustedSOPValue" Type="Edm.Decimal" Precision="25" Scale="3" sap:unit="Currency"/>
+                <Property Name="SOPPercentage" Type="Edm.Decimal" Precision="10" Scale="2"/>
+                <Property Name="AISopValueScore" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AIBounceValueRatio" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AIBounceValueScore" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AIUtilizationPercentage" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AIUtilPercentageScore" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AIAverageDelayScore" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AIPurchaseVelocityRatio" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AIPurchaseVelocityScore" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AIAccountTrajecRatio" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AIAccountTrajecScore" Type="Edm.String" MaxLength="20"/>
+                <Property Name="AISummaryText" Type="Edm.String"/>
+                <NavigationProperty Name="Parameters" Relationship="ZC_CE_ORDERSONHOLD_CDS.assoc_A097531DE51F8A3F53BACD073D06F130" FromRole="ToRole_assoc_A097531DE51F8A3F53BACD073D06F130" ToRole="FromRole_assoc_A097531DE51F8A3F53BACD073D06F130" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="ZC_CE_OrdersOnHoldParameters" sap:semantics="parameters" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="p_date"/>
+                </Key>
+                <Property Name="p_date" Type="Edm.DateTime" Nullable="false" Precision="0" sap:display-format="Date" sap:parameter="mandatory" sap:label="Date" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <NavigationProperty Name="Set" Relationship="ZC_CE_ORDERSONHOLD_CDS.assoc_A097531DE51F8A3F53BACD073D06F130" FromRole="FromRole_assoc_A097531DE51F8A3F53BACD073D06F130" ToRole="ToRole_assoc_A097531DE51F8A3F53BACD073D06F130"/>
+            </EntityType>
+            <EntityType Name="ZI_CE_ChequeBounceBaseType" sap:label="Checque Bounce Base view" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="p_date"/>
+                    <PropertyRef Name="CompanyCode"/>
+                    <PropertyRef Name="AccountingDocNumber"/>
+                    <PropertyRef Name="FiscalYear"/>
+                    <PropertyRef Name="Division"/>
+                </Key>
+                <Property Name="p_date" Type="Edm.DateTime" Nullable="false" Precision="0" sap:display-format="Date" sap:label="Date"/>
+                <Property Name="CompanyCode" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="UpperCase" sap:label="Company Code"/>
+                <Property Name="AccountingDocNumber" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Document Number" sap:quickinfo="Document Number of an Accounting Document"/>
+                <Property Name="FiscalYear" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="NonNegative" sap:label="Fiscal Year"/>
+                <Property Name="Division" Type="Edm.String" Nullable="false" MaxLength="2" sap:display-format="UpperCase" sap:label="Division"/>
+                <Property Name="Tcode" Type="Edm.String" MaxLength="20" sap:display-format="UpperCase" sap:label="Transaction Code"/>
+                <Property Name="DocumentDate" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Entry Date" sap:quickinfo="Day On Which Accounting Document Was Entered"/>
+                <Property Name="ProfitCenter" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Profit Center"/>
+                <Property Name="Businessarea" Type="Edm.String" MaxLength="4" sap:display-format="UpperCase" sap:label="Business Area"/>
+                <Property Name="Customer" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Customer" sap:quickinfo="Customer Number"/>
+                <Property Name="Item" Type="Edm.String" MaxLength="3" sap:display-format="NonNegative" sap:label="Item" sap:quickinfo="Number of Line Item Within Accounting Document"/>
+                <Property Name="ChequeAmount" Type="Edm.Decimal" Precision="24" Scale="3" sap:unit="Currency" sap:label="Amount in Loc. Curr." sap:quickinfo="Amount in local currency"/>
+                <Property Name="Currency" Type="Edm.String" MaxLength="5" sap:semantics="currency-code"/>
+                <Property Name="ChequeDate" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Posting Date" sap:quickinfo="Posting Date in the Document"/>
+                <Property Name="ChequeNumber" Type="Edm.String" MaxLength="18" sap:label="Assignment" sap:quickinfo="Assignment number"/>
+                <NavigationProperty Name="Parameters" Relationship="ZC_CE_ORDERSONHOLD_CDS.assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95" FromRole="ToRole_assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95" ToRole="FromRole_assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="ZI_CE_ChequeBounceBaseParameters" sap:semantics="parameters" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="p_date"/>
+                </Key>
+                <Property Name="p_date" Type="Edm.DateTime" Nullable="false" Precision="0" sap:display-format="Date" sap:parameter="mandatory" sap:label="Date" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <NavigationProperty Name="Set" Relationship="ZC_CE_ORDERSONHOLD_CDS.assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95" FromRole="FromRole_assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95" ToRole="ToRole_assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95"/>
+            </EntityType>
+            <EntityType Name="ZI_CE_CUSTOMEROPENITEMBASE_SUMType" sap:label="summation" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="p_date"/>
+                    <PropertyRef Name="CompanyCode"/>
+                    <PropertyRef Name="CustomerNumber"/>
+                    <PropertyRef Name="Division"/>
+                </Key>
+                <Property Name="p_date" Type="Edm.DateTime" Nullable="false" Precision="0" sap:display-format="Date" sap:label="Date"/>
+                <Property Name="CompanyCode" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="UpperCase" sap:label="Company Code"/>
+                <Property Name="CustomerNumber" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Customer" sap:quickinfo="Customer Number"/>
+                <Property Name="Division" Type="Edm.String" Nullable="false" MaxLength="12" sap:display-format="UpperCase" sap:label="Reference Key 1" sap:quickinfo="Business Partner Reference Key"/>
+                <Property Name="summationAmount" Type="Edm.Decimal" Precision="30" Scale="3"/>
+                <NavigationProperty Name="Parameters" Relationship="ZC_CE_ORDERSONHOLD_CDS.assoc_25129A460726CFBC00771BED8AE6BFCD" FromRole="ToRole_assoc_25129A460726CFBC00771BED8AE6BFCD" ToRole="FromRole_assoc_25129A460726CFBC00771BED8AE6BFCD" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="ZI_CE_CUSTOMEROPENITEMBASE_SUMParameters" sap:semantics="parameters" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="p_date"/>
+                </Key>
+                <Property Name="p_date" Type="Edm.DateTime" Nullable="false" Precision="0" sap:display-format="Date" sap:parameter="mandatory" sap:label="Date" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <NavigationProperty Name="Set" Relationship="ZC_CE_ORDERSONHOLD_CDS.assoc_25129A460726CFBC00771BED8AE6BFCD" FromRole="FromRole_assoc_25129A460726CFBC00771BED8AE6BFCD" ToRole="ToRole_assoc_25129A460726CFBC00771BED8AE6BFCD"/>
+            </EntityType>
+            <Association Name="assoc_25129A460726CFBC00771BED8AE6BFCD" sap:content-version="1">
+                <End Type="ZC_CE_ORDERSONHOLD_CDS.ZI_CE_CUSTOMEROPENITEMBASE_SUMParameters" Multiplicity="1" Role="FromRole_assoc_25129A460726CFBC00771BED8AE6BFCD"/>
+                <End Type="ZC_CE_ORDERSONHOLD_CDS.ZI_CE_CUSTOMEROPENITEMBASE_SUMType" Multiplicity="*" Role="ToRole_assoc_25129A460726CFBC00771BED8AE6BFCD"/>
+            </Association>
+            <Association Name="assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95" sap:content-version="1">
+                <End Type="ZC_CE_ORDERSONHOLD_CDS.ZI_CE_ChequeBounceBaseParameters" Multiplicity="1" Role="FromRole_assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95"/>
+                <End Type="ZC_CE_ORDERSONHOLD_CDS.ZI_CE_ChequeBounceBaseType" Multiplicity="*" Role="ToRole_assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95"/>
+            </Association>
+            <Association Name="assoc_A097531DE51F8A3F53BACD073D06F130" sap:content-version="1">
+                <End Type="ZC_CE_ORDERSONHOLD_CDS.ZC_CE_OrdersOnHoldParameters" Multiplicity="1" Role="FromRole_assoc_A097531DE51F8A3F53BACD073D06F130"/>
+                <End Type="ZC_CE_ORDERSONHOLD_CDS.ZC_CE_OrdersOnHoldType" Multiplicity="*" Role="ToRole_assoc_A097531DE51F8A3F53BACD073D06F130"/>
+            </Association>
+            <EntityContainer Name="ZC_CE_ORDERSONHOLD_CDS_Entities" m:IsDefaultEntityContainer="true" sap:message-scope-supported="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="ZC_CE_OrdersOnHoldSet" EntityType="ZC_CE_ORDERSONHOLD_CDS.ZC_CE_OrdersOnHoldType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="ZC_CE_OrdersOnHold" EntityType="ZC_CE_ORDERSONHOLD_CDS.ZC_CE_OrdersOnHoldParameters" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:content-version="1"/>
+                <EntitySet Name="ZI_CE_ChequeBounceBaseSet" EntityType="ZC_CE_ORDERSONHOLD_CDS.ZI_CE_ChequeBounceBaseType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="ZI_CE_ChequeBounceBase" EntityType="ZC_CE_ORDERSONHOLD_CDS.ZI_CE_ChequeBounceBaseParameters" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:content-version="1"/>
+                <EntitySet Name="ZI_CE_CUSTOMEROPENITEMBASE_SUMSet" EntityType="ZC_CE_ORDERSONHOLD_CDS.ZI_CE_CUSTOMEROPENITEMBASE_SUMType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="ZI_CE_CUSTOMEROPENITEMBASE_SUM" EntityType="ZC_CE_ORDERSONHOLD_CDS.ZI_CE_CUSTOMEROPENITEMBASE_SUMParameters" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:content-version="1"/>
+                <AssociationSet Name="assoc_25129A460726CFBC00771BED8AE6BFCD" Association="ZC_CE_ORDERSONHOLD_CDS.assoc_25129A460726CFBC00771BED8AE6BFCD" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1">
+                    <End EntitySet="ZI_CE_CUSTOMEROPENITEMBASE_SUM" Role="FromRole_assoc_25129A460726CFBC00771BED8AE6BFCD"/>
+                    <End EntitySet="ZI_CE_CUSTOMEROPENITEMBASE_SUMSet" Role="ToRole_assoc_25129A460726CFBC00771BED8AE6BFCD"/>
+                </AssociationSet>
+                <AssociationSet Name="assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95" Association="ZC_CE_ORDERSONHOLD_CDS.assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1">
+                    <End EntitySet="ZI_CE_ChequeBounceBase" Role="FromRole_assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95"/>
+                    <End EntitySet="ZI_CE_ChequeBounceBaseSet" Role="ToRole_assoc_BD03793F8962DD4DF4A2E5DC1C5F0D95"/>
+                </AssociationSet>
+                <AssociationSet Name="assoc_A097531DE51F8A3F53BACD073D06F130" Association="ZC_CE_ORDERSONHOLD_CDS.assoc_A097531DE51F8A3F53BACD073D06F130" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1">
+                    <End EntitySet="ZC_CE_OrdersOnHold" Role="FromRole_assoc_A097531DE51F8A3F53BACD073D06F130"/>
+                    <End EntitySet="ZC_CE_OrdersOnHoldSet" Role="ToRole_assoc_A097531DE51F8A3F53BACD073D06F130"/>
+                </AssociationSet>
+            </EntityContainer>
+            <Annotation Term="Core.SchemaVersion" String="1.0.0" xmlns="http://docs.oasis-open.org/odata/ns/edm"/>
+            <Annotations Target="ZC_CE_ORDERSONHOLD_CDS.ZC_CE_ORDERSONHOLD_CDS_Entities" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ApplyMultiUnitBehaviorForSortingAndFiltering" Bool="true"/>
+            </Annotations>
+            <Annotations Target="ZC_CE_ORDERSONHOLD_CDS.ZC_CE_ORDERSONHOLD_CDS_Entities/ZC_CE_OrdersOnHold" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Capabilities.FilterRestrictions">
+                    <Record>
+                        <PropertyValue Property="NonFilterableProperties">
+                            <Collection>
+                                <PropertyPath>p_date</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.NavigationRestrictions">
+                    <Record>
+                        <PropertyValue Property="RestrictedProperties">
+                            <Collection>
+                                <Record>
+                                    <PropertyValue Property="NavigationProperty" NavigationPropertyPath="Parameters"/>
+                                    <PropertyValue Property="FilterRestrictions">
+                                        <Record>
+                                            <PropertyValue Property="Filterable" Bool="false"/>
+                                        </Record>
+                                    </PropertyValue>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.SortRestrictions">
+                    <Record>
+                        <PropertyValue Property="NonSortableProperties">
+                            <Collection>
+                                <PropertyPath>p_date</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZC_CE_ORDERSONHOLD_CDS.ZC_CE_ORDERSONHOLD_CDS_Entities/ZC_CE_OrdersOnHoldSet" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Capabilities.FilterRestrictions">
+                    <Record>
+                        <PropertyValue Property="FilterExpressionRestrictions">
+                            <Collection>
+                                <Record>
+                                    <PropertyValue Property="Property" PropertyPath="AISummaryText"/>
+                                    <PropertyValue Property="AllowedExpressions" String="SearchExpression"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.SortRestrictions">
+                    <Record>
+                        <PropertyValue Property="NonSortableProperties">
+                            <Collection>
+                                <PropertyPath>AISummaryText</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZC_CE_ORDERSONHOLD_CDS.ZC_CE_ORDERSONHOLD_CDS_Entities/ZI_CE_CUSTOMEROPENITEMBASE_SUM" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Capabilities.FilterRestrictions">
+                    <Record>
+                        <PropertyValue Property="NonFilterableProperties">
+                            <Collection>
+                                <PropertyPath>p_date</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.NavigationRestrictions">
+                    <Record>
+                        <PropertyValue Property="RestrictedProperties">
+                            <Collection>
+                                <Record>
+                                    <PropertyValue Property="NavigationProperty" NavigationPropertyPath="Parameters"/>
+                                    <PropertyValue Property="FilterRestrictions">
+                                        <Record>
+                                            <PropertyValue Property="Filterable" Bool="false"/>
+                                        </Record>
+                                    </PropertyValue>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.SortRestrictions">
+                    <Record>
+                        <PropertyValue Property="NonSortableProperties">
+                            <Collection>
+                                <PropertyPath>p_date</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZC_CE_ORDERSONHOLD_CDS.ZC_CE_ORDERSONHOLD_CDS_Entities/ZI_CE_ChequeBounceBase" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Capabilities.FilterRestrictions">
+                    <Record>
+                        <PropertyValue Property="NonFilterableProperties">
+                            <Collection>
+                                <PropertyPath>p_date</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.NavigationRestrictions">
+                    <Record>
+                        <PropertyValue Property="RestrictedProperties">
+                            <Collection>
+                                <Record>
+                                    <PropertyValue Property="NavigationProperty" NavigationPropertyPath="Parameters"/>
+                                    <PropertyValue Property="FilterRestrictions">
+                                        <Record>
+                                            <PropertyValue Property="Filterable" Bool="false"/>
+                                        </Record>
+                                    </PropertyValue>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.SortRestrictions">
+                    <Record>
+                        <PropertyValue Property="NonSortableProperties">
+                            <Collection>
+                                <PropertyPath>p_date</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <atom:link rel="self" href="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/sap/ZC_CE_ORDERSONHOLD_CDS/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/sap/ZC_CE_ORDERSONHOLD_CDS/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

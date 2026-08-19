@@ -1,0 +1,50 @@
+<mvc:View
+    controllerName="creditedge.controller.EntryPage"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns="sap.m"
+>
+    <f:DynamicPage
+        id="dynamicPage"
+        headerExpanded="true"
+        toggleHeaderOnTitleClick="false"
+        class="sapUiNoContentPadding"
+    >
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <Title
+                        text="Credit Edge"
+                        level="H2"
+                    />
+                </f:heading>
+            </f:DynamicPageTitle>
+        </f:title>
+
+        <f:content>
+            <IconTabBar
+                id="mainTabBar"
+                expanded="true"
+                selectedKey="dataView"
+                select="onTabSelect"
+                class="sapUiResponsiveContentPadding"
+            >
+                <items>
+                    <IconTabFilter
+                        key="analytics"
+                        text="Analytics"
+                    >
+                        <mvc:XMLView viewName="creditedge.view.Analytics" />
+                    </IconTabFilter>
+
+                    <IconTabFilter
+                        key="dataView"
+                        text="Data View"
+                    >
+                        <mvc:XMLView viewName="creditedge.view.DataView" />
+                    </IconTabFilter>
+                </items>
+            </IconTabBar>
+        </f:content>
+    </f:DynamicPage>
+</mvc:View>

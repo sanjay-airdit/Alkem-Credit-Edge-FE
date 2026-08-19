@@ -1,0 +1,299 @@
+<mvc:View
+    controllerName="creditedge.controller.DataView"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:smartTable="sap.ui.comp.smarttable"
+    xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
+>
+    <VBox>
+        <HBox
+            class="kpiRow sapUiTinyMargin"
+            wrap="Wrap"
+        >
+            <!-- Total Orders -->
+            <VBox class="kpiCard kpiCard--blue">
+                <HBox
+                    justifyContent="SpaceBetween"
+                    alignItems="Center"
+                >
+                    <Text
+                        text="Total Orders"
+                        class="kpiTitle"
+                    />
+                    <core:Icon
+                        src="sap-icon://sys-monitor"
+                        class="kpiIcon kpiIcon--blue"
+                    />
+                </HBox>
+                <Text
+                    text="{kpiModel>/totalOrders}"
+                    class="kpiValue kpiValue--blue"
+                />
+            </VBox>
+
+            <!-- In Hold -->
+            <VBox class="kpiCard kpiCard--orange">
+                <HBox
+                    justifyContent="SpaceBetween"
+                    alignItems="Center"
+                >
+                    <Text
+                        text="In Hold"
+                        class="kpiTitle"
+                    />
+                    <core:Icon
+                        src="sap-icon://pending"
+                        class="kpiIcon kpiIcon--orange"
+                    />
+                </HBox>
+                <Text
+                    text="{kpiModel>/inHold}"
+                    class="kpiValue kpiValue--orange"
+                />
+            </VBox>
+
+            <!-- Approved -->
+            <VBox class="kpiCard kpiCard--green">
+                <HBox
+                    justifyContent="SpaceBetween"
+                    alignItems="Center"
+                >
+                    <Text
+                        text="Approved"
+                        class="kpiTitle"
+                    />
+                    <core:Icon
+                        src="sap-icon://message-success"
+                        class="kpiIcon kpiIcon--green"
+                    />
+                </HBox>
+                <Text
+                    text="{kpiModel>/approved}"
+                    class="kpiValue kpiValue--green"
+                />
+            </VBox>
+
+            <!-- High Risk Orders -->
+            <VBox class="kpiCard kpiCard--red">
+                <HBox
+                    justifyContent="SpaceBetween"
+                    alignItems="Center"
+                >
+                    <Text
+                        text="High Risk Orders"
+                        class="kpiTitle"
+                    />
+                    <core:Icon
+                        src="sap-icon://alert"
+                        class="kpiIcon kpiIcon--red"
+                    />
+                </HBox>
+                <Text
+                    text="{kpiModel>/highRiskOrders}"
+                    class="kpiValue kpiValue--red"
+                />
+            </VBox>
+
+            <!-- Avg Delay Score -->
+            <VBox class="kpiCard kpiCard--purple">
+                <HBox
+                    justifyContent="SpaceBetween"
+                    alignItems="Center"
+                >
+                    <Text
+                        text="Avg Delay Score"
+                        class="kpiTitle"
+                    />
+                    <core:Icon
+                        src="sap-icon://history"
+                        class="kpiIcon kpiIcon--purple"
+                    />
+                </HBox>
+                <Text
+                    text="{kpiModel>/avgDelayScore}"
+                    class="kpiValue kpiValue--purple"
+                />
+            </VBox>
+
+            <!-- Avg SOP Score -->
+            <VBox class="kpiCard kpiCard--gold">
+                <HBox
+                    justifyContent="SpaceBetween"
+                    alignItems="Center"
+                >
+                    <Text
+                        text="Avg SOP Score"
+                        class="kpiTitle"
+                    />
+                    <core:Icon
+                        src="sap-icon://action-settings"
+                        class="kpiIcon kpiIcon--gold"
+                    />
+                </HBox>
+                <Text
+                    text="{kpiModel>/avgSopScore}"
+                    class="kpiValue kpiValue--gold"
+                />
+            </VBox>
+        </HBox>
+
+        <FlexBox justifyContent="End">
+            <SegmentedButton
+                id="viewSwitchButton"
+                selectedKey="list"
+                selectionChange="onViewSwitchChange"
+            >
+                <items>
+                    <SegmentedButtonItem
+                        key="list"
+                        icon="sap-icon://list"
+                        tooltip="List View"
+                    />
+                    <SegmentedButtonItem
+                        key="grid"
+                        icon="sap-icon://grid"
+                        tooltip="Grid View"
+                    />
+                </items>
+            </SegmentedButton>
+        </FlexBox>
+
+        <!-- LIST VIEW: Smart Table -->
+        <VBox
+            id="listViewBox"
+            visible="true"
+        >
+            <smartTable:SmartTable
+                id="idSmartTable"
+                entitySet="ZC_CE_OrdersOnHoldSet"
+                tableType="Table"
+                enableExport="true"
+                beforeExport=".onBeforeExport"
+                useVariantManagement="true"
+                useTablePersonalisation="true"
+                header="Order List"
+                showRowCount="true"
+                enableAutoBinding="true"
+                enableAutoColumnWidth="true"
+                beforeRebindTable="onBeforeRebindTable"
+                height="100%"
+            >
+                <smartTable:customToolbar>
+                    <Toolbar>
+                        <ToolbarSpacer />
+                        <SearchField
+                            id="idOrderSearchField"
+                            width="20rem"
+                            search="onSearch"
+                            liveChange="onSearchLiveChange"
+                        />
+                    </Toolbar>
+                </smartTable:customToolbar>
+                <Table
+                    id="idTableAccount"
+                    mode="None"
+                    growing="true"
+                    growingScrollToLoad="true"
+                    sticky="ColumnHeaders,HeaderToolbar,InfoToolbar"
+                >
+                    <columns>
+                        <Column>
+                            <customData>
+                                <core:CustomData
+                                    key="p13nData"
+                                    value='\{"columnKey": "AISopValueScore","leadingProperty": "AISopValueScore", "sortProperty": "AISopValueScore", "filterProperty": "AISopValueScore", "columnIndex": "4"}'
+                                />
+                            </customData>
+                            <Label
+                                text="SOP Value Score"
+                                wrapping="false"
+                            />
+                        </Column>
+                        <Column>
+                            <customData>
+                                <core:CustomData
+                                    key="p13nData"
+                                    value='\{"columnKey": "AIAverageDelayScore","leadingProperty": "AIAverageDelayScore", "sortProperty": "AIAverageDelayScore", "filterProperty": "AIAverageDelayScore", "columnIndex": "5"}'
+                                />
+                            </customData>
+                            <Label
+                                text="Average Delay Score"
+                                wrapping="false"
+                            />
+                        </Column>
+                        <Column>
+                            <customData>
+                                <core:CustomData
+                                    key="p13nData"
+                                    value='\{"columnKey": "AIUtilPercentageScore","leadingProperty": "AIUtilPercentageScore", "sortProperty": "AIUtilPercentageScore", "filterProperty": "AIUtilPercentageScore", "columnIndex": "6"}'
+                                />
+                            </customData>
+                            <Label
+                                text="Utilization % Score"
+                                wrapping="false"
+                            />
+                        </Column>
+                        <Column hAlign="Center">
+                            <customData>
+                                <core:CustomData
+                                    key="p13nData"
+                                    value='\{"columnKey": "Grade","leadingProperty": "Grade", "sortProperty": "Grade", "filterProperty": "Grade", "columnIndex": "50"}'
+                                />
+                            </customData>
+                            <Label
+                                text="Actions"
+                                wrapping="false"
+                            />
+                        </Column>
+                    </columns>
+
+                    <items>
+                        <ColumnListItem vAlign="Middle">
+                            <cells>
+                                <ProgressIndicator
+                                    class="sapUiSmallMarginBottom"
+                                    percentValue="{path: 'AISopValueScore', formatter: '.formatter.percentValue'}"
+                                    state="{path: 'AISopValueScore', formatter: '.formatter.stateValue'}"
+                                    showValue="false"
+                                />
+                                <ProgressIndicator
+                                    class="sapUiSmallMarginBottom"
+                                    percentValue="{path: 'AIAverageDelayScore', formatter: '.formatter.percentValue'}"
+                                    state="{path: 'AIAverageDelayScore', formatter: '.formatter.stateValue'}"
+                                    showValue="false"
+                                />
+                                <ProgressIndicator
+                                    class="sapUiSmallMarginBottom"
+                                    percentValue="{path: 'AIUtilPercentageScore', formatter: '.formatter.percentValue'}"
+                                    state="{path: 'AIUtilPercentageScore', formatter: '.formatter.stateValue'}"
+                                    showValue="false"
+                                />
+                                <HBox justifyContent="SpaceAround">
+                                    <Button
+                                        icon="sap-icon://refresh"
+                                        class="sapUiTinyMarginEnd"
+                                    />
+                                    <Button
+                                        icon="sap-icon://accept"
+                                        class="sapUiTinyMarginEnd"
+                                    />
+                                    <Button icon="sap-icon://decline" />
+                                </HBox>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </smartTable:SmartTable>
+        </VBox>
+
+        <!-- GRID VIEW -->
+        <VBox
+            id="gridViewBox"
+            visible="false"
+        >
+            <Text text="Grid" />
+        </VBox>
+    </VBox>
+</mvc:View>

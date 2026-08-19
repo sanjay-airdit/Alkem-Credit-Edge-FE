@@ -1,0 +1,29 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <Popover
+        id="profilePopover"
+        title="Profile"
+        placement="Bottom"
+        contentWidth="220px"
+    >
+        <VBox class="sapUiSmallMargin" alignItems="Center">
+            <!-- <Avatar
+                src="/viewFiles/{lpadData>/imageurl}"
+                displaySize="M"
+                class="sapUiSmallMarginBottom"
+            />
+            <Text text="{lpadData>/userName}" class="sapUiTinyMarginBottom" />
+            <Text text="{lpadData>/email}" class="sapUiSmallMarginBottom" />
+            <Button
+                text="Logout"
+                type="Reject"
+                icon="sap-icon://log"
+                press=".onLogout"
+                width="100%"
+            /> -->
+            <Text text="Coming soon..."></Text>
+        </VBox>
+    </Popover>
+</core:FragmentDefinition>
