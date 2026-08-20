@@ -6,6 +6,7 @@
     xmlns:core="sap.ui.core"
     xmlns:smartTable="sap.ui.comp.smarttable"
     xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
+    xmlns:customData="sap.ui.core.CustomData"
 >
     <VBox>
         <HBox
@@ -139,7 +140,10 @@
             </VBox>
         </HBox>
 
-        <FlexBox justifyContent="End">
+        <FlexBox
+            justifyContent="End"
+            class="sapUiTinyMarginBottom"
+        >
             <SegmentedButton
                 id="viewSwitchButton"
                 selectedKey="list"
@@ -292,8 +296,254 @@
         <VBox
             id="gridViewBox"
             visible="false"
+            class="sapUiSmallMarginTop"
+            width="100%"
+            busy="{ordersModel>/busy}"
+            busyIndicatorDelay="0"
         >
-            <Text text="Grid" />
+            <!-- Scrollable card area -->
+            <ScrollContainer
+                id="idGridScrollContainer"
+                height="59vh"
+                width="100%"
+                vertical="true"
+                horizontal="false"
+            >
+                <FlexBox
+                    id="idOrdersGridContainer"
+                    wrap="Wrap"
+                    justifyContent="Start"
+                    items="{ordersModel>/orders}"
+                >
+                    <items>
+                        <f:Card
+                            width="19rem"
+                            class="sapUiSmallMargin"
+                        >
+                            <f:content>
+                                <VBox
+                                    width="100%"
+                                    class="sapUiSmallMargin"
+                                >
+                                    <!-- Header -->
+                                    <HBox
+                                        justifyContent="SpaceBetween"
+                                        alignItems="Center"
+                                        class="sapUiTinyMarginBottom"
+                                    >
+                                        <Title
+                                            text="{ordersModel>OrderNumber}"
+                                            class="sapUiFontHeader5"
+                                        />
+                                        <ObjectStatus
+                                            text="{ordersModel>AITotalScoreText}"
+                                            state="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.stateValue'}"
+                                        />
+                                    </HBox>
+                                    <Text
+                                        text="Customer: {ordersModel>CustomerName}"
+                                        class="sapUiTinyMarginBottom"
+                                    />
+
+                                    <!-- AI SUMMARY -->
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <HBox
+                                            justifyContent="SpaceBetween"
+                                            alignItems="Center"
+                                        >
+                                            <Label
+                                                text="AI SUMMARY"
+                                                design="Bold"
+                                            />
+                                            <ObjectStatus
+                                                text="{ordersModel>RiskLevel}"
+                                                state="{path: 'ordersModel>RiskLevel', formatter: '.formatter.riskState'}"
+                                            />
+                                        </HBox>
+                                        <MessageStrip
+                                            text="{ordersModel>AISummaryText}"
+                                            type="{path: 'ordersModel>RiskLevel', formatter: '.formatter.riskState'}"
+                                            showIcon="false"
+                                            showCloseButton="false"
+                                            class="sapUiTinyMarginTop"
+                                        />
+                                    </VBox>
+
+                                    <!-- SUGGESTION -->
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <Label
+                                            text="SUGGESTION"
+                                            design="Bold"
+                                        />
+                                        <MessageStrip
+                                            text="{ordersModel>AISuggestionText}"
+                                            type="Information"
+                                            showIcon="false"
+                                            showCloseButton="false"
+                                            class="sapUiTinyMarginTop"
+                                        />
+                                    </VBox>
+
+                                    <!-- Scores -->
+                                    <HBox
+                                        justifyContent="SpaceBetween"
+                                        class="sapUiTinyMarginBottom"
+                                    >
+                                        <VBox width="48%">
+                                            <Label text="SOP Value Score" />
+                                            <ProgressIndicator
+                                                width="100%"
+                                                percentValue="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.percentValue'}"
+                                                state="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.stateValue'}"
+                                                displayValue="{ordersModel>AISopValueScore}"
+                                                showValue="true"
+                                            />
+                                        </VBox>
+                                        <VBox width="48%">
+                                            <Label text="AVG Delay Score" />
+                                            <ProgressIndicator
+                                                width="100%"
+                                                percentValue="{path: 'ordersModel>AIAverageDelayScore', formatter: '.formatter.percentValue'}"
+                                                state="{path: 'ordersModel>AIAverageDelayScore', formatter: '.formatter.stateValue'}"
+                                                displayValue="{ordersModel>AIAverageDelayScore}"
+                                                showValue="true"
+                                            />
+                                        </VBox>
+                                    </HBox>
+                                    <HBox
+                                        justifyContent="SpaceBetween"
+                                        class="sapUiTinyMarginBottom"
+                                    >
+                                        <VBox width="48%">
+                                            <Label text="Utilization % Score" />
+                                            <ProgressIndicator
+                                                width="100%"
+                                                percentValue="{path: 'ordersModel>AIUtilPercentageScore', formatter: '.formatter.percentValue'}"
+                                                state="{path: 'ordersModel>AIUtilPercentageScore', formatter: '.formatter.stateValue'}"
+                                                displayValue="{ordersModel>AIUtilPercentageScore}"
+                                                showValue="true"
+                                            />
+                                        </VBox>
+                                        <VBox width="48%">
+                                            <Label text="Order Value" />
+                                            <Text
+                                                text="{ordersModel>CurrentOrderValue}"
+                                            />
+                                        </VBox>
+                                    </HBox>
+
+                                    <!-- Footer -->
+                                    <HBox
+                                        justifyContent="SpaceBetween"
+                                        alignItems="Center"
+                                        class="sapUiTinyMarginTop"
+                                    >
+                                        <VBox>
+                                            <Text
+                                                text="Credit Exposure: {ordersModel>CreditExposure}"
+                                            />
+                                            <Text
+                                                text="Utilization: {ordersModel>UtilizationPercentage}"
+                                            />
+                                        </VBox>
+                                        <HBox>
+                                            <Button
+                                                icon="sap-icon://refresh"
+                                                type="Emphasized"
+                                                class="sapUiTinyMarginEnd"
+                                                press="onReset"
+                                            />
+                                            <Button
+                                                icon="sap-icon://accept"
+                                                type="Accept"
+                                                class="sapUiTinyMarginEnd"
+                                                press="onApprove"
+                                            />
+                                            <Button
+                                                icon="sap-icon://decline"
+                                                type="Reject"
+                                                press="onReject"
+                                            />
+                                        </HBox>
+                                    </HBox>
+                                </VBox>
+                            </f:content>
+                        </f:Card>
+                    </items>
+                </FlexBox>
+
+                <!-- No data / empty state (hidden while busy) -->
+                <MessageStrip
+                    visible="{= !${ordersModel>/busy} &amp;&amp; ${ordersModel>/noData} }"
+                    text="No records found."
+                    type="Information"
+                    showIcon="true"
+                    showCloseButton="false"
+                    class="sapUiMediumMargin"
+                />
+            </ScrollContainer>
+
+            <!-- Pagination bar, pinned at bottom of the grid area -->
+            <Toolbar
+                id="idGridPaginationToolbar"
+                width="100%"
+                class="sapUiTinyMarginTop"
+            >
+                <ToolbarSpacer />
+
+                <!-- << : jump back 10 pages -->
+                <Button
+                    text="&lt;&lt;"
+                    tooltip="Back 10 pages"
+                    press="onGridJumpBack"
+                    enabled="{= ${ordersModel>/currentPage} > 1 }"
+                />
+
+                <!-- Previous : back 1 page -->
+                <Button
+                    text="Previous"
+                    press="onGridPrevPage"
+                    enabled="{= ${ordersModel>/currentPage} > 1 }"
+                />
+
+                <OverflowToolbar
+                    id="idPageNumbersToolbar"
+                    width="auto"
+                    content="{path: 'ordersModel>/pageNumbers'}"
+                >
+                    <Button
+                        text="{ordersModel>text}"
+                        press="onGridPageNumberPress"
+                        enabled="{ordersModel>enabled}"
+                        type="{= ${ordersModel>emphasized} ? 'Emphasized' : 'Transparent'}"
+                    >
+                        <customData>
+                            <core:CustomData
+                                key="page"
+                                value="{ordersModel>page}"
+                            />
+                        </customData>
+                    </Button>
+                </OverflowToolbar>
+
+                <!-- Next : forward 1 page -->
+                <Button
+                    text="Next"
+                    press="onGridNextPage"
+                    enabled="{= ${ordersModel>/currentPage} &lt; ${ordersModel>/totalPages} }"
+                />
+
+                <!-- >> : jump forward 10 pages -->
+                <Button
+                    text="&gt;&gt;"
+                    tooltip="Forward 10 pages"
+                    press="onGridJumpForward"
+                    enabled="{= ${ordersModel>/currentPage} &lt; ${ordersModel>/totalPages} }"
+                />
+
+                <ToolbarSpacer />
+                <Text text="{ordersModel>/totalCount} records" />
+            </Toolbar>
         </VBox>
     </VBox>
 </mvc:View>

@@ -91,7 +91,7 @@
 }
 
 /* Keep avatars aligned with bottom of bubble, prevent squish */
-.airbotMessageList .sapMHBox > .sapMAvatar {
+.airbotMessageList .sapMHBox>.sapMAvatar {
     flex-shrink: 0;
 }
 
@@ -131,31 +131,91 @@
 }
 
 /* Blue - Total Orders (Information) */
-.kpiCard--blue      { border-top-color: var(--sapInformativeColor, #2b6cb0); }
-.kpiValue--blue     { color: var(--sapInformativeColor, #2b6cb0); }
-.kpiIcon--blue      { color: var(--sapInformativeColor, #2b6cb0); background: var(--sapInformativeBackground, #e8f0fb); }
+.kpiCard--blue {
+    border-top-color: var(--sapInformativeColor, #2b6cb0);
+}
+
+.kpiValue--blue {
+    color: var(--sapInformativeColor, #2b6cb0);
+}
+
+.kpiIcon--blue {
+    color: var(--sapInformativeColor, #2b6cb0);
+    background: var(--sapInformativeBackground, #e8f0fb);
+}
 
 /* Orange - In Hold (Critical) */
-.kpiCard--orange    { border-top-color: var(--sapCriticalColor, #dd8500); }
-.kpiValue--orange   { color: var(--sapCriticalColor, #dd8500); }
-.kpiIcon--orange    { color: var(--sapCriticalColor, #dd8500); background: var(--sapCriticalBackground, #fdf1e0); }
+.kpiCard--orange {
+    border-top-color: var(--sapCriticalColor, #dd8500);
+}
+
+.kpiValue--orange {
+    color: var(--sapCriticalColor, #dd8500);
+}
+
+.kpiIcon--orange {
+    color: var(--sapCriticalColor, #dd8500);
+    background: var(--sapCriticalBackground, #fdf1e0);
+}
 
 /* Green - Approved (Positive/Success) */
-.kpiCard--green     { border-top-color: var(--sapPositiveColor, #2f8f4e); }
-.kpiValue--green    { color: var(--sapPositiveColor, #2f8f4e); }
-.kpiIcon--green     { color: var(--sapPositiveColor, #2f8f4e); background: var(--sapPositiveBackground, #e6f5ea); }
+.kpiCard--green {
+    border-top-color: var(--sapPositiveColor, #2f8f4e);
+}
+
+.kpiValue--green {
+    color: var(--sapPositiveColor, #2f8f4e);
+}
+
+.kpiIcon--green {
+    color: var(--sapPositiveColor, #2f8f4e);
+    background: var(--sapPositiveBackground, #e6f5ea);
+}
 
 /* Red - High Risk Orders (Negative/Error) */
-.kpiCard--red       { border-top-color: var(--sapNegativeColor, #a12b2b); }
-.kpiValue--red      { color: var(--sapNegativeColor, #a12b2b); }
-.kpiIcon--red       { color: var(--sapNegativeColor, #a12b2b); background: var(--sapNegativeBackground, #fbe8e8); }
+.kpiCard--red {
+    border-top-color: var(--sapNegativeColor, #a12b2b);
+}
+
+.kpiValue--red {
+    color: var(--sapNegativeColor, #a12b2b);
+}
+
+.kpiIcon--red {
+    color: var(--sapNegativeColor, #a12b2b);
+    background: var(--sapNegativeBackground, #fbe8e8);
+}
 
 /* Purple - Avg Delay Score (Brand/Accent) */
-.kpiCard--purple    { border-top-color: var(--sapAccentColor6, #5b2d8e); }
-.kpiValue--purple   { color: var(--sapAccentColor6, #5b2d8e); }
-.kpiIcon--purple    { color: var(--sapAccentColor6, #5b2d8e); background: var(--sapContent_Selected_Background, #efe6f7); }
+.kpiCard--purple {
+    border-top-color: var(--sapAccentColor6, #5b2d8e);
+}
+
+.kpiValue--purple {
+    color: var(--sapAccentColor6, #5b2d8e);
+}
+
+.kpiIcon--purple {
+    color: var(--sapAccentColor6, #5b2d8e);
+    background: var(--sapContent_Selected_Background, #efe6f7);
+}
 
 /* Gold - Avg SOP Score (Accent) */
-.kpiCard--gold      { border-top-color: var(--sapAccentColor3, #9c7a1e); }
-.kpiValue--gold     { color: var(--sapAccentColor3, #9c7a1e); }
-.kpiIcon--gold      { color: var(--sapAccentColor3, #9c7a1e); background: var(--sapContent_ImagePlaceholderBackground, #f7f0dd); }
+.kpiCard--gold {
+    border-top-color: var(--sapAccentColor3, #9c7a1e);
+}
+
+.kpiValue--gold {
+    color: var(--sapAccentColor3, #9c7a1e);
+}
+
+.kpiIcon--gold {
+    color: var(--sapAccentColor3, #9c7a1e);
+    background: var(--sapContent_ImagePlaceholderBackground, #f7f0dd);
+}
+
+
+.sapMMsgStripMessage {
+    max-height: 30rem !important;
+    overflow: auto;
+}

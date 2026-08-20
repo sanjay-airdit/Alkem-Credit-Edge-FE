@@ -32,6 +32,27 @@ sap.ui.define([], function () {
             }
 
             return Math.round((value / 15) * 100);
+        },
+
+        riskState: function (sRiskLevel) {
+            var sValue = (sRiskLevel || "").trim().toLowerCase();
+
+            switch (sValue) {
+                case "escalate":
+                case "high":
+                case "high risk":
+                    return "Error";
+                case "review":
+                case "medium":
+                case "caution":
+                    return "Warning";
+                case "approved":
+                case "low":
+                case "low risk":
+                    return "Success";
+                default:
+                    return "None";
+            }
         }
     };
 });
