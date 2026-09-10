@@ -374,12 +374,12 @@
                                     <!-- SUGGESTION -->
                                     <VBox class="sapUiTinyMarginBottom">
                                         <Label
-                                            text="SUGGESTION"
+                                            text="RECOMMENDATION"
                                             design="Bold"
                                         />
                                         <MessageStrip
-                                            text="{ordersModel>AISuggestionText}"
-                                            type="Information"
+                                            text="{ordersModel>AISummaryVerdict}"
+                                            type="{path: 'ordersModel>AISummaryVerdict', formatter: '.formatter.riskState'}"
                                             showIcon="false"
                                             showCloseButton="false"
                                             class="sapUiTinyMarginTop"

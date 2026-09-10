@@ -6,13 +6,13 @@ sap.ui.define([], function () {
             var value = parseInt(sopValue, 10);
 
             if (isNaN(value)) {
-                return "None";
-            }
-            if (value >= 1 && value <= 5) {
                 return "Error";
-            } else if (value >= 6 && value <= 10) {
+            }
+            if (value >= 1 && value <= 2) {
+                return "Error";
+            } else if (value >= 3 && value <= 4) {
                 return "Warning";
-            } else if (value >= 11 && value <= 15) {
+            } else if (value === 5) {
                 return "Success";
             }
 
@@ -27,18 +27,18 @@ sap.ui.define([], function () {
             }
             if (value < 1) {
                 value = 1;
-            } else if (value > 15) {
-                value = 15;
+            } else if (value > 5) {
+                value = 5;
             }
 
-            return Math.round((value / 15) * 100);
+            return Math.round((value / 5) * 100);
         },
 
         riskState: function (sRiskLevel) {
             var sValue = (sRiskLevel || "").trim().toLowerCase();
 
             switch (sValue) {
-                case "escalate":
+                case "review":
                 case "high":
                 case "high risk":
                     return "Error";

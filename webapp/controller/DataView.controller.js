@@ -12,10 +12,10 @@ sap.ui.define([
 
         onInit: function () {
             const oKpiModel = new JSONModel({
-                totalOrders: 12,
-                inHold: 12,
-                approved: 0,
-                highRiskOrders: 2,
+                totalOrders: 12523232,
+                inHold: 124355,
+                approved: 13342,
+                highRiskOrders: 232442,
                 avgDelayScore: 5.0,
                 avgSopScore: 2.7
             });
@@ -24,7 +24,7 @@ sap.ui.define([
 
             // --- Grid/card pagination setup ---
             this._iPageSize = 20; // fixed page size
-            this._iJumpSize = 2; // pages skipped by << / >>
+            this._iJumpSize = 9; // pages skipped by << / >>
             this._bGridLoaded = false;
 
             const oOrdersModel = new JSONModel({
