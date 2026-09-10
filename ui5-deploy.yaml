@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
+
+specVersion: "4.0"
+metadata:
+  name: creditedge
+type: application
+builder:
+  resources:
+    excludes:
+      - /test/**
+      - /localService/**
+  customTasks:
+    - name: deploy-to-abap
+      afterTask: generateCachebusterInfo
+      configuration:
+        target:
+          destination: S4HANA_DEV
+          url: http://sandbox-app.alkemerp.com:8001
+          client: '900'
+        app:
+          name: ZCREDIT_EDGE
+          description: Credit Edge
+          package: ZCREDIT_EDGE
+          transport: SNDK919788
+        exclude:
+          - /test/
+          - /localService/

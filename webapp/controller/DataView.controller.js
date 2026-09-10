@@ -24,7 +24,7 @@ sap.ui.define([
 
             // --- Grid/card pagination setup ---
             this._iPageSize = 20; // fixed page size
-            this._iJumpSize = 10; // pages skipped by << / >>
+            this._iJumpSize = 2; // pages skipped by << / >>
             this._bGridLoaded = false;
 
             const oOrdersModel = new JSONModel({

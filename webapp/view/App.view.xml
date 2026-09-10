@@ -24,7 +24,7 @@
         class='onZoom'
     >
         <tnt:header>
-            <tnt:ToolHeader class="ccc">
+            <!-- <tnt:ToolHeader class="ccc">
                 <Image
                     width="100px"
                     height="40px"
@@ -55,7 +55,6 @@
                     press="onNotification"
                 />
 
-                <!-- Profile section -->
                 <Avatar
                     id="myAvatar"
                     src=""
@@ -67,18 +66,18 @@
                         <OverflowToolbarLayoutData priority="NeverOverflow" />
                     </layoutData>
                 </Avatar>
-            </tnt:ToolHeader>
+            </tnt:ToolHeader> -->
         </tnt:header>
 
         <tnt:mainContents>
             <App id="app" />
-            <Avatar
+            <!-- <Avatar
                 src="sap-icon://ai"
                 id="airbotToggleBtn"
                 tooltip="Ask AIRBOT"
                 press="onAirbotTogglePress"
                 class="airbotFab"
-            />
+            /> -->
         </tnt:mainContents>
     </tnt:ToolPage>
 </mvc:View>

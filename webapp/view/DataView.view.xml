@@ -278,12 +278,14 @@
                                     <Button
                                         icon="sap-icon://refresh"
                                         class="sapUiTinyMarginEnd"
+                                        type="Emphasized"
                                     />
                                     <Button
                                         icon="sap-icon://accept"
                                         class="sapUiTinyMarginEnd"
+                                        type="Accept"
                                     />
-                                    <Button icon="sap-icon://decline" />
+                                    <Button icon="sap-icon://decline" type="Reject"/>
                                 </HBox>
                             </cells>
                         </ColumnListItem>
