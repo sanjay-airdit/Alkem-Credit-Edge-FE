@@ -28,7 +28,7 @@
                 <Image
                     width="100px"
                     height="40px"
-                    src="/images/Alkem_logo.png"
+                    src="/sap/public/bc/ui2/zce/alkem.png"
                 />
 
                 <ToolbarSpacer />
