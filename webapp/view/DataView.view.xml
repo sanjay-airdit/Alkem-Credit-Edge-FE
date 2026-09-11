@@ -187,12 +187,13 @@
                 <smartTable:customToolbar>
                     <Toolbar>
                         <ToolbarSpacer />
-                        <!-- <SearchField
+                        <SearchField
                             id="idOrderSearchField"
                             width="20rem"
                             search="onSearch"
                             liveChange="onSearchLiveChange"
-                        /> -->
+                            placeholder="Enter Order Number..."
+                        />
                     </Toolbar>
                 </smartTable:customToolbar>
                 <Table
@@ -203,6 +204,18 @@
                     sticky="ColumnHeaders,HeaderToolbar,InfoToolbar"
                 >
                     <columns>
+                        <Column width="28rem">
+                            <customData>
+                                <core:CustomData
+                                    key="p13nData"
+                                    value='\{"columnKey": "AISummaryText","leadingProperty": "AISummaryText", "sortProperty": "AISummaryText", "filterProperty": "AISummaryText", "columnIndex": "2"}'
+                                />
+                            </customData>
+                            <Label
+                                text="Summary"
+                                wrapping="false"
+                            />
+                        </Column>
                         <Column>
                             <customData>
                                 <core:CustomData
@@ -239,7 +252,10 @@
                                 wrapping="false"
                             />
                         </Column>
-                        <Column hAlign="Center">
+                        <Column
+                            hAlign="Center"
+                            width="8rem"
+                        >
                             <customData>
                                 <core:CustomData
                                     key="p13nData"
@@ -256,6 +272,10 @@
                     <items>
                         <ColumnListItem vAlign="Middle">
                             <cells>
+                                <FormattedText
+                                    htmlText="{path: 'AISummaryText', formatter: '.formatSummaryHtml'}"
+                                />
+
                                 <ProgressIndicator
                                     class="sapUiSmallMarginBottom"
                                     percentValue="{path: 'AISopValueScore', formatter: '.formatter.percentValue'}"
@@ -285,7 +305,10 @@
                                         class="sapUiTinyMarginEnd"
                                         type="Accept"
                                     />
-                                    <Button icon="sap-icon://decline" type="Reject"/>
+                                    <Button
+                                        icon="sap-icon://decline"
+                                        type="Reject"
+                                    />
                                 </HBox>
                             </cells>
                         </ColumnListItem>
@@ -319,9 +342,17 @@
                 >
                     <items>
                         <f:Card
-                            width="19rem"
+                            width="20rem"
                             class="sapUiSmallMargin"
                         >
+                            <f:layoutData>
+                                <FlexItemData
+                                    growFactor="1"
+                                    minWidth="19rem"
+                                    maxWidth="30rem"
+                                />
+                            </f:layoutData>
+
                             <f:content>
                                 <VBox
                                     width="100%"
@@ -362,13 +393,17 @@
                                                 state="{path: 'ordersModel>RiskLevel', formatter: '.formatter.riskState'}"
                                             />
                                         </HBox>
-                                        <MessageStrip
-                                            text="{ordersModel>AISummaryText}"
-                                            type="{path: 'ordersModel>RiskLevel', formatter: '.formatter.riskState'}"
-                                            showIcon="false"
-                                            showCloseButton="false"
+                                        <ScrollContainer
+                                            height="12rem"
+                                            width="100%"
+                                            vertical="true"
+                                            horizontal="false"
                                             class="sapUiTinyMarginTop"
-                                        />
+                                        >
+                                            <FormattedText
+                                                htmlText="{path: 'ordersModel>AISummaryText', formatter: '.formatSummaryHtml'}"
+                                            />
+                                        </ScrollContainer>
                                     </VBox>
 
                                     <!-- SUGGESTION -->

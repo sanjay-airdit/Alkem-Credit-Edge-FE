@@ -3,8 +3,11 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "sap/m/Dialog",
+    "sap/m/Button",
+    "sap/m/FormattedText",
     "creditedge/controller/formatter"
-], function (Controller, JSONModel, Filter, FilterOperator, formatter) {
+], function (Controller, JSONModel, Filter, FilterOperator, Dialog, Button, FormattedText, formatter) {
     "use strict";
     return Controller.extend("creditedge.controller.DataView", {
 
@@ -42,6 +45,14 @@ sap.ui.define([
             // Pre-load grid data in the background so it's ready the moment
             // the user switches to the Grid view (instead of loading on click).
             this._preloadGridData();
+
+            const oSmartTable = this.byId("idSmartTable")
+            const customizeConfig = {
+                autoColumnWidth: {
+                    '*': { min: 2, max: 6, gap: 1, truncateLabel: false },
+                }
+            };
+            oSmartTable.setCustomizeConfig(customizeConfig);
         },
 
         /**
@@ -339,6 +350,147 @@ sap.ui.define([
             const oCtx = oEvent.getSource().getBindingContext("ordersModel");
             const oOrder = oCtx && oCtx.getObject();
             /* call reset API */
+        },
+
+        // --- AI summary parsing / display -----------------------------------------
+
+        /**
+         * Converts the AISummaryText markdown-ish content into a small, safe
+         * HTML subset that sap.m.FormattedText can render natively (no custom
+         * CSS/styling involved - headings, bold text and bullet lists are all
+         * rendered using the current UI5 theme).
+         *
+         * Handles the two shapes this field tends to arrive in:
+         *   1) "### Section Heading" followed by "* **Label** is **value**" bullets
+         *   2) A standalone "**Section Heading**" line (no leading #) used as
+         *      a heading, followed by the same style of bullets
+         *
+         * Used as a binding formatter: formatter: '.formatSummaryHtml'
+         *
+         * @param {string} sText raw AISummaryText value
+         * @returns {string} sanitized HTML string for FormattedText's htmlText
+         */
+        formatSummaryHtml: function (sText) {
+            if (!sText) {
+                return "<p><em>No summary available.</em></p>";
+            }
+
+            // 1) Escape the raw text first so nothing in the source can be
+            //    interpreted as real markup - only tags we add ourselves below
+            //    end up in the output.
+            const sEscaped = String(sText)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            // 2) Normalise line breaks and split into lines
+            const aLines = sEscaped.replace(/\r\n/g, "\n").split("\n");
+
+            let sHtml = "";
+            let bInList = false;
+
+            const closeList = () => {
+                if (bInList) {
+                    sHtml += "</ul>";
+                    bInList = false;
+                }
+            };
+
+            // Inline **bold** -> <strong>bold</strong>
+            const applyInline = (s) => s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+            aLines.forEach((sRawLine) => {
+                const sLine = sRawLine.trim();
+
+                if (!sLine) {
+                    closeList();
+                    return;
+                }
+
+                // ATX-style headers: ### Heading
+                const oHeaderMatch = sLine.match(/^(#{1,6})\s+(.*)$/);
+                if (oHeaderMatch) {
+                    closeList();
+                    const iLevel = Math.min(oHeaderMatch[1].length, 6);
+                    const sContent = applyInline(oHeaderMatch[2]);
+                    sHtml += `<h5>${sContent}</h5>`;
+                    return;
+                }
+
+                // Bullet lines: "* text" or "- text"
+                const oBulletMatch = sLine.match(/^[*-]\s+(.*)$/);
+                if (oBulletMatch) {
+                    if (!bInList) {
+                        sHtml += "<ul>";
+                        bInList = true;
+                    }
+                    sHtml += `<li>${applyInline(oBulletMatch[1])}</li>`;
+                    return;
+                }
+
+                // A line that is ONLY "**Bold text**" (optionally with a
+                // trailing colon) is treated as a sub-heading, since the AI
+                // output sometimes skips the ### prefix entirely.
+                const oStandaloneBold = sLine.match(/^\*\*(.+?)\*\*:?\s*$/);
+                if (oStandaloneBold) {
+                    closeList();
+                    sHtml += `<h3>${oStandaloneBold[1]}</h3>`;
+                    return;
+                }
+
+                // Regular paragraph text
+                closeList();
+                sHtml += `<p>${applyInline(sLine)}</p>`;
+            });
+
+            closeList();
+            return sHtml;
+        },
+
+        /**
+         * Opens a Dialog showing the fully parsed AI summary for the row/card
+         * that was pressed. Works from both the list Table (default model)
+         * and the grid Cards (named "ordersModel"), and from either a Link
+         * press or a Button press.
+         */
+        onViewSummary: function (oEvent) {
+            const oSource = oEvent.getSource();
+            const oBindingContext = oSource.getBindingContext("ordersModel") || oSource.getBindingContext();
+            const oData = oBindingContext && oBindingContext.getObject();
+
+            if (!oData) {
+                return;
+            }
+
+            const sHtml = this.formatSummaryHtml(oData.AISummaryText);
+
+            if (!this._oSummaryDialog) {
+                this._oSummaryModel = new JSONModel({ html: "" });
+
+                this._oSummaryFormattedText = new FormattedText({
+                    htmlText: "{summaryDialog>/html}"
+                });
+                this._oSummaryFormattedText.setModel(this._oSummaryModel, "summaryDialog");
+
+                this._oSummaryDialog = new Dialog({
+                    title: "AI Summary",
+                    contentWidth: "32rem",
+                    verticalScrolling: true,
+                    content: [this._oSummaryFormattedText],
+                    beginButton: new Button({
+                        text: "Close",
+                        press: () => this._oSummaryDialog.close()
+                    })
+                });
+
+                this.getView().addDependent(this._oSummaryDialog);
+            }
+
+            this._oSummaryModel.setProperty("/html", sHtml);
+            this._oSummaryDialog.setTitle(
+                oData.OrderNumber ? `AI Summary – ${oData.OrderNumber}` : "AI Summary"
+            );
+            this._oSummaryDialog.open();
         }
     });
 });
