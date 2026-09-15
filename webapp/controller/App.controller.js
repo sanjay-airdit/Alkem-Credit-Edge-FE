@@ -11,7 +11,7 @@ sap.ui.define([
         onInit: function () {
             var oAirbotModel = new JSONModel({
                 messages: [
-                    { role: "bot", text: "Hi, I'm AIRBOT. Ask me about orders, credit risk, or delay scores." }
+                    { role: "bot", text: "Hi, Ask me about orders, credit risk, or delay scores." }
                 ],
                 busy: false
             });

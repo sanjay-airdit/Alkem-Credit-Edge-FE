@@ -10,7 +10,7 @@
         contentHeight="480px"
         class="airbotPopover"
         showHeader="true"
-        title="AIRBOT"
+        title="Credit Edge Bot"
     >
         <customHeader>
             <Bar>
@@ -23,7 +23,7 @@
                         badgeIcon="sap-icon://sys-enter-2"
                     />
                     <Title
-                        text="AIRBOT"
+                        text="Credit Edge Bot"
                         level="H3"
                     />
                 </contentLeft>
