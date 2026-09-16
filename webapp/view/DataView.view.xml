@@ -140,6 +140,115 @@
             </VBox>
         </HBox>
 
+        <Panel
+            id="idFilterPanel"
+            class="sapUiTinyMarginBottom sapUiTinyMarginTop"
+            expandable="false"
+            expanded="true"
+            headerText="Filters"
+        >
+            <FlexBox
+                class="sapUiTinyMargin"
+                alignItems="End"
+                justifyContent="SpaceBetween"
+            >
+                <HBox>
+                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                        <Label
+                            text="From Date"
+                            labelFor="idFromDate"
+                        />
+                        <DatePicker
+                            id="idFromDate"
+                            width="12rem"
+                            valueFormat="yyyy-MM-dd"
+                            dateValue="{filterModel>/fromDate}"
+                        />
+                    </VBox>
+
+                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                        <Label
+                            text="To Date"
+                            labelFor="idToDate"
+                        />
+                        <DatePicker
+                            id="idToDate"
+                            width="12rem"
+                            valueFormat="yyyy-MM-dd"
+                            dateValue="{filterModel>/toDate}"
+                        />
+                    </VBox>
+
+                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                        <Label
+                            text="Recommendation"
+                            labelFor="idRecommendationFilter"
+                        />
+                        <Input
+                            id="idRecommendationFilter"
+                            width="12rem"
+                            placeholder="e.g. Approve"
+                            value="{filterModel>/recommendation}"
+                        />
+                    </VBox>
+
+                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                        <Label
+                            text="Customer"
+                            labelFor="idCustomerFilter"
+                        />
+                        <Input
+                            id="idCustomerFilter"
+                            width="12rem"
+                            placeholder="Customer"
+                            value="{filterModel>/customer}"
+                        />
+                    </VBox>
+
+                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                        <Label
+                            text="Division"
+                            labelFor="idDivisionFilter"
+                        />
+                        <Input
+                            id="idDivisionFilter"
+                            width="12rem"
+                            placeholder="Division"
+                            value="{filterModel>/division}"
+                        />
+                    </VBox>
+
+                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                        <Label
+                            text="Business Area"
+                            labelFor="idBusinessAreaFilter"
+                        />
+                        <Input
+                            id="idBusinessAreaFilter"
+                            width="12rem"
+                            placeholder="Business Area"
+                            value="{filterModel>/businessArea}"
+                        />
+                    </VBox>
+                </HBox>
+
+                <HBox class="sapUiSmallMarginBottom">
+                    <Button
+                        id="idFilterGoButton"
+                        text="Go"
+                        type="Emphasized"
+                        class="sapUiTinyMarginEnd"
+                        press="onFilterSearch"
+                    />
+                    <Button
+                        id="idFilterClearButton"
+                        text="Clear"
+                        press="onFilterClear"
+                    />
+                </HBox>
+            </FlexBox>
+        </Panel>
+
         <FlexBox
             justifyContent="End"
             class="sapUiTinyMarginBottom"
@@ -187,13 +296,13 @@
                 <smartTable:customToolbar>
                     <Toolbar>
                         <ToolbarSpacer />
-                        <SearchField
+                        <!-- <SearchField
                             id="idOrderSearchField"
                             width="20rem"
                             search="onSearch"
                             liveChange="onSearchLiveChange"
                             placeholder="Enter Order Number..."
-                        />
+                        /> -->
                     </Toolbar>
                 </smartTable:customToolbar>
                 <Table
@@ -275,7 +384,6 @@
                                 <FormattedText
                                     htmlText="{path: 'AISummaryText', formatter: '.formatSummaryHtml'}"
                                 />
-
                                 <ProgressIndicator
                                     class="sapUiSmallMarginBottom"
                                     percentValue="{path: 'AISopValueScore', formatter: '.formatter.percentValue'}"
@@ -326,10 +434,8 @@
             busy="{ordersModel>/busy}"
             busyIndicatorDelay="0"
         >
-            <!-- Scrollable card area -->
             <ScrollContainer
                 id="idGridScrollContainer"
-                height="59vh"
                 width="100%"
                 vertical="true"
                 horizontal="false"
@@ -342,7 +448,7 @@
                 >
                     <items>
                         <f:Card
-                            width="20rem"
+                            width="90%"
                             class="sapUiSmallMargin"
                         >
                             <f:layoutData>
@@ -358,7 +464,6 @@
                                     width="100%"
                                     class="sapUiSmallMargin"
                                 >
-                                    <!-- Header -->
                                     <HBox
                                         justifyContent="SpaceBetween"
                                         alignItems="Center"
@@ -509,7 +614,6 @@
                     </items>
                 </FlexBox>
 
-                <!-- No data / empty state (hidden while busy) -->
                 <MessageStrip
                     visible="{= !${ordersModel>/busy} &amp;&amp; ${ordersModel>/noData} }"
                     text="No records found."
@@ -520,29 +624,23 @@
                 />
             </ScrollContainer>
 
-            <!-- Pagination bar, pinned at bottom of the grid area -->
             <Toolbar
                 id="idGridPaginationToolbar"
                 width="100%"
                 class="sapUiTinyMarginTop"
             >
                 <ToolbarSpacer />
-
-                <!-- << : jump back 10 pages -->
                 <Button
                     text="&lt;&lt;"
                     tooltip="Back 10 pages"
                     press="onGridJumpBack"
                     enabled="{= ${ordersModel>/currentPage} > 1 }"
                 />
-
-                <!-- Previous : back 1 page -->
                 <Button
                     text="Previous"
                     press="onGridPrevPage"
                     enabled="{= ${ordersModel>/currentPage} > 1 }"
                 />
-
                 <OverflowToolbar
                     id="idPageNumbersToolbar"
                     width="auto"
@@ -562,22 +660,17 @@
                         </customData>
                     </Button>
                 </OverflowToolbar>
-
-                <!-- Next : forward 1 page -->
                 <Button
                     text="Next"
                     press="onGridNextPage"
                     enabled="{= ${ordersModel>/currentPage} &lt; ${ordersModel>/totalPages} }"
                 />
-
-                <!-- >> : jump forward 10 pages -->
                 <Button
                     text="&gt;&gt;"
                     tooltip="Forward 10 pages"
                     press="onGridJumpForward"
                     enabled="{= ${ordersModel>/currentPage} &lt; ${ordersModel>/totalPages} }"
                 />
-
                 <ToolbarSpacer />
                 <Text text="{ordersModel>/totalCount} records" />
             </Toolbar>

@@ -13,6 +13,12 @@ sap.ui.define([
 
         formatter: formatter,
 
+        // Default filter period, reused by both List (SmartTable) and Grid views
+        _oDefaultFilterDates: {
+            fromDate: new Date(2023, 8, 1),  // 2023-09-01
+            toDate: new Date(2023, 8, 30)    // 2023-09-30
+        },
+
         onInit: function () {
             const oKpiModel = new JSONModel({
                 totalOrders: 12523232,
@@ -24,6 +30,17 @@ sap.ui.define([
             });
             this.getView().setModel(oKpiModel, "kpiModel");
             this._sSearchQuery = "";
+
+            // --- Filter bar model (shared by List + Grid views) ---
+            const oFilterModel = new JSONModel({
+                fromDate: new Date(this._oDefaultFilterDates.fromDate),
+                toDate: new Date(this._oDefaultFilterDates.toDate),
+                recommendation: "",
+                customer: "",
+                division: "",
+                businessArea: ""
+            });
+            this.getView().setModel(oFilterModel, "filterModel");
 
             // --- Grid/card pagination setup ---
             this._iPageSize = 20; // fixed page size
@@ -66,8 +83,6 @@ sap.ui.define([
             if (oModel) {
                 this._loadGridPage(1);
             } else {
-                // Model not attached yet (e.g. still resolving from manifest) -
-                // wait for it, then load once.
                 oView.attachEventOnce("modelContextChange", () => {
                     if (this.getView().getModel() && !this._bGridLoaded) {
                         this._loadGridPage(1);
@@ -76,25 +91,24 @@ sap.ui.define([
             }
         },
 
-        onBeforeRebindTable: function (oEvent) {
-            const oSmartTable = oEvent.getSource();
-            const mBindingParams = oEvent.getParameter("bindingParams");
 
+        _getFormattedFilterDates: function () {
+            const oFilterModel = this.getView().getModel("filterModel");
             const oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
-            const sTodayDate = oDateFormat.format(new Date());
 
-            oSmartTable.setEntitySet(`ZC_CE_OrdersOnHold(p_date=datetime'${sTodayDate}T00:00:00')/Set`);
+            const oFromDate = (oFilterModel && oFilterModel.getProperty("/fromDate")) || this._oDefaultFilterDates.fromDate;
+            const oToDate = (oFilterModel && oFilterModel.getProperty("/toDate")) || this._oDefaultFilterDates.toDate;
 
-            mBindingParams.filters.push(
-                // new Filter("OrderNumber", FilterOperator.EQ, "0000002147"),
-            );
-
-            const oSearchFilter = this._buildSearchFilter();
-            if (oSearchFilter) {
-                mBindingParams.filters.push(oSearchFilter);
-            }
+            return {
+                from: oDateFormat.format(oFromDate),
+                to: oDateFormat.format(oToDate)
+            };
         },
 
+        /**
+         * Builds the OrderNumber free-text search filter (existing behavior),
+         * OR-combined across the configured searchable fields.
+         */
         _buildSearchFilter: function () {
             const sQuery = (this._sSearchQuery || "").trim();
             if (!sQuery) {
@@ -122,6 +136,87 @@ sap.ui.define([
             });
         },
 
+
+        _buildFilterBarFilters: function () {
+            const oFilterModel = this.getView().getModel("filterModel");
+            if (!oFilterModel) {
+                return [];
+            }
+
+            const oData = oFilterModel.getData();
+            const aFilters = [];
+
+            if (oData.recommendation && oData.recommendation.trim()) {
+                aFilters.push(new Filter({
+                    path: "AISummaryVerdict",
+                    operator: FilterOperator.Contains,
+                    value1: oData.recommendation.trim()
+                }));
+            }
+            if (oData.customer && oData.customer.trim()) {
+                aFilters.push(new Filter({
+                    path: "Customer",
+                    operator: FilterOperator.Contains,
+                    value1: oData.customer.trim()
+                }));
+            }
+            if (oData.division && oData.division.trim()) {
+                aFilters.push(new Filter({
+                    path: "Division", 
+                    operator: FilterOperator.Contains,
+                    value1: oData.division.trim()
+                }));
+            }
+            if (oData.businessArea && oData.businessArea.trim()) {
+                aFilters.push(new Filter({
+                    path: "BusinessArea",
+                    operator: FilterOperator.Contains,
+                    value1: oData.businessArea.trim()
+                }));
+            }
+
+            return aFilters;
+        },
+
+        /**
+         * Combines the free-text search filter with the filter bar filters
+         * into a single AND-ed filter, used by both the SmartTable rebind
+         * and the Grid OData read.
+         */
+        _buildODataFilters: function () {
+            const aAndFilters = [];
+
+            const oSearchFilter = this._buildSearchFilter();
+            if (oSearchFilter) {
+                aAndFilters.push(oSearchFilter);
+            }
+
+            aAndFilters.push(...this._buildFilterBarFilters());
+
+            if (aAndFilters.length === 0) {
+                return null;
+            }
+
+            return new Filter({
+                filters: aAndFilters,
+                and: true
+            });
+        },
+
+        onBeforeRebindTable: function (oEvent) {
+            const oSmartTable = oEvent.getSource();
+            const mBindingParams = oEvent.getParameter("bindingParams");
+
+            const oDates = this._getFormattedFilterDates();
+
+            oSmartTable.setEntitySet(`ZC_CE_OrdersOnHold(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`);
+
+            const oCombinedFilter = this._buildODataFilters();
+            if (oCombinedFilter) {
+                mBindingParams.filters.push(oCombinedFilter);
+            }
+        },
+
         onSearch: function (oEvent) {
             this._sSearchQuery = oEvent.getParameter("query") || oEvent.getParameter("newValue") || "";
             this._rebindWithSearch();
@@ -140,8 +235,29 @@ sap.ui.define([
             if (oSmartTable) {
                 oSmartTable.rebindTable(true);
             }
-            // Keep grid view in sync with the same search term
             this._loadGridPage(1);
+        },
+
+
+        onFilterSearch: function () {
+            const oSmartTable = this.byId("idSmartTable");
+            if (oSmartTable) {
+                oSmartTable.rebindTable(true);
+            }
+            this._loadGridPage(1);
+        },
+
+        onFilterClear: function () {
+            const oFilterModel = this.getView().getModel("filterModel");
+            oFilterModel.setData({
+                fromDate: new Date(this._oDefaultFilterDates.fromDate),
+                toDate: new Date(this._oDefaultFilterDates.toDate),
+                recommendation: "",
+                customer: "",
+                division: "",
+                businessArea: ""
+            });
+            this.onFilterSearch();
         },
 
         onViewSwitchChange: function (oEvent) {
@@ -154,26 +270,19 @@ sap.ui.define([
             if (sKey === "list") {
                 oListBox.setVisible(true);
                 oGridBox.setVisible(false);
-                oView.byId("idSmartTable").rebindTable(true);
+                // oView.byId("idSmartTable").rebindTable(true);
             } else {
                 oListBox.setVisible(false);
                 oGridBox.setVisible(true);
-                // Data is generally already preloaded from onInit;
-                // this only fires a load if that preload hasn't completed yet.
                 if (!this._bGridLoaded) {
                     this._loadGridPage(1);
                 }
             }
         },
 
-        _getTodayDate: function () {
-            const oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
-            return oDateFormat.format(new Date());
-        },
-
         _getGridEntityPath: function () {
-            const sTodayDate = this._getTodayDate();
-            return `/ZC_CE_OrdersOnHold(p_date=datetime'${sTodayDate}T00:00:00')/Set`;
+            const oDates = this._getFormattedFilterDates();
+            return `/ZC_CE_OrdersOnHold(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`;
         },
 
         _loadGridPage: function (iPage) {
@@ -188,9 +297,9 @@ sap.ui.define([
             }
 
             const aFilters = [];
-            const oSearchFilter = this._buildSearchFilter();
-            if (oSearchFilter) {
-                aFilters.push(oSearchFilter);
+            const oCombinedFilter = this._buildODataFilters();
+            if (oCombinedFilter) {
+                aFilters.push(oCombinedFilter);
             }
 
             oOrdersModel.setProperty("/busy", true);
@@ -208,7 +317,6 @@ sap.ui.define([
                     const aResults = (oData && oData.results) || [];
                     const iTotalCount = oData && oData.__count ? parseInt(oData.__count, 10) : aResults.length;
                     const iTotalPages = Math.max(1, Math.ceil(iTotalCount / this._iPageSize));
-                    // Clamp requested page in case totalPages shrank (e.g. after a search)
                     const iClampedPage = Math.min(Math.max(1, iPage), iTotalPages);
 
                     oOrdersModel.setData({
@@ -230,31 +338,21 @@ sap.ui.define([
             });
         },
 
-        /**
-         * Builds the page-number list for the toolbar:
-         *   << Previous  1 ... 3 4 5 ... 600  Next >>
-         * - Always shows the first page (1)
-         * - Always shows the last page
-         * - Shows a window of (current-1, current, current+1)
-         * - Inserts an "..." separator wherever there's a gap
-         */
         _buildPageNumbers: function (iCurrent, iTotal) {
-            const iBoundaryStart = 1; // always-visible pages at the start
-            const iBoundaryEnd = 1;   // always-visible pages at the end
-            const iSiblingCount = 1;  // pages around the current page
+            const iBoundaryStart = 1;
+            const iBoundaryEnd = 1;
+            const iSiblingCount = 1;
 
             const aRawSet = new Set();
 
             for (let p = 1; p <= Math.min(iBoundaryStart, iTotal); p++) {
                 aRawSet.add(p);
             }
-
             for (let p = iCurrent - iSiblingCount; p <= iCurrent + iSiblingCount; p++) {
                 if (p >= 1 && p <= iTotal) {
                     aRawSet.add(p);
                 }
             }
-
             for (let p = Math.max(1, iTotal - iBoundaryEnd + 1); p <= iTotal; p++) {
                 aRawSet.add(p);
             }
@@ -281,7 +379,6 @@ sap.ui.define([
 
         // --- Navigation handlers -------------------------------------------------
 
-        /** "Previous" — go back exactly 1 page */
         onGridPrevPage: function () {
             const oOrdersModel = this.getView().getModel("ordersModel");
             const iCurrent = oOrdersModel.getProperty("/currentPage");
@@ -290,7 +387,6 @@ sap.ui.define([
             }
         },
 
-        /** "Next" — go forward exactly 1 page */
         onGridNextPage: function () {
             const oOrdersModel = this.getView().getModel("ordersModel");
             const iCurrent = oOrdersModel.getProperty("/currentPage");
@@ -300,7 +396,6 @@ sap.ui.define([
             }
         },
 
-        /** "<<" — jump back 10 pages (clamped to page 1) */
         onGridJumpBack: function () {
             const oOrdersModel = this.getView().getModel("ordersModel");
             const iCurrent = oOrdersModel.getProperty("/currentPage");
@@ -310,7 +405,6 @@ sap.ui.define([
             }
         },
 
-        /** ">>" — jump forward 10 pages (clamped to last page) */
         onGridJumpForward: function () {
             const oOrdersModel = this.getView().getModel("ordersModel");
             const iCurrent = oOrdersModel.getProperty("/currentPage");
@@ -354,36 +448,16 @@ sap.ui.define([
 
         // --- AI summary parsing / display -----------------------------------------
 
-        /**
-         * Converts the AISummaryText markdown-ish content into a small, safe
-         * HTML subset that sap.m.FormattedText can render natively (no custom
-         * CSS/styling involved - headings, bold text and bullet lists are all
-         * rendered using the current UI5 theme).
-         *
-         * Handles the two shapes this field tends to arrive in:
-         *   1) "### Section Heading" followed by "* **Label** is **value**" bullets
-         *   2) A standalone "**Section Heading**" line (no leading #) used as
-         *      a heading, followed by the same style of bullets
-         *
-         * Used as a binding formatter: formatter: '.formatSummaryHtml'
-         *
-         * @param {string} sText raw AISummaryText value
-         * @returns {string} sanitized HTML string for FormattedText's htmlText
-         */
         formatSummaryHtml: function (sText) {
             if (!sText) {
                 return "<p><em>No summary available.</em></p>";
             }
 
-            // 1) Escape the raw text first so nothing in the source can be
-            //    interpreted as real markup - only tags we add ourselves below
-            //    end up in the output.
             const sEscaped = String(sText)
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;");
 
-            // 2) Normalise line breaks and split into lines
             const aLines = sEscaped.replace(/\r\n/g, "\n").split("\n");
 
             let sHtml = "";
@@ -396,7 +470,6 @@ sap.ui.define([
                 }
             };
 
-            // Inline **bold** -> <strong>bold</strong>
             const applyInline = (s) => s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 
             aLines.forEach((sRawLine) => {
@@ -407,7 +480,6 @@ sap.ui.define([
                     return;
                 }
 
-                // ATX-style headers: ### Heading
                 const oHeaderMatch = sLine.match(/^(#{1,6})\s+(.*)$/);
                 if (oHeaderMatch) {
                     closeList();
@@ -417,7 +489,6 @@ sap.ui.define([
                     return;
                 }
 
-                // Bullet lines: "* text" or "- text"
                 const oBulletMatch = sLine.match(/^[*-]\s+(.*)$/);
                 if (oBulletMatch) {
                     if (!bInList) {
@@ -428,9 +499,6 @@ sap.ui.define([
                     return;
                 }
 
-                // A line that is ONLY "**Bold text**" (optionally with a
-                // trailing colon) is treated as a sub-heading, since the AI
-                // output sometimes skips the ### prefix entirely.
                 const oStandaloneBold = sLine.match(/^\*\*(.+?)\*\*:?\s*$/);
                 if (oStandaloneBold) {
                     closeList();
@@ -438,7 +506,6 @@ sap.ui.define([
                     return;
                 }
 
-                // Regular paragraph text
                 closeList();
                 sHtml += `<p>${applyInline(sLine)}</p>`;
             });
@@ -447,12 +514,6 @@ sap.ui.define([
             return sHtml;
         },
 
-        /**
-         * Opens a Dialog showing the fully parsed AI summary for the row/card
-         * that was pressed. Works from both the list Table (default model)
-         * and the grid Cards (named "ordersModel"), and from either a Link
-         * press or a Button press.
-         */
         onViewSummary: function (oEvent) {
             const oSource = oEvent.getSource();
             const oBindingContext = oSource.getBindingContext("ordersModel") || oSource.getBindingContext();
