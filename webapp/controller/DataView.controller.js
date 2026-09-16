@@ -21,11 +21,11 @@ sap.ui.define([
 
         onInit: function () {
             const oKpiModel = new JSONModel({
-                totalOrders: 12523232,
-                inHold: 124355,
-                approved: 13342,
-                highRiskOrders: 232442,
-                avgDelayScore: 5.0,
+                totalOrders: 177258,
+                inHold: 7258,
+                approved: 0,
+                highRiskOrders: 258,
+                avgDelayScore: 4.3,
                 avgSopScore: 2.7
             });
             this.getView().setModel(oKpiModel, "kpiModel");
@@ -38,7 +38,8 @@ sap.ui.define([
                 recommendation: "",
                 customer: "",
                 division: "",
-                businessArea: ""
+                businessArea: "",
+                orderNumber: ""
             });
             this.getView().setModel(oFilterModel, "filterModel");
 
@@ -177,6 +178,13 @@ sap.ui.define([
                     value1: oData.businessArea.trim()
                 }));
             }
+            if (oData.orderNumber && oData.orderNumber.trim()) {
+                aFilters.push(new Filter({
+                    path: "OrderNumber",
+                    operator: FilterOperator.Contains,
+                    value1: oData.orderNumber.trim()
+                }));
+            }
 
             return aFilters;
         },
@@ -258,7 +266,8 @@ sap.ui.define([
                 recommendation: "",
                 customer: "",
                 division: "",
-                businessArea: ""
+                businessArea: "",
+                orderNumber: ""
             });
             this.onFilterSearch();
         },

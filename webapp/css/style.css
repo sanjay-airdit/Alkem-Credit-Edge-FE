@@ -219,3 +219,11 @@
     max-height: 30rem !important;
     overflow: auto;
 }
+
+.sapUiSizeCompact .sapMTB {
+    height: 3rem !important;
+}
+
+.sapMITBContent {
+    border-bottom: none !important;
+}

@@ -145,99 +145,18 @@
             class="sapUiTinyMarginBottom sapUiTinyMarginTop"
             expandable="false"
             expanded="true"
-            headerText="Filters"
         >
-            <FlexBox
-                class="sapUiTinyMargin"
-                alignItems="End"
-                justifyContent="SpaceBetween"
-            >
-                <HBox>
-                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
-                        <Label
-                            text="From Date"
-                            labelFor="idFromDate"
-                        />
-                        <DatePicker
-                            id="idFromDate"
-                            width="12rem"
-                            valueFormat="yyyy-MM-dd"
-                            dateValue="{filterModel>/fromDate}"
-                        />
-                    </VBox>
-
-                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
-                        <Label
-                            text="To Date"
-                            labelFor="idToDate"
-                        />
-                        <DatePicker
-                            id="idToDate"
-                            width="12rem"
-                            valueFormat="yyyy-MM-dd"
-                            dateValue="{filterModel>/toDate}"
-                        />
-                    </VBox>
-
-                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
-                        <Label
-                            text="Recommendation"
-                            labelFor="idRecommendationFilter"
-                        />
-                        <Input
-                            id="idRecommendationFilter"
-                            width="12rem"
-                            placeholder="e.g. Approve"
-                            value="{filterModel>/recommendation}"
-                        />
-                    </VBox>
-
-                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
-                        <Label
-                            text="Customer"
-                            labelFor="idCustomerFilter"
-                        />
-                        <Input
-                            id="idCustomerFilter"
-                            width="12rem"
-                            placeholder="Customer"
-                            value="{filterModel>/customer}"
-                        />
-                    </VBox>
-
-                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
-                        <Label
-                            text="Division"
-                            labelFor="idDivisionFilter"
-                        />
-                        <Input
-                            id="idDivisionFilter"
-                            width="12rem"
-                            placeholder="Division"
-                            value="{filterModel>/division}"
-                        />
-                    </VBox>
-
-                    <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
-                        <Label
-                            text="Business Area"
-                            labelFor="idBusinessAreaFilter"
-                        />
-                        <Input
-                            id="idBusinessAreaFilter"
-                            width="12rem"
-                            placeholder="Business Area"
-                            value="{filterModel>/businessArea}"
-                        />
-                    </VBox>
-                </HBox>
-
-                <HBox class="sapUiSmallMarginBottom">
+            <headerToolbar>
+                <OverflowToolbar style="Clear">
+                    <Title
+                        text="Filters"
+                        level="H3"
+                    />
+                    <ToolbarSpacer />
                     <Button
                         id="idFilterGoButton"
                         text="Go"
                         type="Emphasized"
-                        class="sapUiTinyMarginEnd"
                         press="onFilterSearch"
                     />
                     <Button
@@ -245,7 +164,104 @@
                         text="Clear"
                         press="onFilterClear"
                     />
-                </HBox>
+                </OverflowToolbar>
+            </headerToolbar>
+
+            <FlexBox
+                class="sapUiTinyMargin"
+                wrap="Wrap"
+                alignItems="End"
+            >
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="From Date"
+                        labelFor="idFromDate"
+                    />
+                    <DatePicker
+                        id="idFromDate"
+                        width="12rem"
+                        valueFormat="yyyy-MM-dd"
+                        dateValue="{filterModel>/fromDate}"
+                    />
+                </VBox>
+
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="To Date"
+                        labelFor="idToDate"
+                    />
+                    <DatePicker
+                        id="idToDate"
+                        width="12rem"
+                        valueFormat="yyyy-MM-dd"
+                        dateValue="{filterModel>/toDate}"
+                    />
+                </VBox>
+
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="Order Number"
+                        labelFor="idOrderNumberFilter"
+                    />
+                    <Input
+                        id="idOrderNumberFilter"
+                        width="12rem"
+                        placeholder="Order Number"
+                        value="{filterModel>/orderNumber}"
+                    />
+                </VBox>
+
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="Recommendation"
+                        labelFor="idRecommendationFilter"
+                    />
+                    <Input
+                        id="idRecommendationFilter"
+                        width="12rem"
+                        placeholder="e.g. Approve"
+                        value="{filterModel>/recommendation}"
+                    />
+                </VBox>
+
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="Customer"
+                        labelFor="idCustomerFilter"
+                    />
+                    <Input
+                        id="idCustomerFilter"
+                        width="12rem"
+                        placeholder="Customer"
+                        value="{filterModel>/customer}"
+                    />
+                </VBox>
+
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="Division"
+                        labelFor="idDivisionFilter"
+                    />
+                    <Input
+                        id="idDivisionFilter"
+                        width="12rem"
+                        placeholder="Division"
+                        value="{filterModel>/division}"
+                    />
+                </VBox>
+
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="Business Area"
+                        labelFor="idBusinessAreaFilter"
+                    />
+                    <Input
+                        id="idBusinessAreaFilter"
+                        width="12rem"
+                        placeholder="Business Area"
+                        value="{filterModel>/businessArea}"
+                    />
+                </VBox>
             </FlexBox>
         </Panel>
 
@@ -623,8 +639,6 @@
                     class="sapUiMediumMargin"
                 />
             </ScrollContainer>
-
-            
         </VBox>
     </VBox>
 </mvc:View>
