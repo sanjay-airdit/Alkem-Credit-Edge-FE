@@ -43,8 +43,8 @@ sap.ui.define([
             this.getView().setModel(oFilterModel, "filterModel");
 
             // --- Grid/card pagination setup ---
-            this._iPageSize = 20; // fixed page size
-            this._iJumpSize = 9; // pages skipped by << / >>
+            this._iPageSize = 20;
+            this._iJumpSize = 9;
             this._bGridLoaded = false;
 
             const oOrdersModel = new JSONModel({
@@ -57,10 +57,13 @@ sap.ui.define([
                 pageNumbers: []
             });
             oOrdersModel.setSizeLimit(1000);
-            this.getView().setModel(oOrdersModel, "ordersModel");
 
-            // Pre-load grid data in the background so it's ready the moment
-            // the user switches to the Grid view (instead of loading on click).
+            // Set on the view (existing bindings in DataView.view.xml keep working)
+            this.getView().setModel(oOrdersModel, "ordersModel");
+            // ALSO set on the owner Component, so EntryPage's footer (outside this view)
+            // can bind to the same live model instance.
+            this.getOwnerComponent().setModel(oOrdersModel, "ordersModel");
+
             this._preloadGridData();
 
             const oSmartTable = this.byId("idSmartTable")
@@ -267,10 +270,15 @@ sap.ui.define([
             const oListBox = oView.byId("listViewBox");
             const oGridBox = oView.byId("gridViewBox");
 
+            // Tell EntryPage's footer whether Grid view is active
+            const oUiStateModel = this.getOwnerComponent().getModel("uiState");
+            if (oUiStateModel) {
+                oUiStateModel.setProperty("/gridActive", sKey === "grid");
+            }
+
             if (sKey === "list") {
                 oListBox.setVisible(true);
                 oGridBox.setVisible(false);
-                // oView.byId("idSmartTable").rebindTable(true);
             } else {
                 oListBox.setVisible(false);
                 oGridBox.setVisible(true);

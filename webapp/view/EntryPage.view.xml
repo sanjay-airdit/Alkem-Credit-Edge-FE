@@ -2,6 +2,7 @@
     controllerName="creditedge.controller.EntryPage"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
     xmlns="sap.m"
 >
     <f:DynamicPage
@@ -9,6 +10,7 @@
         headerExpanded="true"
         toggleHeaderOnTitleClick="false"
         class="sapUiNoContentPadding"
+        showFooter="{= ${uiState>/activeTab} === 'dataView' &amp;&amp; ${uiState>/gridActive} }"
     >
         <f:title>
             <f:DynamicPageTitle>
@@ -41,10 +43,62 @@
                         key="dataView"
                         text="Data View"
                     >
-                        <mvc:XMLView viewName="creditedge.view.DataView" />
+                        <mvc:XMLView
+                            id="dataView"
+                            viewName="creditedge.view.DataView"
+                        />
                     </IconTabFilter>
                 </items>
             </IconTabBar>
         </f:content>
+
+        <f:footer>
+            <Toolbar id="idGridPaginationFooterToolbar">
+                <ToolbarSpacer />
+                <Button
+                    text="&lt;&lt;"
+                    tooltip="Back 10 pages"
+                    press="onFooterGridJumpBack"
+                    enabled="{= ${ordersModel>/currentPage} > 1 }"
+                />
+                <Button
+                    text="Previous"
+                    press="onFooterGridPrevPage"
+                    enabled="{= ${ordersModel>/currentPage} > 1 }"
+                />
+                <OverflowToolbar
+                    id="idFooterPageNumbersToolbar"
+                    width="auto"
+                    content="{path: 'ordersModel>/pageNumbers'}"
+                >
+                    <Button
+                        text="{ordersModel>text}"
+                        press="onFooterGridPageNumberPress"
+                        enabled="{ordersModel>enabled}"
+                        type="{= ${ordersModel>emphasized} ? 'Emphasized' : 'Transparent'}"
+                    >
+                        <customData>
+                            <core:CustomData
+                                key="page"
+                                value="{ordersModel>page}"
+                            />
+                        </customData>
+                    </Button>
+                </OverflowToolbar>
+                <Button
+                    text="Next"
+                    press="onFooterGridNextPage"
+                    enabled="{= ${ordersModel>/currentPage} &lt; ${ordersModel>/totalPages} }"
+                />
+                <Button
+                    text="&gt;&gt;"
+                    tooltip="Forward 10 pages"
+                    press="onFooterGridJumpForward"
+                    enabled="{= ${ordersModel>/currentPage} &lt; ${ordersModel>/totalPages} }"
+                />
+                <ToolbarSpacer />
+                <Text text="{ordersModel>/totalCount} records" />
+            </Toolbar>
+        </f:footer>
     </f:DynamicPage>
 </mvc:View>

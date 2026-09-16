@@ -624,56 +624,7 @@
                 />
             </ScrollContainer>
 
-            <Toolbar
-                id="idGridPaginationToolbar"
-                width="100%"
-                class="sapUiTinyMarginTop"
-            >
-                <ToolbarSpacer />
-                <Button
-                    text="&lt;&lt;"
-                    tooltip="Back 10 pages"
-                    press="onGridJumpBack"
-                    enabled="{= ${ordersModel>/currentPage} > 1 }"
-                />
-                <Button
-                    text="Previous"
-                    press="onGridPrevPage"
-                    enabled="{= ${ordersModel>/currentPage} > 1 }"
-                />
-                <OverflowToolbar
-                    id="idPageNumbersToolbar"
-                    width="auto"
-                    content="{path: 'ordersModel>/pageNumbers'}"
-                >
-                    <Button
-                        text="{ordersModel>text}"
-                        press="onGridPageNumberPress"
-                        enabled="{ordersModel>enabled}"
-                        type="{= ${ordersModel>emphasized} ? 'Emphasized' : 'Transparent'}"
-                    >
-                        <customData>
-                            <core:CustomData
-                                key="page"
-                                value="{ordersModel>page}"
-                            />
-                        </customData>
-                    </Button>
-                </OverflowToolbar>
-                <Button
-                    text="Next"
-                    press="onGridNextPage"
-                    enabled="{= ${ordersModel>/currentPage} &lt; ${ordersModel>/totalPages} }"
-                />
-                <Button
-                    text="&gt;&gt;"
-                    tooltip="Forward 10 pages"
-                    press="onGridJumpForward"
-                    enabled="{= ${ordersModel>/currentPage} &lt; ${ordersModel>/totalPages} }"
-                />
-                <ToolbarSpacer />
-                <Text text="{ordersModel>/totalCount} records" />
-            </Toolbar>
+            
         </VBox>
     </VBox>
 </mvc:View>
