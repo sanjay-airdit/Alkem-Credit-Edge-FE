@@ -4,12 +4,13 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/core/format/DateFormat",
+    "sap/ui/core/Fragment",
     "sap/m/Dialog",
     "sap/m/Button",
     "sap/m/FormattedText",
     "creditedge/controller/formatter",
     "sap/m/MessageBox"
-], function (Controller, JSONModel, Filter, FilterOperator, DateFormat, Dialog, Button, FormattedText, formatter, MessageBox) {
+], function (Controller, JSONModel, Filter, FilterOperator, DateFormat, Fragment, Dialog, Button, FormattedText, formatter, MessageBox) {
     "use strict";
     return Controller.extend("creditedge.controller.DataView", {
 
@@ -23,12 +24,12 @@ sap.ui.define([
 
         onInit: function () {
             const oKpiModel = new JSONModel({
-                totalOrders: 177258,
-                inHold: 7258,
+                totalOrders: 0,
+                inHold: 0,
                 approved: 0,
-                highRiskOrders: 258,
-                avgDelayScore: 4.3,
-                avgSopScore: 2.7
+                highRiskOrders: 0,
+                avgDelayScore: 0,
+                avgSopScore: 0
             });
             this.getView().setModel(oKpiModel, "kpiModel");
             this._sSearchQuery = "";
@@ -167,7 +168,7 @@ sap.ui.define([
             }
             if (oData.division && oData.division.trim()) {
                 aFilters.push(new Filter({
-                    path: "Division", 
+                    path: "Division",
                     operator: FilterOperator.Contains,
                     value1: oData.division.trim()
                 }));
@@ -362,6 +363,11 @@ sap.ui.define([
                         totalCount: iTotalCount,
                         pageNumbers: this._buildPageNumbers(iClampedPage, iTotalPages)
                     });
+
+                    const oKpiModel = this.getView().getModel("kpiModel");
+                    if (oKpiModel) {
+                        oKpiModel.setProperty("/totalOrders", iTotalCount);
+                    }
                 },
                 error: (oError) => {
                     oOrdersModel.setProperty("/busy", false);
@@ -541,17 +547,60 @@ sap.ui.define([
                     Vbeln: sOrderNumber
                 },
                 success: (oData, oResponse) => {
-                    debugger
                     this.getView().setBusy(false);
-                    // MessageBox.success(`Order Number - ${sOrderNumber} Rejected`);
-                    // oModel.refresh(true);
+                    const aResults = (oData && oData.results) || [];
+                    this._openApprovalLogDialog(sOrderNumber, aResults);
                 },
                 error: (oError) => {
-                    debugger
                     this.getView().setBusy(false);
                     MessageBox.error(`Failed to Fetch Logs Order Number - ${sOrderNumber}`);
                 }
             });
+        },
+
+        /**
+         * Opens (creating on first use) a fragment-based Dialog showing the
+         * approval log for the given order, sorted chronologically.
+         */
+        _openApprovalLogDialog: function (sOrderNumber, aResults) {
+            const fnShowDialog = (oDialog) => {
+                if (!this._oLogModel) {
+                    this._oLogModel = new JSONModel({ logs: [] });
+                    oDialog.setModel(this._oLogModel, "logModel");
+                }
+
+                // Sort by ActionWhen ascending so the approval chain reads top-to-bottom
+                const aSorted = [...aResults].sort((a, b) =>
+                    new Date(a.ActionWhen) - new Date(b.ActionWhen)
+                );
+
+                this._oLogModel.setProperty("/logs", aSorted);
+                oDialog.setTitle(sOrderNumber ? `Approval Log – ${sOrderNumber}` : "Approval Log");
+                oDialog.open();
+            };
+
+            if (this._oApprovalLogDialog) {
+                fnShowDialog(this._oApprovalLogDialog);
+                return;
+            }
+
+            Fragment.load({
+                id: this.getView().getId(),
+                name: "creditedge.fragment.ApprovalLogDialog",
+                controller: this
+            }).then((oDialog) => {
+                this._oApprovalLogDialog = oDialog;
+                this.getView().addDependent(oDialog);
+                fnShowDialog(oDialog);
+            }).catch((oError) => {
+                MessageBox.error("Failed to load Approval Log dialog.");
+            });
+        },
+
+        onCloseApprovalLog: function () {
+            if (this._oApprovalLogDialog) {
+                this._oApprovalLogDialog.close();
+            }
         },
 
         _getOrderFromEvent: function (oEvent) {

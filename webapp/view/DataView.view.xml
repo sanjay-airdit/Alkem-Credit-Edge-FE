@@ -176,6 +176,7 @@
                     <Label
                         text="From Date"
                         labelFor="idFromDate"
+                        required="true"
                     />
                     <DatePicker
                         id="idFromDate"
@@ -189,6 +190,7 @@
                     <Label
                         text="To Date"
                         labelFor="idToDate"
+                        required="true"
                     />
                     <DatePicker
                         id="idToDate"

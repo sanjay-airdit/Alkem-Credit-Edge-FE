@@ -47,12 +47,31 @@ sap.ui.define([], function () {
                 case "caution":
                     return "Warning";
                 case "approved":
-                case "accept":
+                case "approve":
                 case "low":
                 case "low risk":
                     return "Success";
                 default:
                     return "None";
+            }
+        },
+
+        formatDateTime: function (sDate) {
+            if (!sDate) return "";
+            const oDate = new Date(sDate);
+            if (isNaN(oDate.getTime())) return sDate;
+            const oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({
+                pattern: "dd MMM yyyy, HH:mm"
+            });
+            return oDateFormat.format(oDate);
+        },
+
+        actionState: function (sAction) {
+            switch ((sAction || "").toUpperCase()) {
+                case "APPROVE": return "Success";
+                case "REJECT": return "Error";
+                case "INITIATE": return "Information";
+                default: return "None";
             }
         }
     };

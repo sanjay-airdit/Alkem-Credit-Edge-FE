@@ -34,10 +34,10 @@
                         </Record> -->
                         <!-- Hold Reason -->
                         <Record Type="UI.DataField">
-                            <PropertyValue Property="Value" Path="HoldReason"/>
-                            <PropertyValue Property="Label" String="Hold Reason"/>
+                            <PropertyValue Property="Value" Path="HoldReason" />
+                            <PropertyValue Property="Label" String="Hold Reason" />
                         </Record>
-                       
+
                         <!-- Cumulative Score -->
                         <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="CurrentOrderValue" />
@@ -58,6 +58,109 @@
                     </Collection>
                 </Annotation>
             </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/CompanyCode">
+                <Annotation Term="Common.Label" String="Company Code to Be Billed" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/CreatedOn">
+                <Annotation Term="Common.Label" String="Created On" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/SalesOrganization">
+                <Annotation Term="Common.Label" String="Sales Organization" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/DistributionChannel">
+                <Annotation Term="Common.Label" String="Distribution Channel" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/Division">
+                <Annotation Term="Common.Label" String="Division" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/RequestedDeliveryDate">
+                <Annotation Term="Common.Label" String="Requested Delivery Date" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/CredeitCheckStatus">
+                <Annotation Term="Common.Label" String="Credit Check Status" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/PaymentTrendInDays">
+                <Annotation Term="Common.Label" String="Payment Trend (Days)" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/OutstandingAmount">
+                <Annotation Term="Common.Label" String="Outstanding Amount" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/MaxOutstandingDays">
+                <Annotation Term="Common.Label" String="Max Outstanding Days" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/TotalBouncedAmount">
+                <Annotation Term="Common.Label" String="Total Bounced Amount" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/Currency">
+                <Annotation Term="Common.Label" String="Currency" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/SalesAverage">
+                <Annotation Term="Common.Label" String="Sales Average" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/CreatedTimeStamp">
+                <Annotation Term="Common.Label" String="Created Timestamp" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/MonthlyPurchase">
+                <Annotation Term="Common.Label" String="Monthly Purchase" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/QuarterlyPurchase">
+                <Annotation Term="Common.Label" String="Quarterly Purchase" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/YearlyPurchase">
+                <Annotation Term="Common.Label" String="Yearly Purchase" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/CreditLimit">
+                <Annotation Term="Common.Label" String="Credit Limit" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/ChecqueCount">
+                <Annotation Term="Common.Label" String="Cheque Count" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/Grade">
+                <Annotation Term="Common.Label" String="Grade" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/SOPValue">
+                <Annotation Term="Common.Label" String="SOP Value" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AdjustedSOPValue">
+                <Annotation Term="Common.Label" String="Adjusted SOP Value" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/SOPPercentage">
+                <Annotation Term="Common.Label" String="SOP Percentage" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AISopValueScore">
+                <Annotation Term="Common.Label" String="AI SOP Value Score" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AIBounceValueRatio">
+                <Annotation Term="Common.Label" String="AI Bounce Value Ratio" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AIBounceValueScore">
+                <Annotation Term="Common.Label" String="AI Bounce Value Score" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AIUtilizationPercentage">
+                <Annotation Term="Common.Label" String="AI Utilization Percentage" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AIUtilPercentageScore">
+                <Annotation Term="Common.Label" String="AI Utilization % Score" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AIAverageDelayScore">
+                <Annotation Term="Common.Label" String="AI Average Delay Score" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AIPurchaseVelocityRatio">
+                <Annotation Term="Common.Label" String="AI Purchase Velocity Ratio" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AIPurchaseVelocityScore">
+                <Annotation Term="Common.Label" String="AI Purchase Velocity Score" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AIAccountTrajecRatio">
+                <Annotation Term="Common.Label" String="AI Account Trajectory Ratio" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AIAccountTrajecScore">
+                <Annotation Term="Common.Label" String="AI Account Trajectory Score" />
+            </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AISummaryText">
+                <Annotation Term="Common.Label" String="AI Summary" />
+            </Annotations>
+            
         </Schema>
     </edmx:DataServices>
 </edmx:Edmx>
