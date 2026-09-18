@@ -423,15 +423,18 @@
                                         icon="sap-icon://refresh"
                                         class="sapUiTinyMarginEnd"
                                         type="Emphasized"
+                                        press="onReset"
                                     />
                                     <Button
                                         icon="sap-icon://accept"
                                         class="sapUiTinyMarginEnd"
                                         type="Accept"
+                                        press="onApprove"
                                     />
                                     <Button
                                         icon="sap-icon://decline"
                                         type="Reject"
+                                        press="onReject"
                                     />
                                 </HBox>
                             </cells>

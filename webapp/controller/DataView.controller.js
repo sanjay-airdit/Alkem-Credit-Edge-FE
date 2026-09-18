@@ -6,8 +6,9 @@ sap.ui.define([
     "sap/m/Dialog",
     "sap/m/Button",
     "sap/m/FormattedText",
-    "creditedge/controller/formatter"
-], function (Controller, JSONModel, Filter, FilterOperator, Dialog, Button, FormattedText, formatter) {
+    "creditedge/controller/formatter",
+    "sap/m/MessageBox"
+], function (Controller, JSONModel, Filter, FilterOperator, Dialog, Button, FormattedText, formatter, MessageBox) {
     "use strict";
     return Controller.extend("creditedge.controller.DataView", {
 
@@ -448,19 +449,72 @@ sap.ui.define([
         },
 
         onApprove: function (oEvent) {
-            const oCtx = oEvent.getSource().getBindingContext("ordersModel");
-            const oOrder = oCtx && oCtx.getObject();
-            /* call approve API using oOrder.OrderNumber, then this._loadGridPage(current page) to refresh */
+            const oOrder = this._getOrderFromEvent(oEvent);
+            const sOrderNumber = oOrder?.OrderNumber;
+
+            if (!sOrderNumber) {
+                MessageBox.error("No order selected.");
+                return;
+            }
+
+            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
+
+            this.getView().setBusy(true);
+
+            oModel.callFunction("/approve", {
+                method: "POST",
+                urlParameters: {
+                    Vbeln: sOrderNumber
+                },
+                success: (oData, oResponse) => {
+                    this.getView().setBusy(false);
+                    MessageBox.success(`Order Number - ${sOrderNumber} Approved`);
+                    oModel.refresh(true);
+                },
+                error: (oError) => {
+                    this.getView().setBusy(false);
+                    MessageBox.error("Failed to approve order " + sOrderNumber);
+                }
+            });
         },
         onReject: function (oEvent) {
-            const oCtx = oEvent.getSource().getBindingContext("ordersModel");
-            const oOrder = oCtx && oCtx.getObject();
-            /* call reject API */
+            const oOrder = this._getOrderFromEvent(oEvent);
+            const sOrderNumber = oOrder?.OrderNumber;
+
+            if (!sOrderNumber) {
+                MessageBox.error("No order selected.");
+                return;
+            }
+
+            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
+
+            this.getView().setBusy(true);
+
+            oModel.callFunction("/reject", {
+                method: "POST",
+                urlParameters: {
+                    Vbeln: sOrderNumber
+                },
+                success: (oData, oResponse) => {
+                    this.getView().setBusy(false);
+                    MessageBox.success(`Order Number - ${sOrderNumber} Rejected`);
+                    oModel.refresh(true);
+                },
+                error: (oError) => {
+                    this.getView().setBusy(false);
+                    MessageBox.error("Failed to reject order " + sOrderNumber);
+                }
+            });
         },
         onReset: function (oEvent) {
-            const oCtx = oEvent.getSource().getBindingContext("ordersModel");
-            const oOrder = oCtx && oCtx.getObject();
-            /* call reset API */
+            const oOrder = this._getOrderFromEvent(oEvent);
+            console.log(oOrder && oOrder.OrderNumber);
+        },
+
+        _getOrderFromEvent: function (oEvent) {
+            const oSource = oEvent.getSource();
+            const oCtx = oSource.getBindingContext("ordersModel") || oSource.getBindingContext();
+            return oCtx && oCtx.getObject();
         },
 
         // --- AI summary parsing / display -----------------------------------------

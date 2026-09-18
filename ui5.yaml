@@ -19,6 +19,10 @@ server:
           - path: /sap
             url: http://sandbox-app.alkemerp.com:8001
             destination: S4HANA_DEV
+          - path: /sap/opu/odata/sap/ZUI_CE_APPR_MATRIX_SB/
+            url: http://sandbox-app.alkemerp.com:8001
+            client: '900'
+            destination: S4HANA_DEV
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:

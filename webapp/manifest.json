@@ -1,137 +1,160 @@
 {
-    "_version": "1.60.0",
-    "sap.app": {
-        "id": "creditedge",
-        "type": "application",
-        "i18n": "i18n/i18n.properties",
-        "applicationVersion": {
-            "version": "0.0.1"
-        },
-        "title": "{{appTitle}}",
-        "description": "{{appDescription}}",
-        "resources": "resources.json",
-        "sourceTemplate": {
-            "id": "@sap/generator-fiori:basic",
-            "version": "1.31.0",
-            "toolsId": "6b97e1c9-7731-4ae4-87a1-9d17d56f123a"
-        },
-        "dataSources": {
-            "ZC_CE_ORDERSONHOLD_CDS_VAN": {
-                "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZC_CE_ORDERSONHOLD_CDS_VAN',Version='0001')/$value/",
-                "type": "ODataAnnotation",
-                "settings": {
-                    "localUri": "localService/mainService/ZC_CE_ORDERSONHOLD_CDS_VAN.xml"
-                }
-            },
-            "mainService": {
-                "uri": "/sap/opu/odata/sap/ZC_CE_ORDERSONHOLD_CDS/",
-                "type": "OData",
-                "settings": {
-                    "annotations": [
-                        "ZC_CE_ORDERSONHOLD_CDS_VAN",
-                        "annotationZC_CE_OrdersOnHold"
-                    ],
-                    "localUri": "localService/mainService/metadata.xml",
-                    "odataVersion": "2.0"
-                }
-            },
-            "annotationZC_CE_OrdersOnHold": {
-                "type": "ODataAnnotation",
-                "uri": "annotations/annotationZC_CE_OrdersOnHold.xml",
-                "settings": {
-                    "localUri": "annotations/annotationZC_CE_OrdersOnHold.xml"
-                }
-            }
-        }
+  "_version": "1.60.0",
+  "sap.app": {
+    "id": "creditedge",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
     },
-    "sap.ui": {
-        "technology": "UI5",
-        "icons": {
-            "icon": "",
-            "favIcon": "",
-            "phone": "",
-            "phone@2": "",
-            "tablet": "",
-            "tablet@2": ""
-        },
-        "deviceTypes": {
-            "desktop": true,
-            "tablet": true,
-            "phone": true
-        }
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.31.0",
+      "toolsId": "6b97e1c9-7731-4ae4-87a1-9d17d56f123a"
     },
-    "sap.ui5": {
-        "flexEnabled": false,
-        "dependencies": {
-            "minUI5Version": "1.120.39",
-            "libs": {
-                "sap.m": {},
-                "sap.ui.core": {},
-                "sap.f": {},
-                "sap.tnt": {},
-                "sap.viz": {},
-                "sap.ui.layout": {}
-            }
-        },
-        "contentDensities": {
-            "compact": true,
-            "cozy": true
-        },
-        "models": {
-            "i18n": {
-                "type": "sap.ui.model.resource.ResourceModel",
-                "settings": {
-                    "bundleName": "creditedge.i18n.i18n"
-                }
-            },
-            "": {
-                "dataSource": "mainService",
-                "preload": true,
-                "settings": {
-                    "useBatch": false
-                }
-            }
-        },
-        "resources": {
-            "css": [
-                {
-                    "uri": "css/style.css"
-                }
-            ]
-        },
-        "routing": {
-            "config": {
-                "routerClass": "sap.m.routing.Router",
-                "controlAggregation": "pages",
-                "controlId": "app",
-                "transition": "slide",
-                "type": "View",
-                "viewType": "XML",
-                "path": "creditedge.view",
-                "async": true,
-                "viewPath": "creditedge.view"
-            },
-            "routes": [
-                {
-                    "name": "RouteEntryPage",
-                    "pattern": ":?query:",
-                    "target": [
-                        "TargetEntryPage"
-                    ]
-                }
-            ],
-            "targets": {
-                "TargetEntryPage": {
-                    "id": "EntryPage",
-                    "name": "EntryPage"
-                }
-            }
-        },
-        "rootView": {
-            "viewName": "creditedge.view.App",
-            "type": "XML",
-            "id": "App",
-            "async": true
+    "dataSources": {
+      "ZC_CE_ORDERSONHOLD_CDS_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZC_CE_ORDERSONHOLD_CDS_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/mainService/ZC_CE_ORDERSONHOLD_CDS_VAN.xml"
         }
+      },
+      "mainService": {
+        "uri": "/sap/opu/odata/sap/ZC_CE_ORDERSONHOLD_CDS/",
+        "type": "OData",
+        "settings": {
+          "annotations": [
+            "ZC_CE_ORDERSONHOLD_CDS_VAN",
+            "annotationZC_CE_OrdersOnHold"
+          ],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      },
+      "annotationZC_CE_OrdersOnHold": {
+        "type": "ODataAnnotation",
+        "uri": "annotations/annotationZC_CE_OrdersOnHold.xml",
+        "settings": {
+          "localUri": "annotations/annotationZC_CE_OrdersOnHold.xml"
+        }
+      },
+      "ZUI_CE_APPR_MATRIX_SB_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZUI_CE_APPR_MATRIX_SB_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/ZUI_CE_APPR_MATRIX_SB/ZUI_CE_APPR_MATRIX_SB_VAN.xml"
+        }
+      },
+      "ZUI_CE_APPR_MATRIX_SB": {
+        "uri": "/sap/opu/odata/sap/ZUI_CE_APPR_MATRIX_SB/",
+        "type": "OData",
+        "settings": {
+          "annotations": [
+            "ZUI_CE_APPR_MATRIX_SB_VAN"
+          ],
+          "localUri": "localService/ZUI_CE_APPR_MATRIX_SB/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      }
     }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.120.39",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.f": {},
+        "sap.tnt": {},
+        "sap.viz": {},
+        "sap.ui.layout": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "creditedge.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "useBatch": false
+        }
+      },
+      "ZUI_CE_APPR_MATRIX_SB": {
+        "dataSource": "ZUI_CE_APPR_MATRIX_SB",
+        "preload": true,
+        "settings": {}
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "creditedge.view",
+        "async": true,
+        "viewPath": "creditedge.view"
+      },
+      "routes": [
+        {
+          "name": "RouteEntryPage",
+          "pattern": ":?query:",
+          "target": [
+            "TargetEntryPage"
+          ]
+        }
+      ],
+      "targets": {
+        "TargetEntryPage": {
+          "id": "EntryPage",
+          "name": "EntryPage"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "creditedge.view.App",
+      "type": "XML",
+      "id": "App",
+      "async": true
+    }
+  }
 }

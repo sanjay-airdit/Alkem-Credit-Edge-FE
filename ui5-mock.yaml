@@ -19,6 +19,10 @@ server:
           - path: /sap
             url: http://sandbox-app.alkemerp.com:8001
             destination: S4HANA_DEV
+          - path: /sap/opu/odata/sap/ZUI_CE_APPR_MATRIX_SB/
+            url: http://sandbox-app.alkemerp.com:8001
+            client: '900'
+            destination: S4HANA_DEV
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:
@@ -47,9 +51,15 @@ server:
             metadataPath: ./webapp/localService/mainService/metadata.xml
             mockdataPath: ./webapp/localService/mainService/data
             generateMockData: true
+          - urlPath: /sap/opu/odata/sap/ZUI_CE_APPR_MATRIX_SB
+            metadataPath: ./webapp/localService/ZUI_CE_APPR_MATRIX_SB/metadata.xml
+            mockdataPath: ./webapp/localService/ZUI_CE_APPR_MATRIX_SB/data
+            generateMockData: true
         annotations:
           - localPath: ./webapp/localService/mainService/ZC_CE_ORDERSONHOLD_CDS_VAN.xml
             urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZC_CE_ORDERSONHOLD_CDS_VAN',Version='0001')/$value/
+          - localPath: ./webapp/localService/ZUI_CE_APPR_MATRIX_SB/ZUI_CE_APPR_MATRIX_SB_VAN.xml
+            urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZUI_CE_APPR_MATRIX_SB_VAN',Version='0001')/$value/
 builder:
   resources:
     excludes:
