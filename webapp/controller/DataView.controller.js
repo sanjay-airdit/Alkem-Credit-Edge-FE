@@ -3,12 +3,13 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "sap/ui/core/format/DateFormat",
     "sap/m/Dialog",
     "sap/m/Button",
     "sap/m/FormattedText",
     "creditedge/controller/formatter",
     "sap/m/MessageBox"
-], function (Controller, JSONModel, Filter, FilterOperator, Dialog, Button, FormattedText, formatter, MessageBox) {
+], function (Controller, JSONModel, Filter, FilterOperator, DateFormat, Dialog, Button, FormattedText, formatter, MessageBox) {
     "use strict";
     return Controller.extend("creditedge.controller.DataView", {
 
@@ -82,8 +83,7 @@ sap.ui.define([
          * available, without waiting for the user to click the Grid toggle.
          */
         _preloadGridData: function () {
-            const oView = this.getView();
-            const oModel = oView.getModel(); // default OData model
+            const oModel = this.getOwnerComponent().getModel(); // default OData model
 
             if (oModel) {
                 this._loadGridPage(1);
@@ -99,7 +99,7 @@ sap.ui.define([
 
         _getFormattedFilterDates: function () {
             const oFilterModel = this.getView().getModel("filterModel");
-            const oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
+            const oDateFormat = DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
 
             const oFromDate = (oFilterModel && oFilterModel.getProperty("/fromDate")) || this._oDefaultFilterDates.fromDate;
             const oToDate = (oFilterModel && oFilterModel.getProperty("/toDate")) || this._oDefaultFilterDates.toDate;
@@ -305,13 +305,13 @@ sap.ui.define([
 
         _loadGridPage: function (iPage) {
             const oView = this.getView();
-            const oModel = oView.getModel(); // main OData model
+            let oModel = oView.getModel(); // main OData model
             const oOrdersModel = oView.getModel("ordersModel");
             const sPath = this._getGridEntityPath();
             const iSkip = (iPage - 1) * this._iPageSize;
 
             if (!oModel) {
-                return; // model not ready yet; _preloadGridData will retry
+                oModel = this.getOwnerComponent().getModel();
             }
 
             const aFilters = [];
@@ -323,11 +323,27 @@ sap.ui.define([
             oOrdersModel.setProperty("/busy", true);
             oOrdersModel.setProperty("/noData", false);
 
+            const aSelectFields = [
+                "OrderNumber",
+                "Customer",
+                "AISummaryText",
+                "AISummaryVerdict",
+                "AISopValueScore",
+                "AIAverageDelayScore",
+                "AIUtilPercentageScore",
+                "CurrentOrderValue",
+                "Currency",
+                "AIUtilizationPercentage",
+                "CreditEsposure",
+                "Grade"
+            ];
+
             oModel.read(sPath, {
                 urlParameters: {
-                    "$top": this._iPageSize,
                     "$skip": iSkip,
-                    "$inlinecount": "allpages"
+                    "$top": this._iPageSize,
+                    "$inlinecount": "allpages",
+                    "$select": aSelectFields.join(",")
                 },
                 filters: aFilters,
                 success: (oData) => {
@@ -502,13 +518,40 @@ sap.ui.define([
                 },
                 error: (oError) => {
                     this.getView().setBusy(false);
-                    MessageBox.error("Failed to reject order " + sOrderNumber);
+                    MessageBox.error(`Failed to Reject Order Number - ${sOrderNumber}`);
                 }
             });
         },
-        onReset: function (oEvent) {
+        onView: function (oEvent) {
             const oOrder = this._getOrderFromEvent(oEvent);
-            console.log(oOrder && oOrder.OrderNumber);
+            const sOrderNumber = oOrder?.OrderNumber;
+
+            if (!sOrderNumber) {
+                MessageBox.error("No order selected.");
+                return;
+            }
+
+            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
+
+            this.getView().setBusy(true);
+
+            oModel.callFunction("/get_log", {
+                method: "POST",
+                urlParameters: {
+                    Vbeln: sOrderNumber
+                },
+                success: (oData, oResponse) => {
+                    debugger
+                    this.getView().setBusy(false);
+                    // MessageBox.success(`Order Number - ${sOrderNumber} Rejected`);
+                    // oModel.refresh(true);
+                },
+                error: (oError) => {
+                    debugger
+                    this.getView().setBusy(false);
+                    MessageBox.error(`Failed to Fetch Logs Order Number - ${sOrderNumber}`);
+                }
+            });
         },
 
         _getOrderFromEvent: function (oEvent) {

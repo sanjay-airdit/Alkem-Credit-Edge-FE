@@ -341,6 +341,18 @@
                                 wrapping="false"
                             />
                         </Column>
+                        <Column hAlign="Center">
+                            <customData>
+                                <core:CustomData
+                                    key="p13nData"
+                                    value='\{"columnKey": "AISummaryVerdict","leadingProperty": "AISummaryVerdict", "sortProperty": "AISummaryVerdict", "filterProperty": "AISummaryVerdict", "columnIndex": "3"}'
+                                />
+                            </customData>
+                            <Label
+                                text="Recommendation"
+                                wrapping="false"
+                            />
+                        </Column>
                         <Column>
                             <customData>
                                 <core:CustomData
@@ -400,6 +412,11 @@
                                 <FormattedText
                                     htmlText="{path: 'AISummaryText', formatter: '.formatSummaryHtml'}"
                                 />
+                                <ObjectStatus
+                                    text="{AISummaryVerdict}"
+                                    state="{path: 'AISummaryVerdict', formatter: '.formatter.riskState'}"
+                                    inverted="true"
+                                />
                                 <ProgressIndicator
                                     class="sapUiSmallMarginBottom"
                                     percentValue="{path: 'AISopValueScore', formatter: '.formatter.percentValue'}"
@@ -420,10 +437,10 @@
                                 />
                                 <HBox justifyContent="SpaceAround">
                                     <Button
-                                        icon="sap-icon://refresh"
+                                        icon="sap-icon://show"
                                         class="sapUiTinyMarginEnd"
                                         type="Emphasized"
-                                        press="onReset"
+                                        press="onView"
                                     />
                                     <Button
                                         icon="sap-icon://accept"
@@ -473,8 +490,8 @@
                             <f:layoutData>
                                 <FlexItemData
                                     growFactor="1"
-                                    minWidth="19rem"
-                                    maxWidth="30rem"
+                                    minWidth="26rem"
+                                    maxWidth="26rem"
                                 />
                             </f:layoutData>
 
@@ -493,12 +510,13 @@
                                             class="sapUiFontHeader5"
                                         />
                                         <ObjectStatus
-                                            text="{ordersModel>AITotalScoreText}"
+                                            text="{= ${ordersModel>AISopValueScore} !== undefined &amp;&amp; ${ordersModel>AISopValueScore} !== null &amp;&amp; ${ordersModel>AISopValueScore} !== '' ? ${ordersModel>AISopValueScore} + ' / 5' : ''}"
                                             state="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.stateValue'}"
+                                            inverted="true"
                                         />
                                     </HBox>
                                     <Text
-                                        text="Customer: {ordersModel>CustomerName}"
+                                        text="Customer: {ordersModel>Customer}"
                                         class="sapUiTinyMarginBottom"
                                     />
 
@@ -513,8 +531,9 @@
                                                 design="Bold"
                                             />
                                             <ObjectStatus
-                                                text="{ordersModel>RiskLevel}"
-                                                state="{path: 'ordersModel>RiskLevel', formatter: '.formatter.riskState'}"
+                                                text="{ordersModel>AISummaryVerdict}"
+                                                state="{path: 'ordersModel>AISummaryVerdict', formatter: '.formatter.riskState'}"
+                                                inverted="true"
                                             />
                                         </HBox>
                                         <ScrollContainer
@@ -531,7 +550,7 @@
                                     </VBox>
 
                                     <!-- SUGGESTION -->
-                                    <VBox class="sapUiTinyMarginBottom">
+                                    <!-- <VBox class="sapUiTinyMarginBottom">
                                         <Label
                                             text="RECOMMENDATION"
                                             design="Bold"
@@ -543,7 +562,7 @@
                                             showCloseButton="false"
                                             class="sapUiTinyMarginTop"
                                         />
-                                    </VBox>
+                                    </VBox> -->
 
                                     <!-- Scores -->
                                     <HBox
@@ -601,18 +620,18 @@
                                     >
                                         <VBox>
                                             <Text
-                                                text="Credit Exposure: {ordersModel>CreditExposure}"
+                                                text="Credit Exposure: {ordersModel>CreditEsposure}"
                                             />
                                             <Text
-                                                text="Utilization: {ordersModel>UtilizationPercentage}"
+                                                text="Utilization: {ordersModel>AIUtilizationPercentage}"
                                             />
                                         </VBox>
                                         <HBox>
                                             <Button
-                                                icon="sap-icon://refresh"
+                                                icon="sap-icon://show"
                                                 type="Emphasized"
                                                 class="sapUiTinyMarginEnd"
-                                                press="onReset"
+                                                press="onView"
                                             />
                                             <Button
                                                 icon="sap-icon://accept"

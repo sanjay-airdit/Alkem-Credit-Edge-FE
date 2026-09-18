@@ -71,13 +71,13 @@
 
         <tnt:mainContents>
             <App id="app" />
-            <Avatar
+            <!-- <Avatar
                 src="sap-icon://ai"
                 id="airbotToggleBtn"
                 tooltip="Ask AIRBOT"
                 press="onAirbotTogglePress"
                 class="airbotFab"
-            />
+            /> -->
         </tnt:mainContents>
     </tnt:ToolPage>
 </mvc:View>

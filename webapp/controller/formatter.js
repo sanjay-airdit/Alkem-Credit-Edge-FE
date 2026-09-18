@@ -38,7 +38,7 @@ sap.ui.define([], function () {
             var sValue = (sRiskLevel || "").trim().toLowerCase();
 
             switch (sValue) {
-                case "review":
+                case "reject":
                 case "high":
                 case "high risk":
                     return "Error";
@@ -47,6 +47,7 @@ sap.ui.define([], function () {
                 case "caution":
                     return "Warning";
                 case "approved":
+                case "accept":
                 case "low":
                 case "low risk":
                     return "Success";

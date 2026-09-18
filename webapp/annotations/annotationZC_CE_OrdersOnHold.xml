@@ -28,10 +28,10 @@
                             <PropertyValue Property="Value" Path="AISummaryText"/>
                             <PropertyValue Property="Label" String="Summary"/>
                         </Record> -->
-                        <Record Type="UI.DataField">
+                        <!-- <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="AISummaryVerdict"/>
                             <PropertyValue Property="Label" String="Recommendation"/>
-                        </Record>
+                        </Record> -->
                         <!-- Hold Reason -->
                         <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="HoldReason"/>
