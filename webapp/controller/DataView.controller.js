@@ -490,6 +490,10 @@ sap.ui.define([
                 },
                 success: (oData, oResponse) => {
                     this.getView().setBusy(false);
+                    const severity = JSON.parse(oResponse?.headers['sap-message'])?.severity;
+                    if (severity.includes('error')){
+                        return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`)
+                    }
                     MessageBox.success(`Order Number - ${sOrderNumber} Approved`);
                     oModel.refresh(true);
                 },
@@ -519,6 +523,10 @@ sap.ui.define([
                 },
                 success: (oData, oResponse) => {
                     this.getView().setBusy(false);
+                    const severity = JSON.parse(oResponse?.headers['sap-message'])?.severity;
+                    if (severity.includes('error')) {
+                        return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`)
+                    }
                     MessageBox.success(`Order Number - ${sOrderNumber} Rejected`);
                     oModel.refresh(true);
                 },
@@ -575,7 +583,7 @@ sap.ui.define([
                 );
 
                 this._oLogModel.setProperty("/logs", aSorted);
-                oDialog.setTitle(sOrderNumber ? `Approval Log – ${sOrderNumber}` : "Approval Log");
+                oDialog.setTitle(sOrderNumber ? `Approval Log (${sOrderNumber})` : "Approval Log");
                 oDialog.open();
             };
 
