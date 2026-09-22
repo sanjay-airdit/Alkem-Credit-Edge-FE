@@ -467,6 +467,17 @@ sap.ui.define([
             const oCtx = oEvent.getSource().getBindingContext();
         },
 
+        _refreshAllViews: function () {
+            const oSmartTable = this.byId("idSmartTable");
+            if (oSmartTable) {
+                oSmartTable.rebindTable(true);
+            }
+
+            const oOrdersModel = this.getView().getModel("ordersModel");
+            const iCurrentPage = oOrdersModel ? oOrdersModel.getProperty("/currentPage") : 1;
+            this._loadGridPage(iCurrentPage || 1);
+        },
+
         onApprove: function (oEvent) {
             const oOrder = this._getOrderFromEvent(oEvent);
             const sOrderNumber = oOrder?.OrderNumber;
@@ -496,11 +507,12 @@ sap.ui.define([
                         return MessageBox.error(sMessageText);
                     }
 
-                    oModel.refresh(true);
-                    
                     if (sMessageText.includes("Final approval completed") && sMessageText.includes("ready for release")) {
                         this._releaseCreditBlock(sOrderNumber, oOrder.SDDocumentCategory || "C");
+                        return;
                     }
+
+                    this._refreshAllViews();
                     MessageBox.success(`Order Number - ${sOrderNumber} Approved`);
                 },
                 error: (oError) => {
@@ -529,10 +541,7 @@ sap.ui.define([
                 success: (oData, oResponse) => {
                     this.getView().setBusy(false);
                     MessageBox.success(`Credit block released for Order ${sOrderNumber}`);
-
-                    const oOrdersModel = this.getView().getModel("ordersModel");
-                    const iCurrentPage = oOrdersModel ? oOrdersModel.getProperty("/currentPage") : 1;
-                    this._loadGridPage(iCurrentPage);
+                    this._refreshAllViews();
                 },
                 error: (oError) => {
                     this.getView().setBusy(false);
@@ -540,6 +549,7 @@ sap.ui.define([
                 }
             });
         },
+
         onReject: function (oEvent) {
             const oOrder = this._getOrderFromEvent(oEvent);
             const sOrderNumber = oOrder?.OrderNumber;
@@ -565,7 +575,7 @@ sap.ui.define([
                         return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`)
                     }
                     MessageBox.success(`Order Number - ${sOrderNumber} Rejected`);
-                    oModel.refresh(true);
+                    this._refreshAllViews();
                 },
                 error: (oError) => {
                     this.getView().setBusy(false);
@@ -573,6 +583,7 @@ sap.ui.define([
                 }
             });
         },
+
         onView: function (oEvent) {
             const oOrder = this._getOrderFromEvent(oEvent);
             const sOrderNumber = oOrder?.OrderNumber;

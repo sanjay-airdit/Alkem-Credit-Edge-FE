@@ -5,7 +5,7 @@
     <Dialog
         id="idApprovalLogDialog"
         title="Approval Log"
-        contentWidth="50%"
+        contentWidth="80%"
         verticalScrolling="true"
     >
         <content>
@@ -24,7 +24,7 @@
                     <Column>
                         <Text text="User" />
                     </Column>
-                    <Column width="15rem" hAlign="End">
+                    <Column width="15rem">
                         <Text text="Action Time" />
                     </Column>
                     <Column>
