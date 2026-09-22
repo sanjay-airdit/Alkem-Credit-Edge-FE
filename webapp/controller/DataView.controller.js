@@ -22,6 +22,10 @@ sap.ui.define([
             toDate: new Date(2023, 8, 30)    // 2023-09-30
         },
 
+        // Status tab keys — must match the values coming from the backend field
+        // used in _buildFilterBarFilters (currently status).
+        _sDefaultStatusTab: "HOLD",
+
         onInit: function () {
             const oKpiModel = new JSONModel({
                 totalOrders: 0,
@@ -42,7 +46,8 @@ sap.ui.define([
                 customer: "",
                 division: "",
                 businessArea: "",
-                orderNumber: ""
+                orderNumber: "",
+                statusTab: this._sDefaultStatusTab   // <-- NEW: drives the IconTabBar
             });
             this.getView().setModel(oFilterModel, "filterModel");
 
@@ -62,10 +67,7 @@ sap.ui.define([
             });
             oOrdersModel.setSizeLimit(1000);
 
-            // Set on the view (existing bindings in DataView.view.xml keep working)
             this.getView().setModel(oOrdersModel, "ordersModel");
-            // ALSO set on the owner Component, so EntryPage's footer (outside this view)
-            // can bind to the same live model instance.
             this.getOwnerComponent().setModel(oOrdersModel, "ordersModel");
 
             this._preloadGridData();
@@ -79,12 +81,8 @@ sap.ui.define([
             oSmartTable.setCustomizeConfig(customizeConfig);
         },
 
-        /**
-         * Kicks off the first grid page load as soon as the OData model is
-         * available, without waiting for the user to click the Grid toggle.
-         */
         _preloadGridData: function () {
-            const oModel = this.getOwnerComponent().getModel(); // default OData model
+            const oModel = this.getOwnerComponent().getModel();
 
             if (oModel) {
                 this._loadGridPage(1);
@@ -96,7 +94,6 @@ sap.ui.define([
                 });
             }
         },
-
 
         _getFormattedFilterDates: function () {
             const oFilterModel = this.getView().getModel("filterModel");
@@ -111,10 +108,6 @@ sap.ui.define([
             };
         },
 
-        /**
-         * Builds the OrderNumber free-text search filter (existing behavior),
-         * OR-combined across the configured searchable fields.
-         */
         _buildSearchFilter: function () {
             const sQuery = (this._sSearchQuery || "").trim();
             if (!sQuery) {
@@ -123,9 +116,6 @@ sap.ui.define([
 
             const _aSearchableFields = [
                 "OrderNumber",
-                // "Customer",
-                // "AISummaryText",
-                // "BusinessArea"
             ];
 
             const aFieldFilters = _aSearchableFields.map((sField) => {
@@ -142,7 +132,6 @@ sap.ui.define([
             });
         },
 
-
         _buildFilterBarFilters: function () {
             const oFilterModel = this.getView().getModel("filterModel");
             if (!oFilterModel) {
@@ -151,6 +140,17 @@ sap.ui.define([
 
             const oData = oFilterModel.getData();
             const aFilters = [];
+
+            // --- NEW: Status tab filter (On Hold / Rejected) ---
+            // ASSUMPTION: status lives on status with values "HOLD" / "REJECTED".
+            // If your backend uses a different field/values, change path/value1 below.
+            if (oData.statusTab) {
+                aFilters.push(new Filter({
+                    path: "status",
+                    operator: FilterOperator.EQ,
+                    value1: oData.statusTab
+                }));
+            }
 
             if (oData.recommendation && oData.recommendation.trim()) {
                 aFilters.push(new Filter({
@@ -191,11 +191,6 @@ sap.ui.define([
             return aFilters;
         },
 
-        /**
-         * Combines the free-text search filter with the filter bar filters
-         * into a single AND-ed filter, used by both the SmartTable rebind
-         * and the Grid OData read.
-         */
         _buildODataFilters: function () {
             const aAndFilters = [];
 
@@ -251,7 +246,6 @@ sap.ui.define([
             this._loadGridPage(1);
         },
 
-
         onFilterSearch: function () {
             const oSmartTable = this.byId("idSmartTable");
             if (oSmartTable) {
@@ -269,8 +263,17 @@ sap.ui.define([
                 customer: "",
                 division: "",
                 businessArea: "",
-                orderNumber: ""
+                orderNumber: "",
+                statusTab: oFilterModel.getProperty("/statusTab") || this._sDefaultStatusTab // keep current tab on clear
             });
+            this.onFilterSearch();
+        },
+
+        // --- NEW: IconTabBar select handler for the SmartTable's status tabs ---
+        onStatusTabSelect: function (oEvent) {
+            const sKey = oEvent.getParameter("key");
+            const oFilterModel = this.getView().getModel("filterModel");
+            oFilterModel.setProperty("/statusTab", sKey);
             this.onFilterSearch();
         },
 
@@ -281,7 +284,6 @@ sap.ui.define([
             const oListBox = oView.byId("listViewBox");
             const oGridBox = oView.byId("gridViewBox");
 
-            // Tell EntryPage's footer whether Grid view is active
             const oUiStateModel = this.getOwnerComponent().getModel("uiState");
             if (oUiStateModel) {
                 oUiStateModel.setProperty("/gridActive", sKey === "grid");
@@ -306,7 +308,7 @@ sap.ui.define([
 
         _loadGridPage: function (iPage) {
             const oView = this.getView();
-            let oModel = oView.getModel(); // main OData model
+            let oModel = oView.getModel();
             const oOrdersModel = oView.getModel("ordersModel");
             const sPath = this._getGridEntityPath();
             const iSkip = (iPage - 1) * this._iPageSize;
@@ -337,7 +339,8 @@ sap.ui.define([
                 "AIUtilizationPercentage",
                 "CreditEsposure",
                 "SDDocumentCategory",
-                "Grade"
+                "Grade",
+                "status"
             ];
 
             oModel.read(sPath, {
@@ -414,8 +417,6 @@ sap.ui.define([
             return aPages;
         },
 
-        // --- Navigation handlers -------------------------------------------------
-
         onGridPrevPage: function () {
             const oOrdersModel = this.getView().getModel("ordersModel");
             const iCurrent = oOrdersModel.getProperty("/currentPage");
@@ -478,6 +479,7 @@ sap.ui.define([
             this._loadGridPage(iCurrentPage || 1);
         },
 
+
         onApprove: function (oEvent) {
             const oOrder = this._getOrderFromEvent(oEvent);
             const sOrderNumber = oOrder?.OrderNumber;
@@ -487,6 +489,115 @@ sap.ui.define([
                 return;
             }
 
+            this._openCommentDialog({
+                action: "approve",
+                orderNumber: sOrderNumber,
+                docCategory: oOrder.SDDocumentCategory || "C",
+                title: `Approve Order ${sOrderNumber}`,
+                confirmButtonText: "Approve"
+            });
+        },
+
+        onReject: function (oEvent) {
+            const oOrder = this._getOrderFromEvent(oEvent);
+            const sOrderNumber = oOrder?.OrderNumber;
+
+            if (!sOrderNumber) {
+                MessageBox.error("No order selected.");
+                return;
+            }
+
+            this._openCommentDialog({
+                action: "reject",
+                orderNumber: sOrderNumber,
+                docCategory: oOrder.SDDocumentCategory || "C",
+                title: `Reject Order ${sOrderNumber}`,
+                confirmButtonText: "Reject"
+            });
+        },
+
+        _openCommentDialog: function (oPending) {
+            this._oPendingAction = oPending;
+
+            const fnShowDialog = (oDialog) => {
+                if (!this._oCommentModel) {
+                    this._oCommentModel = new JSONModel();
+                    oDialog.setModel(this._oCommentModel, "commentModel");
+                }
+
+                this._oCommentModel.setData({
+                    title: oPending.title,
+                    confirmButtonText: oPending.confirmButtonText,
+                    comment: "",
+                    valueState: "None",
+                    valueStateText: ""
+                });
+
+                oDialog.open();
+            };
+
+            if (this._oCommentDialog) {
+                fnShowDialog(this._oCommentDialog);
+                return;
+            }
+
+            Fragment.load({
+                id: this.getView().getId(),
+                name: "creditedge.fragment.CommentDialog",
+                controller: this
+            }).then((oDialog) => {
+                this._oCommentDialog = oDialog;
+                this.getView().addDependent(oDialog);
+                fnShowDialog(oDialog);
+            }).catch((oError) => {
+                MessageBox.error("Failed to load Comment dialog.");
+            });
+        },
+
+        onCommentLiveChange: function (oEvent) {
+            const sValue = oEvent.getParameter("value") || "";
+            if (sValue.trim()) {
+                this._oCommentModel.setProperty("/valueState", "None");
+                this._oCommentModel.setProperty("/valueStateText", "");
+            }
+        },
+
+        onCommentDialogCancel: function () {
+            this._oPendingAction = null;
+            if (this._oCommentDialog) {
+                this._oCommentDialog.close();
+            }
+        },
+
+        onCommentDialogConfirm: function () {
+            const sComment = (this._oCommentModel.getProperty("/comment") || "").trim();
+
+            if (!sComment) {
+                this._oCommentModel.setProperty("/valueState", "Error");
+                this._oCommentModel.setProperty("/valueStateText", "Comment is required.");
+                return;
+            }
+
+            const oPending = this._oPendingAction;
+
+            if (this._oCommentDialog) {
+                this._oCommentDialog.close();
+            }
+
+            if (!oPending) {
+                return;
+            }
+
+            if (oPending.action === "approve") {
+                this._executeApprove(oPending.orderNumber, oPending.docCategory, sComment);
+            } else if (oPending.action === "reject") {
+                this._executeReject(oPending.orderNumber, sComment);
+            }
+
+            this._oPendingAction = null;
+        },
+
+        _executeApprove: function (sOrderNumber, sDocCategory, sUserComment) {
             const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
 
             this.getView().setBusy(true);
@@ -494,7 +605,8 @@ sap.ui.define([
             oModel.callFunction("/approve", {
                 method: "POST",
                 urlParameters: {
-                    Vbeln: sOrderNumber
+                    Vbeln: sOrderNumber,
+                    UserComment: sUserComment
                 },
                 success: (oData, oResponse) => {
                     this.getView().setBusy(false);
@@ -508,7 +620,7 @@ sap.ui.define([
                     }
 
                     if (sMessageText.includes("Final approval completed") && sMessageText.includes("ready for release")) {
-                        this._releaseCreditBlock(sOrderNumber, oOrder.SDDocumentCategory || "C");
+                        this._releaseCreditBlock(sOrderNumber, sDocCategory);
                         return;
                     }
 
@@ -518,6 +630,33 @@ sap.ui.define([
                 error: (oError) => {
                     this.getView().setBusy(false);
                     MessageBox.error("Failed to approve order " + sOrderNumber);
+                }
+            });
+        },
+
+        _executeReject: function (sOrderNumber, sUserComment) {
+            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
+
+            this.getView().setBusy(true);
+
+            oModel.callFunction("/reject", {
+                method: "POST",
+                urlParameters: {
+                    Vbeln: sOrderNumber,
+                    UserComment: sUserComment
+                },
+                success: (oData, oResponse) => {
+                    this.getView().setBusy(false);
+                    const severity = JSON.parse(oResponse?.headers['sap-message'])?.severity;
+                    if (severity.includes('error')) {
+                        return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`)
+                    }
+                    MessageBox.success(`Order Number - ${sOrderNumber} Rejected`);
+                    this._refreshAllViews();
+                },
+                error: (oError) => {
+                    this.getView().setBusy(false);
+                    MessageBox.error(`Failed to Reject Order Number - ${sOrderNumber}`);
                 }
             });
         },
@@ -550,40 +689,6 @@ sap.ui.define([
             });
         },
 
-        onReject: function (oEvent) {
-            const oOrder = this._getOrderFromEvent(oEvent);
-            const sOrderNumber = oOrder?.OrderNumber;
-
-            if (!sOrderNumber) {
-                MessageBox.error("No order selected.");
-                return;
-            }
-
-            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
-
-            this.getView().setBusy(true);
-
-            oModel.callFunction("/reject", {
-                method: "POST",
-                urlParameters: {
-                    Vbeln: sOrderNumber
-                },
-                success: (oData, oResponse) => {
-                    this.getView().setBusy(false);
-                    const severity = JSON.parse(oResponse?.headers['sap-message'])?.severity;
-                    if (severity.includes('error')) {
-                        return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`)
-                    }
-                    MessageBox.success(`Order Number - ${sOrderNumber} Rejected`);
-                    this._refreshAllViews();
-                },
-                error: (oError) => {
-                    this.getView().setBusy(false);
-                    MessageBox.error(`Failed to Reject Order Number - ${sOrderNumber}`);
-                }
-            });
-        },
-
         onView: function (oEvent) {
             const oOrder = this._getOrderFromEvent(oEvent);
             const sOrderNumber = oOrder?.OrderNumber;
@@ -600,7 +705,8 @@ sap.ui.define([
             oModel.callFunction("/get_log", {
                 method: "POST",
                 urlParameters: {
-                    Vbeln: sOrderNumber
+                    Vbeln: sOrderNumber,
+                    UserComment:""
                 },
                 success: (oData, oResponse) => {
                     this.getView().setBusy(false);
@@ -614,10 +720,6 @@ sap.ui.define([
             });
         },
 
-        /**
-         * Opens (creating on first use) a fragment-based Dialog showing the
-         * approval log for the given order, sorted chronologically.
-         */
         _openApprovalLogDialog: function (sOrderNumber, aResults) {
             const fnShowDialog = (oDialog) => {
                 if (!this._oLogModel) {
@@ -625,7 +727,6 @@ sap.ui.define([
                     oDialog.setModel(this._oLogModel, "logModel");
                 }
 
-                // Sort by ActionWhen ascending so the approval chain reads top-to-bottom
                 const aSorted = [...aResults].sort((a, b) =>
                     new Date(a.ActionWhen) - new Date(b.ActionWhen)
                 );
@@ -664,8 +765,6 @@ sap.ui.define([
             const oCtx = oSource.getBindingContext("ordersModel") || oSource.getBindingContext();
             return oCtx && oCtx.getObject();
         },
-
-        // --- AI summary parsing / display -----------------------------------------
 
         formatSummaryHtml: function (sText) {
             if (!sText) {

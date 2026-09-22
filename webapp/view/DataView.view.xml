@@ -130,19 +130,23 @@
                     />
                     <core:Icon
                         src="sap-icon://action-settings"
-                        class="kpiIcon kpiIcongold"
+                        class="kpiIcongold"
                     />
                 </HBox>
                 <Text
                     text="{kpiModel>/avgSopScore}"
-                    class="kpiValue kpiValuegold"
+                    class="kpiValuegold"
                 />
             </VBox> -->
         </HBox>
 
+        <!-- =========================================================== -->
+        <!-- FILTER PANEL - now a TOP-LEVEL sibling so it stays visible   -->
+        <!-- regardless of whether List or Grid view is active           -->
+        <!-- =========================================================== -->
         <Panel
             id="idFilterPanel"
-            class="sapUiTinyMarginBottom sapUiTinyMarginTop"
+            class="sapUiTinyMarginTop"
             expandable="false"
             expanded="true"
         >
@@ -164,6 +168,24 @@
                         text="Clear"
                         press="onFilterClear"
                     />
+                    <SegmentedButton
+                        id="viewSwitchButton"
+                        selectedKey="list"
+                        selectionChange="onViewSwitchChange"
+                    >
+                        <items>
+                            <SegmentedButtonItem
+                                key="list"
+                                icon="sap-icon://list"
+                                tooltip="List View"
+                            />
+                            <SegmentedButtonItem
+                                key="grid"
+                                icon="sap-icon://grid"
+                                tooltip="Grid View"
+                            />
+                        </items>
+                    </SegmentedButton>
                 </OverflowToolbar>
             </headerToolbar>
 
@@ -267,378 +289,183 @@
             </FlexBox>
         </Panel>
 
-        <FlexBox
-            justifyContent="End"
+        <!-- =========================================================== -->
+        <!-- ICON TAB BAR - now a TOP-LEVEL sibling so it stays visible   -->
+        <!-- regardless of whether List or Grid view is active.          -->
+        <!-- Its <content> holds BOTH the list and grid view containers, -->
+        <!-- and their individual visible="" bindings (managed by        -->
+        <!-- onViewSwitchChange in the controller) decide which one      -->
+        <!-- shows.                                                      -->
+        <!-- =========================================================== -->
+        <IconTabBar
+            id="idStatusTabBar"
+            selectedKey="{filterModel>/statusTab}"
+            select="onStatusTabSelect"
+            applyContentPadding="false"
+            stretchContentHeight="true"
             class="sapUiTinyMarginBottom"
         >
-            <SegmentedButton
-                id="viewSwitchButton"
-                selectedKey="list"
-                selectionChange="onViewSwitchChange"
-            >
-                <items>
-                    <SegmentedButtonItem
-                        key="list"
-                        icon="sap-icon://list"
-                        tooltip="List View"
-                    />
-                    <SegmentedButtonItem
-                        key="grid"
-                        icon="sap-icon://grid"
-                        tooltip="Grid View"
-                    />
-                </items>
-            </SegmentedButton>
-        </FlexBox>
+            <items>
+                <IconTabFilter
+                    key="HOLD"
+                    text="On Hold"
+                />
+                <IconTabFilter
+                    key="REJECTED"
+                    text="Rejected"
+                />
+            </items>
 
-        <!-- LIST VIEW: Smart Table -->
-        <VBox
-            id="listViewBox"
-            visible="true"
-        >
-            <smartTable:SmartTable
-                id="idSmartTable"
-                entitySet="ZC_CE_OrdersOnHoldSet"
-                tableType="Table"
-                enableExport="true"
-                beforeExport=".onBeforeExport"
-                useVariantManagement="true"
-                useTablePersonalisation="true"
-                header="Order List"
-                showRowCount="true"
-                enableAutoBinding="true"
-                enableAutoColumnWidth="true"
-                beforeRebindTable="onBeforeRebindTable"
-                height="100%"
-            >
-                <smartTable:customToolbar>
-                    <Toolbar>
-                        <ToolbarSpacer />
-                        <!-- <SearchField
-                            id="idOrderSearchField"
-                            width="20rem"
-                            search="onSearch"
-                            liveChange="onSearchLiveChange"
-                            placeholder="Enter Order Number..."
-                        /> -->
-                    </Toolbar>
-                </smartTable:customToolbar>
-                <Table
-                    id="idTableAccount"
-                    mode="None"
-                    growing="true"
-                    growingScrollToLoad="true"
-                    sticky="ColumnHeaders,HeaderToolbar,InfoToolbar"
+            <content>
+                <!-- =============== LIST VIEW =============== -->
+                <VBox
+                    id="listViewBox"
+                    visible="true"
                 >
-                    <columns>
-                        <Column width="28rem">
-                            <customData>
-                                <core:CustomData
-                                    key="p13nData"
-                                    value='\{"columnKey": "AISummaryText","leadingProperty": "AISummaryText", "sortProperty": "AISummaryText", "filterProperty": "AISummaryText", "columnIndex": "2"}'
-                                />
-                            </customData>
-                            <Label
-                                text="Summary"
-                                wrapping="false"
-                            />
-                        </Column>
-                        <Column hAlign="Center">
-                            <customData>
-                                <core:CustomData
-                                    key="p13nData"
-                                    value='\{"columnKey": "AISummaryVerdict","leadingProperty": "AISummaryVerdict", "sortProperty": "AISummaryVerdict", "filterProperty": "AISummaryVerdict", "columnIndex": "3"}'
-                                />
-                            </customData>
-                            <Label
-                                text="Recommendation"
-                                wrapping="false"
-                            />
-                        </Column>
-                        <Column>
-                            <customData>
-                                <core:CustomData
-                                    key="p13nData"
-                                    value='\{"columnKey": "AISopValueScore","leadingProperty": "AISopValueScore", "sortProperty": "AISopValueScore", "filterProperty": "AISopValueScore", "columnIndex": "4"}'
-                                />
-                            </customData>
-                            <Label
-                                text="SOP Value Score"
-                                wrapping="false"
-                            />
-                        </Column>
-                        <Column>
-                            <customData>
-                                <core:CustomData
-                                    key="p13nData"
-                                    value='\{"columnKey": "AIAverageDelayScore","leadingProperty": "AIAverageDelayScore", "sortProperty": "AIAverageDelayScore", "filterProperty": "AIAverageDelayScore", "columnIndex": "5"}'
-                                />
-                            </customData>
-                            <Label
-                                text="Average Delay Score"
-                                wrapping="false"
-                            />
-                        </Column>
-                        <Column>
-                            <customData>
-                                <core:CustomData
-                                    key="p13nData"
-                                    value='\{"columnKey": "AIUtilPercentageScore","leadingProperty": "AIUtilPercentageScore", "sortProperty": "AIUtilPercentageScore", "filterProperty": "AIUtilPercentageScore", "columnIndex": "6"}'
-                                />
-                            </customData>
-                            <Label
-                                text="Utilization % Score"
-                                wrapping="false"
-                            />
-                        </Column>
-                        <Column
-                            hAlign="Center"
-                            width="8rem"
+                    <smartTable:SmartTable
+                        id="idSmartTable"
+                        entitySet="ZC_CE_OrdersOnHoldSet"
+                        tableType="Table"
+                        enableExport="true"
+                        beforeExport=".onBeforeExport"
+                        header="Order List"
+                        showRowCount="true"
+                        enableAutoBinding="true"
+                        enableAutoColumnWidth="true"
+                        beforeRebindTable="onBeforeRebindTable"
+                        height="100%"
+                        width="100%"
+                    >
+                        <smartTable:customToolbar>
+                            <Toolbar>
+                                <ToolbarSpacer />
+                            </Toolbar>
+                        </smartTable:customToolbar>
+                        <Table
+                            id="idTableAccount"
+                            mode="None"
+                            growing="true"
+                            growingScrollToLoad="true"
+                            sticky="ColumnHeaders,HeaderToolbar,InfoToolbar"
                         >
-                            <customData>
-                                <core:CustomData
-                                    key="p13nData"
-                                    value='\{"columnKey": "Grade","leadingProperty": "Grade", "sortProperty": "Grade", "filterProperty": "Grade", "columnIndex": "50"}'
-                                />
-                            </customData>
-                            <Label
-                                text="Actions"
-                                wrapping="false"
-                            />
-                        </Column>
-                    </columns>
-
-                    <items>
-                        <ColumnListItem vAlign="Middle">
-                            <cells>
-                                <FormattedText
-                                    htmlText="{path: 'AISummaryText', formatter: '.formatSummaryHtml'}"
-                                />
-                                <ObjectStatus
-                                    text="{AISummaryVerdict}"
-                                    state="{path: 'AISummaryVerdict', formatter: '.formatter.riskState'}"
-                                    inverted="true"
-                                />
-                                <ProgressIndicator
-                                    class="sapUiSmallMarginBottom"
-                                    percentValue="{path: 'AISopValueScore', formatter: '.formatter.percentValue'}"
-                                    state="{path: 'AISopValueScore', formatter: '.formatter.stateValue'}"
-                                    showValue="false"
-                                />
-                                <ProgressIndicator
-                                    class="sapUiSmallMarginBottom"
-                                    percentValue="{path: 'AIAverageDelayScore', formatter: '.formatter.percentValue'}"
-                                    state="{path: 'AIAverageDelayScore', formatter: '.formatter.stateValue'}"
-                                    showValue="false"
-                                />
-                                <ProgressIndicator
-                                    class="sapUiSmallMarginBottom"
-                                    percentValue="{path: 'AIUtilPercentageScore', formatter: '.formatter.percentValue'}"
-                                    state="{path: 'AIUtilPercentageScore', formatter: '.formatter.stateValue'}"
-                                    showValue="false"
-                                />
-                                <HBox justifyContent="SpaceAround">
-                                    <Button
-                                        icon="sap-icon://show"
-                                        class="sapUiTinyMarginEnd"
-                                        type="Emphasized"
-                                        press="onView"
+                            <columns>
+                                <Column width="28rem">
+                                    <customData>
+                                        <core:CustomData
+                                            key="p13nData"
+                                            value='\{"columnKey": "AISummaryText","leadingProperty": "AISummaryText", "sortProperty": "AISummaryText", "filterProperty": "AISummaryText", "columnIndex": "2"}'
+                                        />
+                                    </customData>
+                                    <Label
+                                        text="Summary"
+                                        wrapping="false"
                                     />
-                                    <Button
-                                        icon="sap-icon://accept"
-                                        class="sapUiTinyMarginEnd"
-                                        type="Accept"
-                                        press="onApprove"
+                                </Column>
+                                <Column hAlign="Center">
+                                    <customData>
+                                        <core:CustomData
+                                            key="p13nData"
+                                            value='\{"columnKey": "AISummaryVerdict","leadingProperty": "AISummaryVerdict", "sortProperty": "AISummaryVerdict", "filterProperty": "AISummaryVerdict", "columnIndex": "3"}'
+                                        />
+                                    </customData>
+                                    <Label
+                                        text="Recommendation"
+                                        wrapping="false"
                                     />
-                                    <Button
-                                        icon="sap-icon://decline"
-                                        type="Reject"
-                                        press="onReject"
+                                </Column>
+                                <Column>
+                                    <customData>
+                                        <core:CustomData
+                                            key="p13nData"
+                                            value='\{"columnKey": "AISopValueScore","leadingProperty": "AISopValueScore", "sortProperty": "AISopValueScore", "filterProperty": "AISopValueScore", "columnIndex": "4"}'
+                                        />
+                                    </customData>
+                                    <Label
+                                        text="SOP Value Score"
+                                        wrapping="false"
                                     />
-                                </HBox>
-                            </cells>
-                        </ColumnListItem>
-                    </items>
-                </Table>
-            </smartTable:SmartTable>
-        </VBox>
-
-        <!-- GRID VIEW -->
-        <VBox
-            id="gridViewBox"
-            visible="false"
-            class="sapUiSmallMarginTop"
-            width="100%"
-            busy="{ordersModel>/busy}"
-            busyIndicatorDelay="0"
-        >
-            <ScrollContainer
-                id="idGridScrollContainer"
-                width="100%"
-                vertical="true"
-                horizontal="false"
-            >
-                <FlexBox
-                    id="idOrdersGridContainer"
-                    wrap="Wrap"
-                    justifyContent="Start"
-                    items="{ordersModel>/orders}"
-                >
-                    <items>
-                        <f:Card
-                            width="90%"
-                            class="sapUiSmallMargin"
-                        >
-                            <f:layoutData>
-                                <FlexItemData
-                                    growFactor="1"
-                                    minWidth="26rem"
-                                    maxWidth="26rem"
-                                />
-                            </f:layoutData>
-
-                            <f:content>
-                                <VBox
-                                    width="100%"
-                                    class="sapUiSmallMargin"
+                                </Column>
+                                <Column>
+                                    <customData>
+                                        <core:CustomData
+                                            key="p13nData"
+                                            value='\{"columnKey": "AIAverageDelayScore","leadingProperty": "AIAverageDelayScore", "sortProperty": "AIAverageDelayScore", "filterProperty": "AIAverageDelayScore", "columnIndex": "5"}'
+                                        />
+                                    </customData>
+                                    <Label
+                                        text="Average Delay Score"
+                                        wrapping="false"
+                                    />
+                                </Column>
+                                <Column>
+                                    <customData>
+                                        <core:CustomData
+                                            key="p13nData"
+                                            value='\{"columnKey": "AIUtilPercentageScore","leadingProperty": "AIUtilPercentageScore", "sortProperty": "AIUtilPercentageScore", "filterProperty": "AIUtilPercentageScore", "columnIndex": "6"}'
+                                        />
+                                    </customData>
+                                    <Label
+                                        text="Utilization % Score"
+                                        wrapping="false"
+                                    />
+                                </Column>
+                                <Column
+                                    hAlign="Center"
+                                    width="8rem"
                                 >
-                                    <HBox
-                                        justifyContent="SpaceBetween"
-                                        alignItems="Center"
-                                        class="sapUiTinyMarginBottom"
-                                    >
-                                        <Title
-                                            text="{ordersModel>OrderNumber}"
-                                            class="sapUiFontHeader5"
+                                    <customData>
+                                        <core:CustomData
+                                            key="p13nData"
+                                            value='\{"columnKey": "Grade","leadingProperty": "Grade", "sortProperty": "Grade", "filterProperty": "Grade", "columnIndex": "50"}'
+                                        />
+                                    </customData>
+                                    <Label
+                                        text="Actions"
+                                        wrapping="false"
+                                    />
+                                </Column>
+                            </columns>
+
+                            <items>
+                                <ColumnListItem vAlign="Middle">
+                                    <cells>
+                                        <FormattedText
+                                            htmlText="{path: 'AISummaryText', formatter: '.formatSummaryHtml'}"
                                         />
                                         <ObjectStatus
-                                            text="{= ${ordersModel>AISopValueScore} !== undefined &amp;&amp; ${ordersModel>AISopValueScore} !== null &amp;&amp; ${ordersModel>AISopValueScore} !== '' ? ${ordersModel>AISopValueScore} + ' / 5' : ''}"
-                                            state="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.stateValue'}"
+                                            text="{AISummaryVerdict}"
+                                            state="{path: 'AISummaryVerdict', formatter: '.formatter.riskState'}"
                                             inverted="true"
                                         />
-                                    </HBox>
-                                    <Text
-                                        text="Customer: {ordersModel>Customer}"
-                                        class="sapUiTinyMarginBottom"
-                                    />
-
-                                    <!-- AI SUMMARY -->
-                                    <VBox class="sapUiTinyMarginBottom">
-                                        <HBox
-                                            justifyContent="SpaceBetween"
-                                            alignItems="Center"
-                                        >
-                                            <Label
-                                                text="AI SUMMARY"
-                                                design="Bold"
-                                            />
-                                            <ObjectStatus
-                                                text="{ordersModel>AISummaryVerdict}"
-                                                state="{path: 'ordersModel>AISummaryVerdict', formatter: '.formatter.riskState'}"
-                                                inverted="true"
-                                            />
-                                        </HBox>
-                                        <ScrollContainer
-                                            height="12rem"
-                                            width="100%"
-                                            vertical="true"
-                                            horizontal="false"
-                                            class="sapUiTinyMarginTop"
-                                        >
-                                            <FormattedText
-                                                htmlText="{path: 'ordersModel>AISummaryText', formatter: '.formatSummaryHtml'}"
-                                            />
-                                        </ScrollContainer>
-                                    </VBox>
-
-                                    <!-- SUGGESTION -->
-                                    <!-- <VBox class="sapUiTinyMarginBottom">
-                                        <Label
-                                            text="RECOMMENDATION"
-                                            design="Bold"
+                                        <ProgressIndicator
+                                            class="sapUiSmallMarginBottom"
+                                            percentValue="{path: 'AISopValueScore', formatter: '.formatter.percentValue'}"
+                                            state="{path: 'AISopValueScore', formatter: '.formatter.stateValue'}"
+                                            showValue="false"
                                         />
-                                        <MessageStrip
-                                            text="{ordersModel>AISummaryVerdict}"
-                                            type="{path: 'ordersModel>AISummaryVerdict', formatter: '.formatter.riskState'}"
-                                            showIcon="false"
-                                            showCloseButton="false"
-                                            class="sapUiTinyMarginTop"
+                                        <ProgressIndicator
+                                            class="sapUiSmallMarginBottom"
+                                            percentValue="{path: 'AIAverageDelayScore', formatter: '.formatter.percentValue'}"
+                                            state="{path: 'AIAverageDelayScore', formatter: '.formatter.stateValue'}"
+                                            showValue="false"
                                         />
-                                    </VBox> -->
-
-                                    <!-- Scores -->
-                                    <HBox
-                                        justifyContent="SpaceBetween"
-                                        class="sapUiTinyMarginBottom"
-                                    >
-                                        <VBox width="48%">
-                                            <Label text="SOP Value Score" />
-                                            <ProgressIndicator
-                                                width="100%"
-                                                percentValue="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.percentValue'}"
-                                                state="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.stateValue'}"
-                                                displayValue="{ordersModel>AISopValueScore}"
-                                                showValue="true"
-                                            />
-                                        </VBox>
-                                        <VBox width="48%">
-                                            <Label text="AVG Delay Score" />
-                                            <ProgressIndicator
-                                                width="100%"
-                                                percentValue="{path: 'ordersModel>AIAverageDelayScore', formatter: '.formatter.percentValue'}"
-                                                state="{path: 'ordersModel>AIAverageDelayScore', formatter: '.formatter.stateValue'}"
-                                                displayValue="{ordersModel>AIAverageDelayScore}"
-                                                showValue="true"
-                                            />
-                                        </VBox>
-                                    </HBox>
-                                    <HBox
-                                        justifyContent="SpaceBetween"
-                                        class="sapUiTinyMarginBottom"
-                                    >
-                                        <VBox width="48%">
-                                            <Label text="Utilization % Score" />
-                                            <ProgressIndicator
-                                                width="100%"
-                                                percentValue="{path: 'ordersModel>AIUtilPercentageScore', formatter: '.formatter.percentValue'}"
-                                                state="{path: 'ordersModel>AIUtilPercentageScore', formatter: '.formatter.stateValue'}"
-                                                displayValue="{ordersModel>AIUtilPercentageScore}"
-                                                showValue="true"
-                                            />
-                                        </VBox>
-                                        <VBox width="48%">
-                                            <Label text="Order Value" />
-                                            <Text
-                                                text="{ordersModel>CurrentOrderValue}"
-                                            />
-                                        </VBox>
-                                    </HBox>
-
-                                    <!-- Footer -->
-                                    <HBox
-                                        justifyContent="SpaceBetween"
-                                        alignItems="Center"
-                                        class="sapUiTinyMarginTop"
-                                    >
-                                        <VBox>
-                                            <Text
-                                                text="Credit Exposure: {ordersModel>CreditEsposure}"
-                                            />
-                                            <Text
-                                                text="Utilization: {ordersModel>AIUtilizationPercentage}"
-                                            />
-                                        </VBox>
-                                        <HBox>
+                                        <ProgressIndicator
+                                            class="sapUiSmallMarginBottom"
+                                            percentValue="{path: 'AIUtilPercentageScore', formatter: '.formatter.percentValue'}"
+                                            state="{path: 'AIUtilPercentageScore', formatter: '.formatter.stateValue'}"
+                                            showValue="false"
+                                        />
+                                        <HBox justifyContent="SpaceAround">
                                             <Button
                                                 icon="sap-icon://show"
-                                                type="Emphasized"
                                                 class="sapUiTinyMarginEnd"
+                                                type="Emphasized"
                                                 press="onView"
                                             />
                                             <Button
                                                 icon="sap-icon://accept"
-                                                type="Accept"
                                                 class="sapUiTinyMarginEnd"
+                                                type="Accept"
                                                 press="onApprove"
                                             />
                                             <Button
@@ -647,22 +474,221 @@
                                                 press="onReject"
                                             />
                                         </HBox>
-                                    </HBox>
-                                </VBox>
-                            </f:content>
-                        </f:Card>
-                    </items>
-                </FlexBox>
+                                    </cells>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </smartTable:SmartTable>
+                </VBox>
 
-                <MessageStrip
-                    visible="{= !${ordersModel>/busy} &amp;&amp; ${ordersModel>/noData} }"
-                    text="No records found."
-                    type="Information"
-                    showIcon="true"
-                    showCloseButton="false"
-                    class="sapUiMediumMargin"
-                />
-            </ScrollContainer>
-        </VBox>
+                <!-- =============== GRID VIEW =============== -->
+                <VBox
+                    id="gridViewBox"
+                    visible="false"
+                    class="sapUiSmallMarginTop"
+                    width="100%"
+                    busy="{ordersModel>/busy}"
+                    busyIndicatorDelay="0"
+                >
+                    <ScrollContainer
+                        id="idGridScrollContainer"
+                        width="100%"
+                        vertical="true"
+                        horizontal="false"
+                    >
+                        <FlexBox
+                            id="idOrdersGridContainer"
+                            wrap="Wrap"
+                            justifyContent="Start"
+                            items="{ordersModel>/orders}"
+                        >
+                            <items>
+                                <f:Card
+                                    width="90%"
+                                    class="sapUiSmallMargin"
+                                >
+                                    <f:layoutData>
+                                        <FlexItemData
+                                            growFactor="1"
+                                            minWidth="26rem"
+                                            maxWidth="26rem"
+                                        />
+                                    </f:layoutData>
+
+                                    <f:content>
+                                        <VBox
+                                            width="100%"
+                                            class="sapUiSmallMargin"
+                                        >
+                                            <HBox
+                                                justifyContent="SpaceBetween"
+                                                alignItems="Center"
+                                                class="sapUiTinyMarginBottom"
+                                            >
+                                                <Title
+                                                    text="{ordersModel>OrderNumber}"
+                                                    class="sapUiFontHeader5"
+                                                />
+                                                <ObjectStatus
+                                                    text="{= ${ordersModel>AISopValueScore} !== undefined &amp;&amp; ${ordersModel>AISopValueScore} !== null &amp;&amp; ${ordersModel>AISopValueScore} !== '' ? ${ordersModel>AISopValueScore} + ' / 5' : ''}"
+                                                    state="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.stateValue'}"
+                                                    inverted="true"
+                                                />
+                                            </HBox>
+                                            <Text
+                                                text="Customer: {ordersModel>Customer}"
+                                                class="sapUiTinyMarginBottom"
+                                            />
+
+                                            <!-- AI SUMMARY -->
+                                            <VBox class="sapUiTinyMarginBottom">
+                                                <HBox
+                                                    justifyContent="SpaceBetween"
+                                                    alignItems="Center"
+                                                >
+                                                    <Label
+                                                        text="AI SUMMARY"
+                                                        design="Bold"
+                                                    />
+                                                    <ObjectStatus
+                                                        text="{ordersModel>AISummaryVerdict}"
+                                                        state="{path: 'ordersModel>AISummaryVerdict', formatter: '.formatter.riskState'}"
+                                                        inverted="true"
+                                                    />
+                                                </HBox>
+                                                <ScrollContainer
+                                                    height="12rem"
+                                                    width="100%"
+                                                    vertical="true"
+                                                    horizontal="false"
+                                                    class="sapUiTinyMarginTop"
+                                                >
+                                                    <FormattedText
+                                                        htmlText="{path: 'ordersModel>AISummaryText', formatter: '.formatSummaryHtml'}"
+                                                    />
+                                                </ScrollContainer>
+                                            </VBox>
+
+                                            <!-- SUGGESTION -->
+                                            <!-- <VBox class="sapUiTinyMarginBottom">
+                                                <Label
+                                                    text="RECOMMENDATION"
+                                                    design="Bold"
+                                                />
+                                                <MessageStrip
+                                                    text="{ordersModel>AISummaryVerdict}"
+                                                    type="{path: 'ordersModel>AISummaryVerdict', formatter: '.formatter.riskState'}"
+                                                    showIcon="false"
+                                                    showCloseButton="false"
+                                                    class="sapUiTinyMarginTop"
+                                                />
+                                            </VBox> -->
+
+                                            <!-- Scores -->
+                                            <HBox
+                                                justifyContent="SpaceBetween"
+                                                class="sapUiTinyMarginBottom"
+                                            >
+                                                <VBox width="48%">
+                                                    <Label
+                                                        text="SOP Value Score"
+                                                    />
+                                                    <ProgressIndicator
+                                                        width="100%"
+                                                        percentValue="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.percentValue'}"
+                                                        state="{path: 'ordersModel>AISopValueScore', formatter: '.formatter.stateValue'}"
+                                                        displayValue="{ordersModel>AISopValueScore}"
+                                                        showValue="true"
+                                                    />
+                                                </VBox>
+                                                <VBox width="48%">
+                                                    <Label
+                                                        text="AVG Delay Score"
+                                                    />
+                                                    <ProgressIndicator
+                                                        width="100%"
+                                                        percentValue="{path: 'ordersModel>AIAverageDelayScore', formatter: '.formatter.percentValue'}"
+                                                        state="{path: 'ordersModel>AIAverageDelayScore', formatter: '.formatter.stateValue'}"
+                                                        displayValue="{ordersModel>AIAverageDelayScore}"
+                                                        showValue="true"
+                                                    />
+                                                </VBox>
+                                            </HBox>
+                                            <HBox
+                                                justifyContent="SpaceBetween"
+                                                class="sapUiTinyMarginBottom"
+                                            >
+                                                <VBox width="48%">
+                                                    <Label
+                                                        text="Utilization % Score"
+                                                    />
+                                                    <ProgressIndicator
+                                                        width="100%"
+                                                        percentValue="{path: 'ordersModel>AIUtilPercentageScore', formatter: '.formatter.percentValue'}"
+                                                        state="{path: 'ordersModel>AIUtilPercentageScore', formatter: '.formatter.stateValue'}"
+                                                        displayValue="{ordersModel>AIUtilPercentageScore}"
+                                                        showValue="true"
+                                                    />
+                                                </VBox>
+                                                <VBox width="48%">
+                                                    <Label text="Order Value" />
+                                                    <Text
+                                                        text="{ordersModel>CurrentOrderValue}"
+                                                    />
+                                                </VBox>
+                                            </HBox>
+
+                                            <!-- Footer -->
+                                            <HBox
+                                                justifyContent="SpaceBetween"
+                                                alignItems="Center"
+                                                class="sapUiTinyMarginTop"
+                                            >
+                                                <VBox>
+                                                    <Text
+                                                        text="Credit Exposure: {ordersModel>CreditEsposure}"
+                                                    />
+                                                    <Text
+                                                        text="Utilization: {ordersModel>AIUtilizationPercentage}"
+                                                    />
+                                                </VBox>
+                                                <HBox>
+                                                    <Button
+                                                        icon="sap-icon://show"
+                                                        type="Emphasized"
+                                                        class="sapUiTinyMarginEnd"
+                                                        press="onView"
+                                                    />
+                                                    <Button
+                                                        icon="sap-icon://accept"
+                                                        type="Accept"
+                                                        class="sapUiTinyMarginEnd"
+                                                        press="onApprove"
+                                                    />
+                                                    <Button
+                                                        icon="sap-icon://decline"
+                                                        type="Reject"
+                                                        press="onReject"
+                                                    />
+                                                </HBox>
+                                            </HBox>
+                                        </VBox>
+                                    </f:content>
+                                </f:Card>
+                            </items>
+                        </FlexBox>
+
+                        <MessageStrip
+                            visible="{= !${ordersModel>/busy} &amp;&amp; ${ordersModel>/noData} }"
+                            text="No records found."
+                            type="Information"
+                            showIcon="true"
+                            showCloseButton="false"
+                            class="sapUiMediumMargin"
+                        />
+                    </ScrollContainer>
+                </VBox>
+            </content>
+        </IconTabBar>
     </VBox>
 </mvc:View>

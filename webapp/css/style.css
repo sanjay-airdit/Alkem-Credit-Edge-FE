@@ -95,7 +95,6 @@
     flex-shrink: 0;
 }
 
-/* Add to your app's css/style.css and make sure it is loaded (e.g. in manifest.json "sap.ui5" > "resources" > "css") */
 
 .kpiRow {
     gap: 1rem;

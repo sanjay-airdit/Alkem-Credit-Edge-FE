@@ -160,6 +160,9 @@
             <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/AISummaryText">
                 <Annotation Term="Common.Label" String="AI Summary" />
             </Annotations>
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/status">
+                <Annotation Term="Common.Label" String="Status" />
+            </Annotations>
             
         </Schema>
     </edmx:DataServices>
