@@ -24,7 +24,7 @@
         class='onZoom'
     >
         <tnt:header>
-            <tnt:ToolHeader class="ccc">
+            <!-- <tnt:ToolHeader class="ccc">
                 <Image
                     width="100px"
                     height="40px"
@@ -66,7 +66,7 @@
                         <OverflowToolbarLayoutData priority="NeverOverflow" />
                     </layoutData>
                 </Avatar>
-            </tnt:ToolHeader>
+            </tnt:ToolHeader> -->
         </tnt:header>
 
         <tnt:mainContents>

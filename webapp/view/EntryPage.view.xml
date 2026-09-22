@@ -12,7 +12,7 @@
         class="sapUiNoContentPadding"
         showFooter="{= ${uiState>/activeTab} === 'dataView' &amp;&amp; ${uiState>/gridActive} }"
     >
-        <f:title>
+        <!-- <f:title>
             <f:DynamicPageTitle>
                 <f:heading>
                     <Title
@@ -21,7 +21,7 @@
                     />
                 </f:heading>
             </f:DynamicPageTitle>
-        </f:title>
+        </f:title> -->
 
         <f:content>
             <IconTabBar
