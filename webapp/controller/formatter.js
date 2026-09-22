@@ -73,6 +73,17 @@ sap.ui.define([], function () {
                 case "INITIATE": return "Information";
                 default: return "None";
             }
+        },
+
+        statusState: function (sStatus) {
+            switch ((sStatus || "").trim().toUpperCase()) {
+                case "PENDING": return "Warning";
+                case "APPROVED": return "Success";
+                case "REJECTED": return "Error";
+                case "COMPLETE":
+                case "COMPLETED": return "Success";
+                default: return "None";
+            }
         }
     };
 });

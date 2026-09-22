@@ -336,6 +336,7 @@ sap.ui.define([
                 "Currency",
                 "AIUtilizationPercentage",
                 "CreditEsposure",
+                "SDDocumentCategory",
                 "Grade"
             ];
 
@@ -364,10 +365,6 @@ sap.ui.define([
                         pageNumbers: this._buildPageNumbers(iClampedPage, iTotalPages)
                     });
 
-                    const oKpiModel = this.getView().getModel("kpiModel");
-                    if (oKpiModel) {
-                        oKpiModel.setProperty("/totalOrders", iTotalCount);
-                    }
                 },
                 error: (oError) => {
                     oOrdersModel.setProperty("/busy", false);
@@ -490,16 +487,56 @@ sap.ui.define([
                 },
                 success: (oData, oResponse) => {
                     this.getView().setBusy(false);
-                    const severity = JSON.parse(oResponse?.headers['sap-message'])?.severity;
-                    if (severity.includes('error')){
-                        return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`)
+
+                    const oSapMessage = JSON.parse(oResponse?.headers['sap-message']);
+                    const sSeverity = oSapMessage?.severity;
+                    const sMessageText = oSapMessage?.message || "";
+
+                    if (sSeverity && sSeverity.includes('error')) {
+                        return MessageBox.error(sMessageText);
+                    }
+
+                    oModel.refresh(true);
+                    
+                    if (sMessageText.includes("Final approval completed") && sMessageText.includes("ready for release")) {
+                        this._releaseCreditBlock(sOrderNumber, oOrder.SDDocumentCategory || "C");
                     }
                     MessageBox.success(`Order Number - ${sOrderNumber} Approved`);
-                    oModel.refresh(true);
                 },
                 error: (oError) => {
                     this.getView().setBusy(false);
                     MessageBox.error("Failed to approve order " + sOrderNumber);
+                }
+            });
+        },
+
+        _releaseCreditBlock: function (sOrderNumber, sDocCategory) {
+            const oCreditModel = this.getOwnerComponent().getModel("API_SLS_DOC_WITH_CREDIT_BLOCK");
+
+            if (!oCreditModel) {
+                MessageBox.error("Credit block release service is not configured.");
+                return;
+            }
+
+            this.getView().setBusy(true);
+
+            oCreditModel.callFunction("/ReleaseCreditBlock", {
+                method: "POST",
+                urlParameters: {
+                    SalesDocument: sOrderNumber,
+                    SDDocumentCategory: sDocCategory
+                },
+                success: (oData, oResponse) => {
+                    this.getView().setBusy(false);
+                    MessageBox.success(`Credit block released for Order ${sOrderNumber}`);
+
+                    const oOrdersModel = this.getView().getModel("ordersModel");
+                    const iCurrentPage = oOrdersModel ? oOrdersModel.getProperty("/currentPage") : 1;
+                    this._loadGridPage(iCurrentPage);
+                },
+                error: (oError) => {
+                    this.getView().setBusy(false);
+                    MessageBox.error(`Failed to release credit block for Order ${sOrderNumber}`);
                 }
             });
         },

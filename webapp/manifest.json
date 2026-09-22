@@ -59,6 +59,24 @@
           "localUri": "localService/ZUI_CE_APPR_MATRIX_SB/metadata.xml",
           "odataVersion": "2.0"
         }
+      },
+      "API_SLS_DOC_WITH_CREDIT_ANNO_MDL": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='API_SLS_DOC_WITH_CREDIT_ANNO_MDL',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/API_SLS_DOC_WITH_CREDIT_BLOCK/API_SLS_DOC_WITH_CREDIT_ANNO_MDL.xml"
+        }
+      },
+      "API_SLS_DOC_WITH_CREDIT_BLOCK": {
+        "uri": "/sap/opu/odata/sap/API_SLS_DOC_WITH_CREDIT_BLOCK/",
+        "type": "OData",
+        "settings": {
+          "annotations": [
+            "API_SLS_DOC_WITH_CREDIT_ANNO_MDL"
+          ],
+          "localUri": "localService/API_SLS_DOC_WITH_CREDIT_BLOCK/metadata.xml",
+          "odataVersion": "2.0"
+        }
       }
     }
   },
@@ -111,6 +129,11 @@
       },
       "ZUI_CE_APPR_MATRIX_SB": {
         "dataSource": "ZUI_CE_APPR_MATRIX_SB",
+        "preload": true,
+        "settings": {}
+      },
+      "API_SLS_DOC_WITH_CREDIT_BLOCK": {
+        "dataSource": "API_SLS_DOC_WITH_CREDIT_BLOCK",
         "preload": true,
         "settings": {}
       }

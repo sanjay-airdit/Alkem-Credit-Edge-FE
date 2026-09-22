@@ -24,23 +24,34 @@
                     <Column>
                         <Text text="User" />
                     </Column>
-                    <Column hAlign="End">
+                    <Column width="15rem" hAlign="End">
                         <Text text="Action Time" />
+                    </Column>
+                    <Column>
+                        <Text text="Status" />
+                    </Column>
+                    <Column>
+                        <Text text="Pending Users" />
                     </Column>
                 </columns>
                 <items>
                     <ColumnListItem>
                         <cells>
                             <Text text="{logModel>ApprovalLevel}" />
-                            <ObjectStatus
+                            <Text
                                 text="{logModel>ActionPerformed}"
-                                state="{path: 'logModel>ActionPerformed', formatter: '.formatter.actionState'}"
-                                inverted="true"
+                                
                             />
                             <Text text="{logModel>ActionBy}" />
                             <Text
                                 text="{ path: 'logModel>ActionWhen', type: 'sap.ui.model.type.DateTime'}"
                             />
+                            <ObjectStatus
+                                text="{logModel>Status}"
+                                state="{path: 'logModel>Status', formatter: '.formatter.statusState'}"
+                                inverted="true"
+                            />
+                            <Text text="{logModel>PendingUsers}" />
                         </cells>
                     </ColumnListItem>
                 </items>

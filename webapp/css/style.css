@@ -201,15 +201,15 @@
 }
 
 /* Gold - Avg SOP Score (Accent) */
-.kpiCard--gold {
+.kpiCardgold {
     border-top-color: var(--sapAccentColor3, #9c7a1e);
 }
 
-.kpiValue--gold {
+.kpiValuegold {
     color: var(--sapAccentColor3, #9c7a1e);
 }
 
-.kpiIcon--gold {
+.kpiIcongold {
     color: var(--sapAccentColor3, #9c7a1e);
     background: var(--sapContent_ImagePlaceholderBackground, #f7f0dd);
 }

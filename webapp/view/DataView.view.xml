@@ -119,7 +119,7 @@
             </VBox>
 
             <!-- Avg SOP Score -->
-            <VBox class="kpiCard kpiCard--gold">
+            <!-- <VBox class="kpiCard kpiCardgold">
                 <HBox
                     justifyContent="SpaceBetween"
                     alignItems="Center"
@@ -130,14 +130,14 @@
                     />
                     <core:Icon
                         src="sap-icon://action-settings"
-                        class="kpiIcon kpiIcon--gold"
+                        class="kpiIcon kpiIcongold"
                     />
                 </HBox>
                 <Text
                     text="{kpiModel>/avgSopScore}"
-                    class="kpiValue kpiValue--gold"
+                    class="kpiValue kpiValuegold"
                 />
-            </VBox>
+            </VBox> -->
         </HBox>
 
         <Panel

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_AGGREGATION',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Aggregation.V1" Alias="Aggregation"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_ANALYTICS',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.Analytics.v1" Alias="Analytics"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CAPABILITIES',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Capabilities.V1" Alias="Capabilities"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CODELIST',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.CodeList.v1" Alias="SAP__CodeList"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMON',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.Common.v1" Alias="Common"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMUNICATION',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.Communication.v1" Alias="Communication"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_MEASURES',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Measures.V1" Alias="Measures"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_PERSONALDATA',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.PersonalData.v1" Alias="PersonalData"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_UI',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.UI.v1" Alias="UI"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/iwfnd/catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_VALIDATION',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Validation.V1" Alias="Validation"/>
+    </edmx:Reference>
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="API_SLS_DOC_WITH_CREDIT_BLOCK" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="A_CreditBlockedSalesDocumentType" sap:label="Credit Blocked Sales Document" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SalesDocument"/>
+                </Key>
+                <Property Name="SalesDocument" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Sales Document"/>
+                <Property Name="SDDocumentCategory" Type="Edm.String" MaxLength="4" sap:label="SD Document Category"/>
+                <Property Name="SalesDocumentType" Type="Edm.String" MaxLength="4" sap:display-format="UpperCase" sap:label="Sales Document Type"/>
+                <Property Name="SalesOrganization" Type="Edm.String" MaxLength="4" sap:display-format="UpperCase" sap:label="Sales Organization"/>
+                <Property Name="DistributionChannel" Type="Edm.String" MaxLength="2" sap:display-format="UpperCase" sap:label="Distribution Channel"/>
+                <Property Name="OrganizationDivision" Type="Edm.String" MaxLength="2" sap:display-format="UpperCase" sap:label="Division"/>
+                <Property Name="SalesOffice" Type="Edm.String" MaxLength="4" sap:display-format="UpperCase" sap:label="Sales Office"/>
+                <Property Name="SalesGroup" Type="Edm.String" MaxLength="3" sap:display-format="UpperCase" sap:label="Sales Group"/>
+                <Property Name="CreatedByUser" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:label="Created By" sap:quickinfo="Name of Person Responsible for Creating the Object"/>
+                <Property Name="CreationDate" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Created On" sap:quickinfo="Record Created On"/>
+                <Property Name="LastChangedByUser" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:label="Last Changed By" sap:quickinfo="User Who Last Changed the Business Document"/>
+                <Property Name="LastChangeDate" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Changed On" sap:quickinfo="Last Changed On"/>
+                <Property Name="SoldToParty" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Sold-to Party"/>
+                <Property Name="TotalNetAmount" Type="Edm.Decimal" Precision="16" Scale="3" sap:unit="TransactionCurrency" sap:label="Net Value" sap:quickinfo="Net Value of the Sales Document in Document Currency"/>
+                <Property Name="TransactionCurrency" Type="Edm.String" MaxLength="5" sap:display-format="UpperCase" sap:label="Document Currency" sap:quickinfo="SD Document Currency" sap:semantics="currency-code"/>
+                <Property Name="CustomerCreditAccount" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Credit Account" sap:quickinfo="Customer's Account Number with Credit Limit Reference"/>
+                <Property Name="ControllingAreaCurrency" Type="Edm.String" MaxLength="5" sap:display-format="UpperCase" sap:label="Currency" sap:quickinfo="Currency key of credit control area" sap:semantics="currency-code"/>
+                <Property Name="ReleasedCreditAmount" Type="Edm.Decimal" Precision="16" Scale="3" sap:unit="ControllingAreaCurrency" sap:label="Rel. Credit Value" sap:quickinfo="Released Credit Value of the Document"/>
+                <Property Name="CreditBlockReleaseDate" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Release date" sap:quickinfo="Release date of the document determined by credit management"/>
+                <Property Name="NextShippingDate" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Next date"/>
+                <Property Name="NextCreditCheckDate" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Next Credit Check" sap:quickinfo="Date of Next Credit Check of Document"/>
+                <Property Name="FinDocCreditCheckStatus" Type="Edm.String" MaxLength="1" sap:display-format="UpperCase" sap:label="Financial Document" sap:quickinfo="Status of Credit Check Against Financial Document"/>
+                <Property Name="TotalCreditCheckStatus" Type="Edm.String" MaxLength="1" sap:display-format="UpperCase" sap:label="Credit Status" sap:quickinfo="Overall Status of Credit Checks"/>
+                <Property Name="OverallSDProcessStatus" Type="Edm.String" MaxLength="1" sap:display-format="UpperCase" sap:label="Overall Status" sap:quickinfo="Overall Processing Status (Header/All Items)"/>
+                <Property Name="CentralCreditCheckStatus" Type="Edm.String" MaxLength="1" sap:display-format="UpperCase" sap:label="SAP Cred. Mgmt" sap:quickinfo="Status of Credit Check SAP Credit Management"/>
+                <Property Name="CentralCreditChkTechErrSts" Type="Edm.String" MaxLength="1" sap:display-format="UpperCase" sap:label="CrMa TE Status" sap:quickinfo="Status of Technical Error SAP Credit Management"/>
+            </EntityType>
+            <EntityType Name="A_SalesDocumentRjcnReasonType" sap:label="Rejection Reason" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SalesDocumentRjcnReason"/>
+                </Key>
+                <Property Name="SalesDocumentRjcnReason" Type="Edm.String" Nullable="false" MaxLength="2" sap:display-format="UpperCase" sap:text="SalesDocumentRjcnReason_Text" sap:label="Reason for Rejection" sap:quickinfo="Reason for Rejection of Sales Documents"/>
+                <Property Name="SalesDocumentRjcnReason_Text" Type="Edm.String" MaxLength="40" sap:label="Description" sap:creatable="false" sap:updatable="false"/>
+            </EntityType>
+            <ComplexType Name="ReturnMessage">
+                <Property Name="MessageType" Type="Edm.String" Nullable="false" sap:label="Message Type" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Message" Type="Edm.String" Nullable="false" sap:label="Message" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </ComplexType>
+            <EntityContainer Name="API_SLS_DOC_WITH_CREDIT_BLOCK_Entities" m:IsDefaultEntityContainer="true" sap:message-scope-supported="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="A_CreditBlockedSalesDocument" EntityType="API_SLS_DOC_WITH_CREDIT_BLOCK.A_CreditBlockedSalesDocumentType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="A_SalesDocumentRjcnReason" EntityType="API_SLS_DOC_WITH_CREDIT_BLOCK.A_SalesDocumentRjcnReasonType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <FunctionImport Name="CheckCreditBlock" ReturnType="API_SLS_DOC_WITH_CREDIT_BLOCK.ReturnMessage" m:HttpMethod="POST">
+                    <Parameter Name="SDDocumentCategory" Type="Edm.String" Mode="In"/>
+                    <Parameter Name="SalesDocument" Type="Edm.String" Mode="In"/>
+                </FunctionImport>
+                <FunctionImport Name="RejectCreditBlock" ReturnType="API_SLS_DOC_WITH_CREDIT_BLOCK.ReturnMessage" m:HttpMethod="POST">
+                    <Parameter Name="SDDocumentCategory" Type="Edm.String" Mode="In"/>
+                    <Parameter Name="SalesDocumentRjcnReason" Type="Edm.String" Mode="In"/>
+                    <Parameter Name="SalesDocument" Type="Edm.String" Mode="In"/>
+                </FunctionImport>
+                <FunctionImport Name="ReleaseCreditBlock" ReturnType="API_SLS_DOC_WITH_CREDIT_BLOCK.ReturnMessage" m:HttpMethod="POST">
+                    <Parameter Name="SalesDocument" Type="Edm.String" Mode="In"/>
+                    <Parameter Name="SDDocumentCategory" Type="Edm.String" Mode="In"/>
+                </FunctionImport>
+            </EntityContainer>
+            <Annotation Term="Core.SchemaVersion" String="1.0.0" xmlns="http://docs.oasis-open.org/odata/ns/edm"/>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.API_SLS_DOC_WITH_CREDIT_BLOCK_Entities" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ApplyMultiUnitBehaviorForSortingAndFiltering" Bool="true"/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.A_CreditBlockedSalesDocumentType/CentralCreditCheckStatus" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.SAPObjectNodeTypeReference" String="CentralCreditCheckStatus"/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.A_CreditBlockedSalesDocumentType/CentralCreditChkTechErrSts" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.SAPObjectNodeTypeReference" String="CentralCreditChkTechErrSts"/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.A_CreditBlockedSalesDocumentType/ControllingAreaCurrency" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.SAPObjectNodeTypeReference" String="Currency"/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.A_CreditBlockedSalesDocumentType/FinDocCreditCheckStatus" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.SAPObjectNodeTypeReference" String="FinDocCreditCheckStatus"/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.A_CreditBlockedSalesDocumentType/OverallSDProcessStatus" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.SAPObjectNodeTypeReference" String="OverallSDProcessStatus"/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.A_CreditBlockedSalesDocumentType/SDDocumentCategory" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.SAPObjectNodeTypeReference" String="SDDocumentCategory"/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.A_CreditBlockedSalesDocumentType/TotalCreditCheckStatus" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.SAPObjectNodeTypeReference" String="TotalCreditCheckStatus"/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.A_CreditBlockedSalesDocumentType/TransactionCurrency" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.SAPObjectNodeTypeReference" String="Currency"/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.API_SLS_DOC_WITH_CREDIT_BLOCK_Entities/A_CreditBlockedSalesDocument" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Capabilities.ReadRestrictions">
+                    <Record>
+                        <PropertyValue Property="Description" String="Reads all credit blocked sales documents."/>
+                        <PropertyValue Property="LongDescription" String="Reads data of all credit blocked sales documents in the system."/>
+                        <PropertyValue Property="ReadByKeyRestrictions">
+                            <Record>
+                                <PropertyValue Property="Description" String="Reads a specific credit blocked sales document."/>
+                                <PropertyValue Property="LongDescription" String="Reads the data of a specific credit blocked sales document, which the consumer specifies by passing the sales document number."/>
+                            </Record>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.API_SLS_DOC_WITH_CREDIT_BLOCK_Entities/A_SalesDocumentRjcnReason" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Capabilities.ReadRestrictions">
+                    <Record>
+                        <PropertyValue Property="Description" String="Reads all rejection reasons."/>
+                        <PropertyValue Property="LongDescription" String="Reads data of all rejection reasons in the system."/>
+                        <PropertyValue Property="ReadByKeyRestrictions">
+                            <Record>
+                                <PropertyValue Property="Description" String="Reads a specific rejection reason."/>
+                                <PropertyValue Property="LongDescription" String="Reads data of a specific rejection reason, which the consumer specifies by passing the rejection reason ID."/>
+                            </Record>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.API_SLS_DOC_WITH_CREDIT_BLOCK_Entities/CheckCreditBlock" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Core.Description" String="Checks the credit status of a specific sales document."/>
+                <Annotation Term="Core.LongDescription" String="Checks credit status of a sales document. Consumers must pass the sales document number and SD document category."/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.API_SLS_DOC_WITH_CREDIT_BLOCK_Entities/RejectCreditBlock" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Core.Description" String="Rejects a specific credit blocked sales document."/>
+                <Annotation Term="Core.LongDescription" String="Rejects the release request of a sales document with a reject reason. Consumers must pass the sales document number, SD document category, and rejection reason."/>
+            </Annotations>
+            <Annotations Target="API_SLS_DOC_WITH_CREDIT_BLOCK.API_SLS_DOC_WITH_CREDIT_BLOCK_Entities/ReleaseCreditBlock" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Core.Description" String="Releases a specific sales document from the credit block."/>
+                <Annotation Term="Core.LongDescription" String="Releases a sales document by removing the credit block on it. Consumers must pass the sales document number and SD document category."/>
+            </Annotations>
+            <atom:link rel="self" href="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/sap/API_SLS_DOC_WITH_CREDIT_BLOCK/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/sap/API_SLS_DOC_WITH_CREDIT_BLOCK/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>
