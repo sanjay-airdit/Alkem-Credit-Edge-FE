@@ -5,7 +5,6 @@
     <Dialog
         id="idApprovalLogDialog"
         title="Approval Log"
-        contentWidth="80%"
         verticalScrolling="true"
     >
         <content>
@@ -31,6 +30,9 @@
                         <Text text="Status" />
                     </Column>
                     <Column>
+                        <Text text="Comments" />
+                    </Column>
+                    <Column>
                         <Text text="Pending Users" />
                     </Column>
                 </columns>
@@ -51,6 +53,7 @@
                                 state="{path: 'logModel>Status', formatter: '.formatter.statusState'}"
                                 inverted="true"
                             />
+                            <Text text="{logModel>UserComment}"></Text>
                             <Text text="{logModel>PendingUsers}" />
                         </cells>
                     </ColumnListItem>

@@ -727,11 +727,7 @@ sap.ui.define([
                     oDialog.setModel(this._oLogModel, "logModel");
                 }
 
-                const aSorted = [...aResults].sort((a, b) =>
-                    new Date(a.ActionWhen) - new Date(b.ActionWhen)
-                );
-
-                this._oLogModel.setProperty("/logs", aSorted);
+                this._oLogModel.setProperty("/logs", aResults);
                 oDialog.setTitle(sOrderNumber ? `Approval Log (${sOrderNumber})` : "Approval Log");
                 oDialog.open();
             };
