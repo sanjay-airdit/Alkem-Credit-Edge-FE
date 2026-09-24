@@ -400,11 +400,8 @@ sap.ui.define([
                     const aResults = (oData && oData.results) || [];
                     const oKpi = aResults[0] || {};
 
-                    oKpiModel.setProperty("/TotalOrders", oKpi.TotalOrders || 0);
-                    oKpiModel.setProperty("/InHold", oKpi.InHold || 0);
-                    oKpiModel.setProperty("/ApprovedOrders", oKpi.ApprovedOrders || 0);
-                    oKpiModel.setProperty("/HighRiskOrders", oKpi.HighRiskOrders || 0);
-                    oKpiModel.setProperty("/AvgDelayScore", oKpi.AvgDelayScore || 0);
+                    const oDefaults = oKpiModel.getData();
+                    oKpiModel.setData({ ...oDefaults, ...oKpi });
                 },
                 error: (oError) => {
                     sap.m.MessageToast.show("Failed to load KPI data.");
