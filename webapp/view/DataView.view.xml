@@ -29,7 +29,7 @@
                     />
                 </HBox>
                 <Text
-                    text="{kpiModel>/totalOrders}"
+                    text="{kpiModel>/TotalOrders}"
                     class="kpiValue kpiValue--blue"
                 />
             </VBox>
@@ -50,7 +50,7 @@
                     />
                 </HBox>
                 <Text
-                    text="{kpiModel>/inHold}"
+                    text="{kpiModel>/InHold}"
                     class="kpiValue kpiValue--orange"
                 />
             </VBox>
@@ -71,7 +71,7 @@
                     />
                 </HBox>
                 <Text
-                    text="{kpiModel>/approved}"
+                    text="{kpiModel>/ApprovedOrders}"
                     class="kpiValue kpiValue--green"
                 />
             </VBox>
@@ -92,7 +92,7 @@
                     />
                 </HBox>
                 <Text
-                    text="{kpiModel>/highRiskOrders}"
+                    text="{kpiModel>/HighRiskOrders}"
                     class="kpiValue kpiValue--red"
                 />
             </VBox>
@@ -113,7 +113,7 @@
                     />
                 </HBox>
                 <Text
-                    text="{kpiModel>/avgDelayScore}"
+                    text="{kpiModel>/AvgDelayScore}"
                     class="kpiValue kpiValue--purple"
                 />
             </VBox>

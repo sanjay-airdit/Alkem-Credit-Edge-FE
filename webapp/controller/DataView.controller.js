@@ -28,11 +28,11 @@ sap.ui.define([
 
         onInit: function () {
             const oKpiModel = new JSONModel({
-                totalOrders: 0,
-                inHold: 0,
-                approved: 0,
-                highRiskOrders: 0,
-                avgDelayScore: 0,
+                TotalOrders: 0,
+                InHold: 0,
+                ApprovedOrders: 0,
+                HighRiskOrders: 0,
+                AvgDelayScore: 0,
                 avgSopScore: 0
             });
             this.getView().setModel(oKpiModel, "kpiModel");
@@ -86,10 +86,13 @@ sap.ui.define([
 
             if (oModel) {
                 this._loadGridPage(1);
+                this._loadKpiData();
             } else {
+                const oView = this.getView();
                 oView.attachEventOnce("modelContextChange", () => {
                     if (this.getView().getModel() && !this._bGridLoaded) {
                         this._loadGridPage(1);
+                        this._loadKpiData();
                     }
                 });
             }
@@ -252,6 +255,7 @@ sap.ui.define([
                 oSmartTable.rebindTable(true);
             }
             this._loadGridPage(1);
+            this._loadKpiData();
         },
 
         onFilterClear: function () {
@@ -378,6 +382,36 @@ sap.ui.define([
             });
         },
 
+        _loadKpiData: function () {
+            const oView = this.getView();
+            const oModel = oView.getModel("ZUI_CE_APPR_MATRIX_SB")
+                || this.getOwnerComponent().getModel("ZUI_CE_APPR_MATRIX_SB");
+            const oKpiModel = oView.getModel("kpiModel");
+
+            if (!oModel || !oKpiModel) {
+                return;
+            }
+
+            const oDates = this._getFormattedFilterDates();
+            const sPath = `/ZC_CE_ORDER_KPI(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`;
+
+            oModel.read(sPath, {
+                success: (oData) => {
+                    const aResults = (oData && oData.results) || [];
+                    const oKpi = aResults[0] || {};
+
+                    oKpiModel.setProperty("/TotalOrders", oKpi.TotalOrders || 0);
+                    oKpiModel.setProperty("/InHold", oKpi.InHold || 0);
+                    oKpiModel.setProperty("/ApprovedOrders", oKpi.ApprovedOrders || 0);
+                    oKpiModel.setProperty("/HighRiskOrders", oKpi.HighRiskOrders || 0);
+                    oKpiModel.setProperty("/AvgDelayScore", oKpi.AvgDelayScore || 0);
+                },
+                error: (oError) => {
+                    sap.m.MessageToast.show("Failed to load KPI data.");
+                }
+            });
+        },
+
         _buildPageNumbers: function (iCurrent, iTotal) {
             const iBoundaryStart = 1;
             const iBoundaryEnd = 1;
@@ -477,6 +511,7 @@ sap.ui.define([
             const oOrdersModel = this.getView().getModel("ordersModel");
             const iCurrentPage = oOrdersModel ? oOrdersModel.getProperty("/currentPage") : 1;
             this._loadGridPage(iCurrentPage || 1);
+            this._loadKpiData();
         },
 
 
@@ -706,7 +741,7 @@ sap.ui.define([
                 method: "POST",
                 urlParameters: {
                     Vbeln: sOrderNumber,
-                    UserComment:""
+                    UserComment: ""
                 },
                 success: (oData, oResponse) => {
                     this.getView().setBusy(false);

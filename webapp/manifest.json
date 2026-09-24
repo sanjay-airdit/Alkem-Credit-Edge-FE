@@ -130,12 +130,16 @@
       "ZUI_CE_APPR_MATRIX_SB": {
         "dataSource": "ZUI_CE_APPR_MATRIX_SB",
         "preload": true,
-        "settings": {}
+        "settings": {
+          "useBatch": false
+        }
       },
       "API_SLS_DOC_WITH_CREDIT_BLOCK": {
         "dataSource": "API_SLS_DOC_WITH_CREDIT_BLOCK",
         "preload": true,
-        "settings": {}
+        "settings": {
+          "useBatch": false
+        }
       }
     },
     "resources": {
