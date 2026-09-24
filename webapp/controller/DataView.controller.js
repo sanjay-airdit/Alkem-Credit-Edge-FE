@@ -9,8 +9,9 @@ sap.ui.define([
     "sap/m/Button",
     "sap/m/FormattedText",
     "creditedge/controller/formatter",
-    "sap/m/MessageBox"
-], function (Controller, JSONModel, Filter, FilterOperator, DateFormat, Fragment, Dialog, Button, FormattedText, formatter, MessageBox) {
+    "sap/m/MessageBox",
+    "sap/ui/core/BusyIndicator"
+], function (Controller, JSONModel, Filter, FilterOperator, DateFormat, Fragment, Dialog, Button, FormattedText, formatter, MessageBox, BusyIndicator) {
     "use strict";
     return Controller.extend("creditedge.controller.DataView", {
 
@@ -632,7 +633,7 @@ sap.ui.define([
         _executeApprove: function (sOrderNumber, sDocCategory, sUserComment) {
             const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
 
-            this.getView().setBusy(true);
+            BusyIndicator.show(0);
 
             oModel.callFunction("/approve", {
                 method: "POST",
@@ -641,7 +642,7 @@ sap.ui.define([
                     UserComment: sUserComment
                 },
                 success: (oData, oResponse) => {
-                    this.getView().setBusy(false);
+                    BusyIndicator.hide();
 
                     const oSapMessage = JSON.parse(oResponse?.headers['sap-message']);
                     const sSeverity = oSapMessage?.severity;
@@ -660,7 +661,7 @@ sap.ui.define([
                     MessageBox.success(`Order Number - ${sOrderNumber} Approved`);
                 },
                 error: (oError) => {
-                    this.getView().setBusy(false);
+                    BusyIndicator.hide();
                     MessageBox.error("Failed to approve order " + sOrderNumber);
                 }
             });
@@ -669,7 +670,7 @@ sap.ui.define([
         _executeReject: function (sOrderNumber, sUserComment) {
             const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
 
-            this.getView().setBusy(true);
+            BusyIndicator.show(0);
 
             oModel.callFunction("/reject", {
                 method: "POST",
@@ -678,7 +679,7 @@ sap.ui.define([
                     UserComment: sUserComment
                 },
                 success: (oData, oResponse) => {
-                    this.getView().setBusy(false);
+                    BusyIndicator.hide();
                     const severity = JSON.parse(oResponse?.headers['sap-message'])?.severity;
                     if (severity.includes('error')) {
                         return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`)
@@ -687,7 +688,7 @@ sap.ui.define([
                     this._refreshAllViews();
                 },
                 error: (oError) => {
-                    this.getView().setBusy(false);
+                    BusyIndicator.hide();
                     MessageBox.error(`Failed to Reject Order Number - ${sOrderNumber}`);
                 }
             });
@@ -701,7 +702,7 @@ sap.ui.define([
                 return;
             }
 
-            this.getView().setBusy(true);
+            BusyIndicator.show(0);
 
             oCreditModel.callFunction("/ReleaseCreditBlock", {
                 method: "POST",
@@ -710,12 +711,12 @@ sap.ui.define([
                     SDDocumentCategory: sDocCategory
                 },
                 success: (oData, oResponse) => {
-                    this.getView().setBusy(false);
+                    BusyIndicator.hide();
                     MessageBox.success(`Credit block released for Order ${sOrderNumber}`);
                     this._refreshAllViews();
                 },
                 error: (oError) => {
-                    this.getView().setBusy(false);
+                    BusyIndicator.hide();
                     MessageBox.error(`Failed to release credit block for Order ${sOrderNumber}`);
                 }
             });
@@ -732,7 +733,7 @@ sap.ui.define([
 
             const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
 
-            this.getView().setBusy(true);
+            BusyIndicator.show(0);
 
             oModel.callFunction("/get_log", {
                 method: "POST",
@@ -741,12 +742,12 @@ sap.ui.define([
                     UserComment: ""
                 },
                 success: (oData, oResponse) => {
-                    this.getView().setBusy(false);
+                    BusyIndicator.hide();
                     const aResults = (oData && oData.results) || [];
                     this._openApprovalLogDialog(sOrderNumber, aResults);
                 },
                 error: (oError) => {
-                    this.getView().setBusy(false);
+                    BusyIndicator.hide();
                     MessageBox.error(`Failed to Fetch Logs Order Number - ${sOrderNumber}`);
                 }
             });
