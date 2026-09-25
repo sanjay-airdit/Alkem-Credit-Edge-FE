@@ -394,7 +394,8 @@ sap.ui.define([
             }
 
             const oDates = this._getFormattedFilterDates();
-            const sPath = `/ZC_CE_ORDER_KPI(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`;
+            const sPath = `/ZC_CE_ORDER_KPI%28p_from_date%3Ddatetime%27${oDates.from}T00%3A00%3A00%27%2Cp_date%3Ddatetime%27${oDates.to}T00%3A00%3A00%27%29/Set`;
+            // const sPath = `/ZC_CE_ORDER_KPI(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`;
 
             oModel.read(sPath, {
                 success: (oData) => {
