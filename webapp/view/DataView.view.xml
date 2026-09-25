@@ -686,6 +686,11 @@
                             showCloseButton="false"
                             class="sapUiMediumMargin"
                         />
+
+                        <VBox
+                            visible="{uiState>/gridActive}"
+                            height="4rem"
+                        />
                     </ScrollContainer>
                 </VBox>
             </content>

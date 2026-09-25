@@ -44,7 +44,7 @@ sap.ui.define([], function () {
                     return "Error";
                 case "review":
                 case "medium":
-                case "caution":
+                case "Hold":
                     return "Warning";
                 case "approved":
                 case "approve":
