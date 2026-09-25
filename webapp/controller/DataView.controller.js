@@ -728,22 +728,8 @@ sap.ui.define([
                 },
                 success: (oData, oResponse) => {
                     BusyIndicator.hide();
-
-                    const oSapMessage = JSON.parse(oResponse?.headers['sap-message']);
-                    const sSeverity = oSapMessage?.severity;
-                    const sMessageText = oSapMessage?.message || "";
-
-                    if (sSeverity && sSeverity.includes('error')) {
-                        return MessageBox.error(sMessageText);
-                    }
-
-                    if (sMessageText.includes("Final approval completed") && sMessageText.includes("ready for release")) {
-                        this._releaseCreditBlock(sOrderNumber, sDocCategory);
-                        return;
-                    }
-
                     this._refreshAllViews();
-                    MessageBox.success(`Order Number - ${sOrderNumber} ReInitiated`);
+                    MessageBox.success(`Order Number - ${sOrderNumber} Re Initiated`);
                 },
                 error: (oError) => {
                     BusyIndicator.hide();
