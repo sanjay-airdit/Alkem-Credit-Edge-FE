@@ -467,11 +467,19 @@
                                                 class="sapUiTinyMarginEnd"
                                                 type="Accept"
                                                 press="onApprove"
+                                                visible="{= ${status} !== 'REJECTED'}"
                                             />
                                             <Button
                                                 icon="sap-icon://decline"
                                                 type="Reject"
                                                 press="onReject"
+                                                visible="{= ${status} !== 'REJECTED'}"
+                                            />
+                                            <Button
+                                                icon="sap-icon://refresh"
+                                                type="Emphasized"
+                                                press="onReInitiate"
+                                                visible="{= ${status} === 'REJECTED'}"
                                             />
                                         </HBox>
                                     </cells>
@@ -664,11 +672,19 @@
                                                         type="Accept"
                                                         class="sapUiTinyMarginEnd"
                                                         press="onApprove"
+                                                        visible="{= ${ordersModel>status} !== 'REJECTED'}"
                                                     />
                                                     <Button
                                                         icon="sap-icon://decline"
                                                         type="Reject"
                                                         press="onReject"
+                                                        visible="{= ${ordersModel>status} !== 'REJECTED'}"
+                                                    />
+                                                    <Button
+                                                        icon="sap-icon://refresh"
+                                                        type="Emphasized"
+                                                        press="onReInitiate"
+                                                        visible="{= ${ordersModel>status} === 'REJECTED'}"
                                                     />
                                                 </HBox>
                                             </HBox>

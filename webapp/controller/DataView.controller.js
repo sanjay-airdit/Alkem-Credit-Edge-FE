@@ -550,6 +550,24 @@ sap.ui.define([
             });
         },
 
+        onReInitiate: function (oEvent) {
+            const oOrder = this._getOrderFromEvent(oEvent);
+            const sOrderNumber = oOrder?.OrderNumber;
+
+            if (!sOrderNumber) {
+                MessageBox.error("No order selected.");
+                return;
+            }
+
+            this._openCommentDialog({
+                action: "reinitiate",
+                orderNumber: sOrderNumber,
+                docCategory: oOrder.SDDocumentCategory || "C",
+                title: `ReInitiate Order ${sOrderNumber}`,
+                confirmButtonText: "ReInitiate"
+            });
+        },
+
         _openCommentDialog: function (oPending) {
             this._oPendingAction = oPending;
 
@@ -626,6 +644,8 @@ sap.ui.define([
                 this._executeApprove(oPending.orderNumber, oPending.docCategory, sComment);
             } else if (oPending.action === "reject") {
                 this._executeReject(oPending.orderNumber, sComment);
+            } else if (oPending.action === "reinitiate") {
+                this._executeReInitiate(oPending.orderNumber, oPending.docCategory, sComment);
             }
 
             this._oPendingAction = null;
@@ -691,6 +711,43 @@ sap.ui.define([
                 error: (oError) => {
                     BusyIndicator.hide();
                     MessageBox.error(`Failed to Reject Order Number - ${sOrderNumber}`);
+                }
+            });
+        },
+
+        _executeReInitiate: function (sOrderNumber, sDocCategory, sUserComment) {
+            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
+
+            BusyIndicator.show(0);
+
+            oModel.callFunction("/reinitiate", {
+                method: "POST",
+                urlParameters: {
+                    Vbeln: sOrderNumber,
+                    UserComment: sUserComment
+                },
+                success: (oData, oResponse) => {
+                    BusyIndicator.hide();
+
+                    const oSapMessage = JSON.parse(oResponse?.headers['sap-message']);
+                    const sSeverity = oSapMessage?.severity;
+                    const sMessageText = oSapMessage?.message || "";
+
+                    if (sSeverity && sSeverity.includes('error')) {
+                        return MessageBox.error(sMessageText);
+                    }
+
+                    if (sMessageText.includes("Final approval completed") && sMessageText.includes("ready for release")) {
+                        this._releaseCreditBlock(sOrderNumber, sDocCategory);
+                        return;
+                    }
+
+                    this._refreshAllViews();
+                    MessageBox.success(`Order Number - ${sOrderNumber} ReInitiated`);
+                },
+                error: (oError) => {
+                    BusyIndicator.hide();
+                    MessageBox.error("Failed to reinitiate order " + sOrderNumber);
                 }
             });
         },
