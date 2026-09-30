@@ -141,7 +141,7 @@
         </HBox>
 
         <!-- =========================================================== -->
-        <!-- FILTER PANEL - now a TOP-LEVEL sibling so it stays visible   -->
+        <!-- FILTER PANEL - TOP-LEVEL sibling so it stays visible         -->
         <!-- regardless of whether List or Grid view is active           -->
         <!-- =========================================================== -->
         <Panel
@@ -222,17 +222,168 @@
                     />
                 </VBox>
 
+                <!-- ORDER NUMBER  (I_SalesDocument) -->
                 <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
                     <Label
                         text="Order Number"
                         labelFor="idOrderNumberFilter"
                     />
-                    <Input
+                    <MultiInput
                         id="idOrderNumberFilter"
-                        width="12rem"
+                        width="14rem"
                         placeholder="Order Number"
-                        value="{filterModel>/orderNumber}"
+                        showValueHelp="true"
+                        showSuggestion="true"
+                        filterSuggests="false"
+                        startSuggestion="1"
+                        valueHelpRequest="onOrderNumberValueHelp"
+                        suggest="onOrderNumberSuggest"
+                        suggestionRows="{
+                            path: '/I_SalesDocument',
+                            length: 10
+                        }"
+                    >
+                        <suggestionColumns>
+                            <Column>
+                                <Label text="Sales Document" />
+                            </Column>
+                            <Column>
+                                <Label text="Doc. Type" />
+                            </Column>
+                            <Column>
+                                <Label text="Sold-to Party" />
+                            </Column>
+                        </suggestionColumns>
+                        <suggestionRows>
+                            <ColumnListItem>
+                                <cells>
+                                    <Label text="{SalesDocument}" />
+                                    <Label text="{SalesDocumentType}" />
+                                    <Label text="{SoldToParty}" />
+                                </cells>
+                            </ColumnListItem>
+                        </suggestionRows>
+                    </MultiInput>
+                </VBox>
+
+                <!-- CUSTOMER  (I_Customer) -->
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="Customer"
+                        labelFor="idCustomerFilter"
                     />
+                    <MultiInput
+                        id="idCustomerFilter"
+                        width="14rem"
+                        placeholder="Customer"
+                        showValueHelp="true"
+                        showSuggestion="true"
+                        filterSuggests="false"
+                        startSuggestion="1"
+                        valueHelpRequest="onCustomerValueHelp"
+                        suggest="onCustomerSuggest"
+                        suggestionRows="{
+                            path: '/I_Customer',
+                            length: 10
+                        }"
+                    >
+                        <suggestionColumns>
+                            <Column>
+                                <Label text="Customer" />
+                            </Column>
+                            <Column>
+                                <Label text="Customer Name" />
+                            </Column>
+                        </suggestionColumns>
+                        <suggestionRows>
+                            <ColumnListItem>
+                                <cells>
+                                    <Label text="{Customer}" />
+                                    <Label text="{CustomerName}" />
+                                </cells>
+                            </ColumnListItem>
+                        </suggestionRows>
+                    </MultiInput>
+                </VBox>
+
+                <!-- DIVISION  (I_Division) -->
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="Division"
+                        labelFor="idDivisionFilter"
+                    />
+                    <MultiInput
+                        id="idDivisionFilter"
+                        width="14rem"
+                        placeholder="Division"
+                        showValueHelp="true"
+                        showSuggestion="true"
+                        filterSuggests="false"
+                        startSuggestion="0"
+                        valueHelpRequest="onDivisionValueHelp"
+                        suggest="onDivisionSuggest"
+                        suggestionRows="{
+                            path: '/I_Division',
+                            length: 10
+                        }"
+                    >
+                        <suggestionColumns>
+                            <Column>
+                                <Label text="Division" />
+                            </Column>
+                            <Column>
+                                <Label text="Description" />
+                            </Column>
+                        </suggestionColumns>
+                        <suggestionRows>
+                            <ColumnListItem>
+                                <cells>
+                                    <Label text="{Division}" />
+                                    <Label text="{Division_Text}" />
+                                </cells>
+                            </ColumnListItem>
+                        </suggestionRows>
+                    </MultiInput>
+                </VBox>
+
+                <!-- BUSINESS AREA  (I_BusinessArea) -->
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="Business Area"
+                        labelFor="idBusinessAreaFilter"
+                    />
+                    <MultiInput
+                        id="idBusinessAreaFilter"
+                        width="14rem"
+                        placeholder="Business Area"
+                        showValueHelp="true"
+                        showSuggestion="true"
+                        filterSuggests="false"
+                        startSuggestion="0"
+                        valueHelpRequest="onBusinessAreaValueHelp"
+                        suggest="onBusinessAreaSuggest"
+                        suggestionRows="{
+                            path: '/I_BusinessArea',
+                            length: 10
+                        }"
+                    >
+                        <suggestionColumns>
+                            <Column>
+                                <Label text="Business Area" />
+                            </Column>
+                            <Column>
+                                <Label text="Description" />
+                            </Column>
+                        </suggestionColumns>
+                        <suggestionRows>
+                            <ColumnListItem>
+                                <cells>
+                                    <Label text="{BusinessArea}" />
+                                    <Label text="{BusinessArea_Text}" />
+                                </cells>
+                            </ColumnListItem>
+                        </suggestionRows>
+                    </MultiInput>
                 </VBox>
 
                 <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
@@ -243,59 +394,16 @@
                     <Input
                         id="idRecommendationFilter"
                         width="12rem"
-                        placeholder="e.g. Approve"
+                        placeholder="Recommendation"
                         value="{filterModel>/recommendation}"
-                    />
-                </VBox>
-
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
-                    <Label
-                        text="Customer"
-                        labelFor="idCustomerFilter"
-                    />
-                    <Input
-                        id="idCustomerFilter"
-                        width="12rem"
-                        placeholder="Customer"
-                        value="{filterModel>/customer}"
-                    />
-                </VBox>
-
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
-                    <Label
-                        text="Division"
-                        labelFor="idDivisionFilter"
-                    />
-                    <Input
-                        id="idDivisionFilter"
-                        width="12rem"
-                        placeholder="Division"
-                        value="{filterModel>/division}"
-                    />
-                </VBox>
-
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
-                    <Label
-                        text="Business Area"
-                        labelFor="idBusinessAreaFilter"
-                    />
-                    <Input
-                        id="idBusinessAreaFilter"
-                        width="12rem"
-                        placeholder="Business Area"
-                        value="{filterModel>/businessArea}"
                     />
                 </VBox>
             </FlexBox>
         </Panel>
 
         <!-- =========================================================== -->
-        <!-- ICON TAB BAR - now a TOP-LEVEL sibling so it stays visible   -->
+        <!-- ICON TAB BAR - TOP-LEVEL sibling so it stays visible         -->
         <!-- regardless of whether List or Grid view is active.          -->
-        <!-- Its <content> holds BOTH the list and grid view containers, -->
-        <!-- and their individual visible="" bindings (managed by        -->
-        <!-- onViewSwitchChange in the controller) decide which one      -->
-        <!-- shows.                                                      -->
         <!-- =========================================================== -->
         <IconTabBar
             id="idStatusTabBar"

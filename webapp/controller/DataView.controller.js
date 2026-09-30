@@ -3,15 +3,29 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "sap/ui/model/type/String",
     "sap/ui/core/format/DateFormat",
     "sap/ui/core/Fragment",
     "sap/m/Dialog",
     "sap/m/Button",
     "sap/m/FormattedText",
-    "creditedge/controller/formatter",
     "sap/m/MessageBox",
+    "sap/m/Token",
+    "sap/m/Input",
+    "sap/m/Label",
+    "sap/m/Text",
+    "sap/m/SearchField",
+    "sap/m/ColumnListItem",
+    "sap/m/Column",
+    "sap/ui/table/Column",
+    "sap/ui/comp/valuehelpdialog/ValueHelpDialog",
+    "sap/ui/comp/filterbar/FilterBar",
+    "sap/ui/comp/filterbar/FilterGroupItem",
+    "creditedge/controller/formatter",
     "sap/ui/core/BusyIndicator"
-], function (Controller, JSONModel, Filter, FilterOperator, DateFormat, Fragment, Dialog, Button, FormattedText, formatter, MessageBox, BusyIndicator) {
+], function (Controller, JSONModel, Filter, FilterOperator, TypeString, DateFormat, Fragment, Dialog, Button,
+    FormattedText, MessageBox, Token, Input, Label, Text, SearchField, ColumnListItem, MColumn, UIColumn,
+    ValueHelpDialog, FilterBar, FilterGroupItem, formatter, BusyIndicator) {
     "use strict";
     return Controller.extend("creditedge.controller.DataView", {
 
@@ -40,17 +54,91 @@ sap.ui.define([
             this._sSearchQuery = "";
 
             // --- Filter bar model (shared by List + Grid views) ---
+            // NOTE: Order Number / Customer / Division / Business Area are MultiInputs (tokens),
+            // so they are no longer stored in this model.
             const oFilterModel = new JSONModel({
                 fromDate: new Date(this._oDefaultFilterDates.fromDate),
                 toDate: new Date(this._oDefaultFilterDates.toDate),
                 recommendation: "",
-                customer: "",
-                division: "",
-                businessArea: "",
-                orderNumber: "",
-                statusTab: this._sDefaultStatusTab   // <-- NEW: drives the IconTabBar
+                statusTab: this._sDefaultStatusTab
             });
             this.getView().setModel(oFilterModel, "filterModel");
+
+            // --- Value help configuration ---
+            // inputId    : id of the MultiInput in the view
+            // filterPath : property of ZC_CE_OrdersOnHoldType that is filtered
+            // entitySet  : value help entity set (default OData model)
+            // key/descriptionKey : fields of the value help entity
+            // columns    : columns of the dialog table + fields of the dialog filter bar
+            // searchFields : fields used for type-ahead suggestions and basic search
+            this._mVHConfig = {
+                orderNumber: {
+                    inputId: "idOrderNumberFilter",
+                    filterPath: "OrderNumber",
+                    title: "Order Number",
+                    entitySet: "/I_SalesDocument",
+                    key: "SalesDocument",
+                    descriptionKey: null,
+                    maxLength: 10,
+                    columns: [
+                        { field: "SalesDocument", label: "Order Number" },
+                        { field: "SalesDocumentType", label: "Doc. Type" },
+                        { field: "SoldToParty", label: "Sold-to Party" }
+                    ],
+                    searchFields: ["SalesDocument", "SoldToParty"]
+                },
+                customer: {
+                    inputId: "idCustomerFilter",
+                    filterPath: "Customer",
+                    title: "Customer",
+                    entitySet: "/I_Customer",
+                    key: "Customer",
+                    descriptionKey: "CustomerName",
+                    maxLength: 10,
+                    columns: [
+                        { field: "Customer", label: "Customer" },
+                        { field: "CustomerName", label: "Customer Name" }
+                    ],
+                    searchFields: ["Customer", "CustomerName"]
+                },
+                division: {
+                    inputId: "idDivisionFilter",
+                    filterPath: "Division",
+                    title: "Division",
+                    entitySet: "/I_Division",
+                    key: "Division",
+                    descriptionKey: "Division_Text",
+                    maxLength: 2,
+                    columns: [
+                        { field: "Division", label: "Division" },
+                        { field: "Division_Text", label: "Description" }
+                    ],
+                    searchFields: ["Division", "Division_Text"]
+                },
+                businessArea: {
+                    inputId: "idBusinessAreaFilter",
+                    filterPath: "BusinessArea",
+                    title: "Business Area",
+                    entitySet: "/I_BusinessArea",
+                    key: "BusinessArea",
+                    descriptionKey: "BusinessArea_Text",
+                    maxLength: 4,
+                    columns: [
+                        { field: "BusinessArea", label: "Business Area" },
+                        { field: "BusinessArea_Text", label: "Description" }
+                    ],
+                    searchFields: ["BusinessArea", "BusinessArea_Text"]
+                }
+            };
+
+            // Validators: turn a selected suggestion / typed text into a Token
+            Object.keys(this._mVHConfig).forEach((sName) => {
+                const cfg = this._mVHConfig[sName];
+                const oInput = this.byId(cfg.inputId);
+                if (oInput) {
+                    oInput.addValidator(this._createValidator(cfg));
+                }
+            });
 
             // --- Grid/card pagination setup ---
             this._iPageSize = 20;
@@ -73,14 +161,310 @@ sap.ui.define([
 
             this._preloadGridData();
 
-            const oSmartTable = this.byId("idSmartTable")
+            const oSmartTable = this.byId("idSmartTable");
             const customizeConfig = {
                 autoColumnWidth: {
-                    '*': { min: 2, max: 6, gap: 1, truncateLabel: false },
+                    '*': { min: 2, max: 6, gap: 1, truncateLabel: false }
                 }
             };
             oSmartTable.setCustomizeConfig(customizeConfig);
         },
+
+        /* =========================================================== */
+        /* VALUE HELP + SUGGESTIONS                                    */
+        /* =========================================================== */
+
+        _createValidator: function (cfg) {
+            return function (oArgs) {
+                // Selected from suggestion list
+                if (oArgs.suggestionObject) {
+                    const oObject = oArgs.suggestionObject.getBindingContext().getObject();
+                    const sKey = oObject[cfg.key];
+                    const sDesc = cfg.descriptionKey ? oObject[cfg.descriptionKey] : "";
+                    return new Token({
+                        key: sKey,
+                        text: sDesc ? sDesc + " (" + sKey + ")" : sKey
+                    });
+                }
+                // Free text + Enter
+                const sText = (oArgs.text || "").trim();
+                if (!sText) {
+                    return null;
+                }
+                return new Token({ key: sText, text: sText });
+            };
+        },
+
+        // ---- Value help request handlers (one per filter) ----
+        onOrderNumberValueHelp: function () { this._openValueHelp("orderNumber"); },
+        onCustomerValueHelp: function () { this._openValueHelp("customer"); },
+        onDivisionValueHelp: function () { this._openValueHelp("division"); },
+        onBusinessAreaValueHelp: function () { this._openValueHelp("businessArea"); },
+
+        // ---- Suggest handlers (one per filter) ----
+        onOrderNumberSuggest: function (oEvent) { this._onSuggest(oEvent, "orderNumber"); },
+        onCustomerSuggest: function (oEvent) { this._onSuggest(oEvent, "customer"); },
+        onDivisionSuggest: function (oEvent) { this._onSuggest(oEvent, "division"); },
+        onBusinessAreaSuggest: function (oEvent) { this._onSuggest(oEvent, "businessArea"); },
+
+        _onSuggest: function (oEvent, sName) {
+            const cfg = this._mVHConfig[sName];
+            const sValue = oEvent.getParameter("suggestValue");
+            const oBinding = oEvent.getSource().getBinding("suggestionRows");
+            if (!oBinding) {
+                return;
+            }
+
+            let aFilters = [];
+            if (sValue) {
+                aFilters = [new Filter({
+                    filters: cfg.searchFields.map((sField) => new Filter({
+                        path: sField,
+                        operator: FilterOperator.Contains,
+                        value1: sValue
+                    })),
+                    and: false
+                })];
+            }
+            oBinding.filter(aFilters);
+        },
+
+        _openValueHelp: function (sName) {
+            const cfg = this._mVHConfig[sName];
+            const oInput = this.byId(cfg.inputId);
+            const oModel = this.getView().getModel() || this.getOwnerComponent().getModel();
+            const oBasicSearch = new SearchField();
+            let oDialog;
+
+            // Filter bar inside the dialog
+            const oFilterBar = new FilterBar({
+                advancedMode: true,
+                isRunningInValueHelpDialog: true,
+                filterGroupItems: cfg.columns.map((c) => new FilterGroupItem({
+                    groupName: "__$INTERNAL$",
+                    name: c.field,
+                    label: c.label,
+                    visibleInFilterBar: true,
+                    control: new Input({ name: c.field })
+                })),
+                search: (oEvent) => this._onValueHelpSearch(oEvent, cfg, oDialog, oBasicSearch)
+            });
+
+            const mSettings = {
+                title: cfg.title,
+                supportRanges: true,
+                key: cfg.key,
+                filterBar: oFilterBar,
+                ok: (oEvent) => {
+                    oInput.setTokens(oEvent.getParameter("tokens"));
+                    oDialog.close();
+                },
+                cancel: () => oDialog.close(),
+                afterClose: () => oDialog.destroy()
+            };
+            if (cfg.descriptionKey) {
+                mSettings.descriptionKey = cfg.descriptionKey;
+            }
+            oDialog = new ValueHelpDialog(mSettings);
+            this.getView().addDependent(oDialog);
+
+            // "Define Conditions" tab
+            oDialog.setRangeKeyFields([{
+                label: cfg.title,
+                key: cfg.key,
+                type: "string",
+                typeInstance: new TypeString({}, { maxLength: cfg.maxLength })
+            }]);
+
+            // Basic search
+            oFilterBar.setFilterBarExpanded(false);
+            oFilterBar.setBasicSearch(oBasicSearch);
+            oBasicSearch.attachSearch(() => oFilterBar.search());
+
+            // Table
+            oDialog.getTableAsync().then((oTable) => {
+                oTable.setModel(oModel);
+
+                // Desktop / tablet: sap.ui.table.Table
+                if (oTable.bindRows) {
+                    oTable.bindAggregation("rows", {
+                        path: cfg.entitySet,
+                        events: {
+                            dataReceived: () => oDialog.update()
+                        }
+                    });
+                    cfg.columns.forEach((c) => {
+                        const oColumn = new UIColumn({
+                            label: new Label({ text: c.label }),
+                            template: new Text({ wrapping: false, text: "{" + c.field + "}" })
+                        });
+                        oColumn.data({ fieldName: c.field });
+                        oTable.addColumn(oColumn);
+                    });
+                }
+
+                // Mobile: sap.m.Table
+                if (oTable.bindItems) {
+                    oTable.bindAggregation("items", {
+                        path: cfg.entitySet,
+                        template: new ColumnListItem({
+                            cells: cfg.columns.map((c) => new Label({ text: "{" + c.field + "}" }))
+                        }),
+                        events: {
+                            dataReceived: () => oDialog.update()
+                        }
+                    });
+                    cfg.columns.forEach((c) => {
+                        oTable.addColumn(new MColumn({ header: new Label({ text: c.label }) }));
+                    });
+                }
+
+                oDialog.update();
+            });
+
+            oDialog.setTokens(oInput.getTokens());
+            oDialog.open();
+        },
+
+        _onValueHelpSearch: function (oEvent, cfg, oDialog, oBasicSearch) {
+            const sQuery = oBasicSearch.getValue();
+            const aSelectionSet = oEvent.getParameter("selectionSet") || [];
+
+            const aFilters = aSelectionSet.reduce((aResult, oControl) => {
+                if (oControl.getValue && oControl.getValue()) {
+                    aResult.push(new Filter({
+                        path: oControl.getName(),
+                        operator: FilterOperator.Contains,
+                        value1: oControl.getValue()
+                    }));
+                }
+                return aResult;
+            }, []);
+
+            if (sQuery) {
+                aFilters.push(new Filter({
+                    filters: cfg.columns.map((c) => new Filter({
+                        path: c.field,
+                        operator: FilterOperator.Contains,
+                        value1: sQuery
+                    })),
+                    and: false
+                }));
+            }
+
+            const oFilter = aFilters.length
+                ? new Filter({ filters: aFilters, and: true })
+                : null;
+
+            oDialog.getTableAsync().then((oTable) => {
+                const oBinding = oTable.getBinding("rows") || oTable.getBinding("items");
+                if (oBinding) {
+                    oBinding.filter(oFilter);
+                }
+                // must be called after the binding update
+                oDialog.update();
+            });
+        },
+
+        // Converts the tokens of one MultiInput into one OData filter
+        _buildTokenFilter: function (cfg) {
+            const oInput = this.byId(cfg.inputId);
+            if (!oInput) {
+                return null;
+            }
+
+            const aInclude = [];
+            const aExclude = [];
+
+            oInput.getTokens().forEach((oToken) => {
+                const oFilter = this._tokenToFilter(oToken, cfg.filterPath);
+                if (!oFilter) {
+                    return;
+                }
+                const oRange = oToken.data("range");
+                if (oRange && oRange.exclude) {
+                    aExclude.push(oFilter);
+                } else {
+                    aInclude.push(oFilter);
+                }
+            });
+
+            const aAll = [];
+            if (aInclude.length) {
+                aAll.push(aInclude.length === 1 ? aInclude[0] : new Filter({ filters: aInclude, and: false }));
+            }
+            if (aExclude.length) {
+                aAll.push(aExclude.length === 1 ? aExclude[0] : new Filter({ filters: aExclude, and: true }));
+            }
+
+            if (!aAll.length) {
+                return null;
+            }
+            return aAll.length === 1 ? aAll[0] : new Filter({ filters: aAll, and: true });
+        },
+
+        _tokenToFilter: function (oToken, sPath) {
+            const oRange = oToken.data("range");
+
+            // Simple token (selected value / typed value)
+            if (!oRange) {
+                const sKey = oToken.getKey();
+                return sKey ? new Filter(sPath, FilterOperator.EQ, sKey) : null;
+            }
+
+            // Range / condition token from "Define Conditions" tab
+            const bExclude = !!oRange.exclude;
+            const sOp = oRange.operation;
+            const v1 = oRange.value1;
+            const v2 = oRange.value2;
+
+            const mInclude = {
+                EQ: FilterOperator.EQ,
+                Contains: FilterOperator.Contains,
+                StartsWith: FilterOperator.StartsWith,
+                EndsWith: FilterOperator.EndsWith,
+                GT: FilterOperator.GT,
+                GE: FilterOperator.GE,
+                LT: FilterOperator.LT,
+                LE: FilterOperator.LE
+            };
+            const mExclude = {
+                EQ: FilterOperator.NE,
+                Contains: FilterOperator.NotContains,
+                StartsWith: FilterOperator.NotStartsWith,
+                EndsWith: FilterOperator.NotEndsWith,
+                GT: FilterOperator.LE,
+                GE: FilterOperator.LT,
+                LT: FilterOperator.GE,
+                LE: FilterOperator.GT
+            };
+
+            if (sOp === "BT") {
+                return new Filter(sPath, bExclude ? FilterOperator.NB : FilterOperator.BT, v1, v2);
+            }
+            if (sOp === "Empty") {
+                return new Filter(sPath, bExclude ? FilterOperator.NE : FilterOperator.EQ, "");
+            }
+
+            const sFilterOp = (bExclude ? mExclude : mInclude)[sOp];
+            return sFilterOp ? new Filter(sPath, sFilterOp, v1) : null;
+        },
+
+        // Text typed into a MultiInput but not confirmed with Enter -> becomes a token
+        _commitPendingText: function () {
+            Object.keys(this._mVHConfig).forEach((sName) => {
+                const oInput = this.byId(this._mVHConfig[sName].inputId);
+                const sText = ((oInput && oInput.getValue()) || "").trim();
+                if (sText) {
+                    oInput.addToken(new Token({ key: sText, text: sText }));
+                    oInput.setValue("");
+                }
+            });
+        },
+
+        /* =========================================================== */
+        /* DATA LOADING                                                */
+        /* =========================================================== */
 
         _preloadGridData: function () {
             const oModel = this.getOwnerComponent().getModel();
@@ -119,7 +503,7 @@ sap.ui.define([
             }
 
             const _aSearchableFields = [
-                "OrderNumber",
+                "OrderNumber"
             ];
 
             const aFieldFilters = _aSearchableFields.map((sField) => {
@@ -145,9 +529,7 @@ sap.ui.define([
             const oData = oFilterModel.getData();
             const aFilters = [];
 
-            // --- NEW: Status tab filter (On Hold / Rejected) ---
-            // ASSUMPTION: status lives on status with values "HOLD" / "REJECTED".
-            // If your backend uses a different field/values, change path/value1 below.
+            // Status tab filter (On Hold / Rejected)
             if (oData.statusTab) {
                 aFilters.push(new Filter({
                     path: "status",
@@ -163,34 +545,14 @@ sap.ui.define([
                     value1: oData.recommendation.trim()
                 }));
             }
-            if (oData.customer && oData.customer.trim()) {
-                aFilters.push(new Filter({
-                    path: "Customer",
-                    operator: FilterOperator.Contains,
-                    value1: oData.customer.trim()
-                }));
-            }
-            if (oData.division && oData.division.trim()) {
-                aFilters.push(new Filter({
-                    path: "Division",
-                    operator: FilterOperator.Contains,
-                    value1: oData.division.trim()
-                }));
-            }
-            if (oData.businessArea && oData.businessArea.trim()) {
-                aFilters.push(new Filter({
-                    path: "BusinessArea",
-                    operator: FilterOperator.Contains,
-                    value1: oData.businessArea.trim()
-                }));
-            }
-            if (oData.orderNumber && oData.orderNumber.trim()) {
-                aFilters.push(new Filter({
-                    path: "OrderNumber",
-                    operator: FilterOperator.Contains,
-                    value1: oData.orderNumber.trim()
-                }));
-            }
+
+            // Value-help based filters (Order Number, Customer, Division, Business Area)
+            Object.keys(this._mVHConfig).forEach((sName) => {
+                const oFilter = this._buildTokenFilter(this._mVHConfig[sName]);
+                if (oFilter) {
+                    aFilters.push(oFilter);
+                }
+            });
 
             return aFilters;
         },
@@ -251,6 +613,8 @@ sap.ui.define([
         },
 
         onFilterSearch: function () {
+            this._commitPendingText();
+
             const oSmartTable = this.byId("idSmartTable");
             if (oSmartTable) {
                 oSmartTable.rebindTable(true);
@@ -265,16 +629,22 @@ sap.ui.define([
                 fromDate: new Date(this._oDefaultFilterDates.fromDate),
                 toDate: new Date(this._oDefaultFilterDates.toDate),
                 recommendation: "",
-                customer: "",
-                division: "",
-                businessArea: "",
-                orderNumber: "",
                 statusTab: oFilterModel.getProperty("/statusTab") || this._sDefaultStatusTab // keep current tab on clear
             });
+
+            // Clear the value-help MultiInputs
+            Object.keys(this._mVHConfig).forEach((sName) => {
+                const oInput = this.byId(this._mVHConfig[sName].inputId);
+                if (oInput) {
+                    oInput.removeAllTokens();
+                    oInput.setValue("");
+                }
+            });
+
             this.onFilterSearch();
         },
 
-        // --- NEW: IconTabBar select handler for the SmartTable's status tabs ---
+        // IconTabBar select handler for the status tabs
         onStatusTabSelect: function (oEvent) {
             const sKey = oEvent.getParameter("key");
             const oFilterModel = this.getView().getModel("filterModel");
@@ -395,7 +765,6 @@ sap.ui.define([
 
             const oDates = this._getFormattedFilterDates();
             const sPath = `/ZC_CE_ORDER_KPI%28p_from_date%3Ddatetime%27${oDates.from}T00%3A00%3A00%27%2Cp_date%3Ddatetime%27${oDates.to}T00%3A00%3A00%27%29/Set`;
-            // const sPath = `/ZC_CE_ORDER_KPI(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`;
 
             oModel.read(sPath, {
                 success: (oData) => {
@@ -703,7 +1072,7 @@ sap.ui.define([
                     BusyIndicator.hide();
                     const severity = JSON.parse(oResponse?.headers['sap-message'])?.severity;
                     if (severity.includes('error')) {
-                        return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`)
+                        return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`);
                     }
                     MessageBox.success(`Order Number - ${sOrderNumber} Rejected`);
                     this._refreshAllViews();
@@ -874,7 +1243,6 @@ sap.ui.define([
                 const oHeaderMatch = sLine.match(/^(#{1,6})\s+(.*)$/);
                 if (oHeaderMatch) {
                     closeList();
-                    const iLevel = Math.min(oHeaderMatch[1].length, 6);
                     const sContent = applyInline(oHeaderMatch[2]);
                     sHtml += `<h5>${sContent}</h5>`;
                     return;
