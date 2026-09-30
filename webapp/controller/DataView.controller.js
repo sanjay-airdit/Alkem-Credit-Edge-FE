@@ -56,10 +56,11 @@ sap.ui.define([
             // --- Filter bar model (shared by List + Grid views) ---
             // NOTE: Order Number / Customer / Division / Business Area are MultiInputs (tokens),
             // so they are no longer stored in this model.
+            // recommendation is an array of selected keys (Approve / Hold / Reject)
             const oFilterModel = new JSONModel({
                 fromDate: new Date(this._oDefaultFilterDates.fromDate),
                 toDate: new Date(this._oDefaultFilterDates.toDate),
-                recommendation: "",
+                recommendation: [],
                 statusTab: this._sDefaultStatusTab
             });
             this.getView().setModel(oFilterModel, "filterModel");
@@ -538,12 +539,19 @@ sap.ui.define([
                 }));
             }
 
-            if (oData.recommendation && oData.recommendation.trim()) {
-                aFilters.push(new Filter({
+            // Recommendation (multi-select) -> OR between the selected values
+            if (Array.isArray(oData.recommendation) && oData.recommendation.length) {
+                const aRecFilters = oData.recommendation.map((sKey) => new Filter({
                     path: "AISummaryVerdict",
                     operator: FilterOperator.Contains,
-                    value1: oData.recommendation.trim()
+                    value1: sKey
                 }));
+
+                aFilters.push(
+                    aRecFilters.length === 1
+                        ? aRecFilters[0]
+                        : new Filter({ filters: aRecFilters, and: false })
+                );
             }
 
             // Value-help based filters (Order Number, Customer, Division, Business Area)
@@ -628,7 +636,7 @@ sap.ui.define([
             oFilterModel.setData({
                 fromDate: new Date(this._oDefaultFilterDates.fromDate),
                 toDate: new Date(this._oDefaultFilterDates.toDate),
-                recommendation: "",
+                recommendation: [],
                 statusTab: oFilterModel.getProperty("/statusTab") || this._sDefaultStatusTab // keep current tab on clear
             });
 

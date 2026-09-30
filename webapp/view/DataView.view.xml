@@ -386,17 +386,31 @@
                     </MultiInput>
                 </VBox>
 
+                <!-- RECOMMENDATION (multi-select: Approve / Hold / Reject) -->
                 <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
                     <Label
                         text="Recommendation"
                         labelFor="idRecommendationFilter"
                     />
-                    <Input
+                    <MultiComboBox
                         id="idRecommendationFilter"
                         width="12rem"
                         placeholder="Recommendation"
-                        value="{filterModel>/recommendation}"
-                    />
+                        selectedKeys="{filterModel>/recommendation}"
+                    >
+                        <core:Item
+                            key="Approve"
+                            text="Approve"
+                        />
+                        <core:Item
+                            key="Hold"
+                            text="Hold"
+                        />
+                        <core:Item
+                            key="Reject"
+                            text="Reject"
+                        />
+                    </MultiComboBox>
                 </VBox>
             </FlexBox>
         </Panel>
