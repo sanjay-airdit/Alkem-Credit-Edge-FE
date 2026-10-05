@@ -20,7 +20,7 @@
                     alignItems="Center"
                 >
                     <Text
-                        text="Total Orders"
+                        text="Total Orders on Hold"
                         class="kpiTitle"
                     />
                     <core:Icon
@@ -83,7 +83,7 @@
                     alignItems="Center"
                 >
                     <Text
-                        text="High Risk Orders"
+                        text="Recommended to Reject"
                         class="kpiTitle"
                     />
                     <core:Icon
@@ -220,6 +220,46 @@
                         valueFormat="yyyy-MM-dd"
                         dateValue="{filterModel>/toDate}"
                     />
+                </VBox>
+
+                <!-- COMPANY CODE  (I_CompanyCode) -->
+                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                    <Label
+                        text="Company Code"
+                        labelFor="idCompanyCodeFilter"
+                    />
+                    <MultiInput
+                        id="idCompanyCodeFilter"
+                        width="14rem"
+                        placeholder="Company Code"
+                        showValueHelp="true"
+                        showSuggestion="true"
+                        filterSuggests="false"
+                        startSuggestion="0"
+                        valueHelpRequest="onCompanyCodeValueHelp"
+                        suggest="onCompanyCodeSuggest"
+                        suggestionRows="{
+                            path: '/I_CompanyCode',
+                            length: 10
+                        }"
+                    >
+                        <suggestionColumns>
+                            <Column>
+                                <Label text="Company Code" />
+                            </Column>
+                            <Column>
+                                <Label text="Company Name" />
+                            </Column>
+                        </suggestionColumns>
+                        <suggestionRows>
+                            <ColumnListItem>
+                                <cells>
+                                    <Label text="{CompanyCode}" />
+                                    <Label text="{CompanyCodeName}" />
+                                </cells>
+                            </ColumnListItem>
+                        </suggestionRows>
+                    </MultiInput>
                 </VBox>
 
                 <!-- ORDER NUMBER  (I_SalesDocument) -->

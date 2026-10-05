@@ -31,10 +31,12 @@ sap.ui.define([
 
         formatter: formatter,
 
-        // Default filter period, reused by both List (SmartTable) and Grid views
-        _oDefaultFilterDates: {
-            fromDate: new Date(2023, 8, 1),  // 2023-09-01
-            toDate: new Date(2023, 8, 30)    // 2023-09-30
+        _getDefaultFilterDates: function () {
+            const oToday = new Date();
+            return {
+                fromDate: new Date(oToday.getFullYear(), oToday.getMonth(), 1),
+                toDate: new Date(oToday.getFullYear(), oToday.getMonth(), oToday.getDate())
+            };
         },
 
         // Status tab keys — must match the values coming from the backend field
@@ -54,12 +56,13 @@ sap.ui.define([
             this._sSearchQuery = "";
 
             // --- Filter bar model (shared by List + Grid views) ---
-            // NOTE: Order Number / Customer / Division / Business Area are MultiInputs (tokens),
+            // NOTE: Company Code / Order Number / Customer / Division / Business Area are MultiInputs (tokens),
             // so they are no longer stored in this model.
             // recommendation is an array of selected keys (Approve / Hold / Reject)
+            const oDefaultDates = this._getDefaultFilterDates();
             const oFilterModel = new JSONModel({
-                fromDate: new Date(this._oDefaultFilterDates.fromDate),
-                toDate: new Date(this._oDefaultFilterDates.toDate),
+                fromDate: oDefaultDates.fromDate,
+                toDate: oDefaultDates.toDate,
                 recommendation: [],
                 statusTab: this._sDefaultStatusTab
             });
@@ -73,6 +76,20 @@ sap.ui.define([
             // columns    : columns of the dialog table + fields of the dialog filter bar
             // searchFields : fields used for type-ahead suggestions and basic search
             this._mVHConfig = {
+                companyCode: {
+                    inputId: "idCompanyCodeFilter",
+                    filterPath: "CompanyCode",
+                    title: "Company Code",
+                    entitySet: "/I_CompanyCode",
+                    key: "CompanyCode",
+                    descriptionKey: "CompanyCodeName",
+                    maxLength: 4,
+                    columns: [
+                        { field: "CompanyCode", label: "Company Code" },
+                        { field: "CompanyCodeName", label: "Company Name" }
+                    ],
+                    searchFields: ["CompanyCode", "CompanyCodeName"]
+                },
                 orderNumber: {
                     inputId: "idOrderNumberFilter",
                     filterPath: "OrderNumber",
@@ -197,12 +214,14 @@ sap.ui.define([
         },
 
         // ---- Value help request handlers (one per filter) ----
+        onCompanyCodeValueHelp: function () { this._openValueHelp("companyCode"); },
         onOrderNumberValueHelp: function () { this._openValueHelp("orderNumber"); },
         onCustomerValueHelp: function () { this._openValueHelp("customer"); },
         onDivisionValueHelp: function () { this._openValueHelp("division"); },
         onBusinessAreaValueHelp: function () { this._openValueHelp("businessArea"); },
 
         // ---- Suggest handlers (one per filter) ----
+        onCompanyCodeSuggest: function (oEvent) { this._onSuggest(oEvent, "companyCode"); },
         onOrderNumberSuggest: function (oEvent) { this._onSuggest(oEvent, "orderNumber"); },
         onCustomerSuggest: function (oEvent) { this._onSuggest(oEvent, "customer"); },
         onDivisionSuggest: function (oEvent) { this._onSuggest(oEvent, "division"); },
@@ -487,9 +506,10 @@ sap.ui.define([
         _getFormattedFilterDates: function () {
             const oFilterModel = this.getView().getModel("filterModel");
             const oDateFormat = DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
+            const oDefaultDates = this._getDefaultFilterDates();
 
-            const oFromDate = (oFilterModel && oFilterModel.getProperty("/fromDate")) || this._oDefaultFilterDates.fromDate;
-            const oToDate = (oFilterModel && oFilterModel.getProperty("/toDate")) || this._oDefaultFilterDates.toDate;
+            const oFromDate = (oFilterModel && oFilterModel.getProperty("/fromDate")) || oDefaultDates.fromDate;
+            const oToDate = (oFilterModel && oFilterModel.getProperty("/toDate")) || oDefaultDates.toDate;
 
             return {
                 from: oDateFormat.format(oFromDate),
@@ -554,7 +574,7 @@ sap.ui.define([
                 );
             }
 
-            // Value-help based filters (Order Number, Customer, Division, Business Area)
+            // Value-help based filters (Company Code, Order Number, Customer, Division, Business Area)
             Object.keys(this._mVHConfig).forEach((sName) => {
                 const oFilter = this._buildTokenFilter(this._mVHConfig[sName]);
                 if (oFilter) {
@@ -633,9 +653,10 @@ sap.ui.define([
 
         onFilterClear: function () {
             const oFilterModel = this.getView().getModel("filterModel");
+            const oDefaultDates = this._getDefaultFilterDates();
             oFilterModel.setData({
-                fromDate: new Date(this._oDefaultFilterDates.fromDate),
-                toDate: new Date(this._oDefaultFilterDates.toDate),
+                fromDate: oDefaultDates.fromDate,
+                toDate: oDefaultDates.toDate,
                 recommendation: [],
                 statusTab: oFilterModel.getProperty("/statusTab") || this._sDefaultStatusTab // keep current tab on clear
             });
