@@ -42,6 +42,10 @@ server:
             url: http://sandbox-app.alkemerp.com:8001
             client: '900'
             destination: S4HANA_DEV
+          - path: /sap/opu/odata/sap/ZC_CE_ORDER_KPI_QUERY_CDS/
+            url: http://sandbox-app.alkemerp.com:8001
+            client: '900'
+            destination: S4HANA_DEV
     - name: sap-fe-mockserver
       beforeMiddleware: csp
       configuration:
@@ -59,6 +63,10 @@ server:
             metadataPath: ./webapp/localService/API_SLS_DOC_WITH_CREDIT_BLOCK/metadata.xml
             mockdataPath: ./webapp/localService/API_SLS_DOC_WITH_CREDIT_BLOCK/data
             generateMockData: true
+          - urlPath: /sap/opu/odata/sap/ZC_CE_ORDER_KPI_QUERY_CDS
+            metadataPath: ./webapp/localService/ZC_CE_ORDER_KPI_QUERY_CDS/metadata.xml
+            mockdataPath: ./webapp/localService/ZC_CE_ORDER_KPI_QUERY_CDS/data
+            generateMockData: true
         annotations:
           - localPath: ./webapp/localService/mainService/ZC_CE_ORDERSONHOLD_CDS_VAN.xml
             urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZC_CE_ORDERSONHOLD_CDS_VAN',Version='0001')/$value/
@@ -66,6 +74,8 @@ server:
             urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZUI_CE_APPR_MATRIX_SB_VAN',Version='0001')/$value/
           - localPath: ./webapp/localService/API_SLS_DOC_WITH_CREDIT_BLOCK/API_SLS_DOC_WITH_CREDIT_ANNO_MDL.xml
             urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='API_SLS_DOC_WITH_CREDIT_ANNO_MDL',Version='0001')/$value/
+          - localPath: ./webapp/localService/ZC_CE_ORDER_KPI_QUERY_CDS/ZC_CE_ORDER_KPI_QUERY_CDS_VAN.xml
+            urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZC_CE_ORDER_KPI_QUERY_CDS_VAN',Version='0001')/$value/
 builder:
   resources:
     excludes:

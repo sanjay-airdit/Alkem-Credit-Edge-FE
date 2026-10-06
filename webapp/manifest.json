@@ -77,6 +77,24 @@
           "localUri": "localService/API_SLS_DOC_WITH_CREDIT_BLOCK/metadata.xml",
           "odataVersion": "2.0"
         }
+      },
+      "ZC_CE_ORDER_KPI_QUERY_CDS_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZC_CE_ORDER_KPI_QUERY_CDS_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/ZC_CE_ORDER_KPI_QUERY_CDS/ZC_CE_ORDER_KPI_QUERY_CDS_VAN.xml"
+        }
+      },
+      "ZC_CE_ORDER_KPI_QUERY_CDS": {
+        "uri": "/sap/opu/odata/sap/ZC_CE_ORDER_KPI_QUERY_CDS/",
+        "type": "OData",
+        "settings": {
+          "annotations": [
+            "ZC_CE_ORDER_KPI_QUERY_CDS_VAN"
+          ],
+          "localUri": "localService/ZC_CE_ORDER_KPI_QUERY_CDS/metadata.xml",
+          "odataVersion": "2.0"
+        }
       }
     }
   },
@@ -139,6 +157,15 @@
         "preload": true,
         "settings": {
           "useBatch": false
+        }
+      },
+      "ZC_CE_ORDER_KPI_QUERY_CDS": {
+        "dataSource": "ZC_CE_ORDER_KPI_QUERY_CDS",
+        "preload": true,
+        "settings": {
+          "useBatch": false,
+          "defaultBindingMode": "OneWay",
+          "defaultCountMode": "None"
         }
       }
     },

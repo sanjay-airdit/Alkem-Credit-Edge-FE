@@ -31,6 +31,9 @@ sap.ui.define([
 
         formatter: formatter,
 
+        // Name of the OData model (manifest.json) for ZC_CE_ORDER_KPI_QUERY_CDS
+        _sKpiModelName: "ZC_CE_ORDER_KPI_QUERY_CDS",
+
         _getDefaultFilterDates: function () {
             const oToday = new Date();
             return {
@@ -54,6 +57,7 @@ sap.ui.define([
             });
             this.getView().setModel(oKpiModel, "kpiModel");
             this._sSearchQuery = "";
+            this._iKpiRequestId = 0;
 
             // --- Filter bar model (shared by List + Grid views) ---
             // NOTE: Company Code / Order Number / Customer / Division / Business Area are MultiInputs (tokens),
@@ -69,12 +73,6 @@ sap.ui.define([
             this.getView().setModel(oFilterModel, "filterModel");
 
             // --- Value help configuration ---
-            // inputId    : id of the MultiInput in the view
-            // filterPath : property of ZC_CE_OrdersOnHoldType that is filtered
-            // entitySet  : value help entity set (default OData model)
-            // key/descriptionKey : fields of the value help entity
-            // columns    : columns of the dialog table + fields of the dialog filter bar
-            // searchFields : fields used for type-ahead suggestions and basic search
             this._mVHConfig = {
                 companyCode: {
                     inputId: "idCompanyCodeFilter",
@@ -638,6 +636,7 @@ sap.ui.define([
                 oSmartTable.rebindTable(true);
             }
             this._loadGridPage(1);
+            this._loadKpiData();
         },
 
         onFilterSearch: function () {
@@ -782,28 +781,86 @@ sap.ui.define([
             });
         },
 
+        /* =========================================================== */
+        /* KPI  (ZC_CE_ORDER_KPI_QUERY)                                */
+        /* =========================================================== */
+
+        // KPI entity path with the date parameters, e.g.
+        // /ZC_CE_ORDER_KPI_QUERY(p_date=datetime'2023-09-30T00:00:00',p_from_date=datetime'2023-09-01T00:00:00')/Results
+        _getKpiEntityPath: function () {
+            const oDates = this._getFormattedFilterDates();
+            return `/ZC_CE_ORDER_KPI_QUERY(p_date=datetime'${oDates.to}T00:00:00',p_from_date=datetime'${oDates.from}T00:00:00')/Results`;
+        },
+
+        _toNumber: function (vValue) {
+            const n = parseFloat(vValue);
+            return isNaN(n) ? 0 : n;
+        },
+
+        // Loads KPI data with the SAME filters as the list / grid
+        // (status tab, recommendation, search, company code, order number, customer, division, business area)
         _loadKpiData: function () {
             const oView = this.getView();
-            const oModel = oView.getModel("ZUI_CE_APPR_MATRIX_SB")
-                || this.getOwnerComponent().getModel("ZUI_CE_APPR_MATRIX_SB");
+            const oModel = oView.getModel(this._sKpiModelName)
+                || this.getOwnerComponent().getModel(this._sKpiModelName);
             const oKpiModel = oView.getModel("kpiModel");
 
             if (!oModel || !oKpiModel) {
                 return;
             }
 
-            const oDates = this._getFormattedFilterDates();
-            const sPath = `/ZC_CE_ORDER_KPI%28p_from_date%3Ddatetime%27${oDates.from}T00%3A00%3A00%27%2Cp_date%3Ddatetime%27${oDates.to}T00%3A00%3A00%27%29/Set`;
+            const aFilters = [];
+            const oCombinedFilter = this._buildODataFilters();
+            if (oCombinedFilter) {
+                aFilters.push(oCombinedFilter);
+            }
 
-            oModel.read(sPath, {
+            // Ignore responses of outdated requests (user changes filters quickly)
+            const iRequestId = ++this._iKpiRequestId;
+
+            oModel.read(this._getKpiEntityPath(), {
+                urlParameters: {
+                    "$select": "OrderCount,IsInHold,ApprovedOrders,HighRiskOrders,CreatedDayRange"
+                },
+                filters: aFilters,
                 success: (oData) => {
+                    if (iRequestId !== this._iKpiRequestId) {
+                        return;
+                    }
+
                     const aResults = (oData && oData.results) || [];
-                    const oKpi = aResults[0] || {};
+
+                    // Normally a single aggregated row; sum defensively if more rows are returned
+                    let iTotalOrders = 0;
+                    let iInHold = 0;
+                    let iApproved = 0;
+                    let iHighRisk = 0;
+                    let sAvgDelay = "";
+
+                    aResults.forEach((oRow) => {
+                        iTotalOrders += this._toNumber(oRow.OrderCount);
+                        iInHold += this._toNumber(oRow.IsInHold);
+                        iApproved += this._toNumber(oRow.ApprovedOrders);
+                        iHighRisk += this._toNumber(oRow.HighRiskOrders);
+                        if (!sAvgDelay && oRow.CreatedDayRange) {
+                            sAvgDelay = oRow.CreatedDayRange;
+                        }
+                    });
 
                     const oDefaults = oKpiModel.getData();
-                    oKpiModel.setData({ ...oDefaults, ...oKpi });
+                    oKpiModel.setData({
+                        ...oDefaults,
+                        TotalOrders: iTotalOrders,
+                        InHold: iInHold,
+                        ApprovedOrders: iApproved,
+                        HighRiskOrders: iHighRisk,
+                        AvgDelayScore: sAvgDelay || "-"
+                    });
                 },
                 error: (oError) => {
+                    if (iRequestId !== this._iKpiRequestId) {
+                        return;
+                    }
                     sap.m.MessageToast.show("Failed to load KPI data.");
                 }
             });

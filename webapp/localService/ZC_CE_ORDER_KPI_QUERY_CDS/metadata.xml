@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZC_CE_ORDER_KPI_QUERY_CDS" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="ZC_CE_ORDER_KPI_QUERYResult" sap:label="CE Top KPIS Query" sap:semantics="aggregate" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="ID"/>
+                </Key>
+                <Property Name="ID" Type="Edm.String" Nullable="false" sap:filterable="false" sap:updatable="false" sap:sortable="false"/>
+                <Property Name="TotaledProperties" Type="Edm.String" sap:aggregation-role="totaled-properties-list" sap:is-annotation="true" sap:updatable="false" sap:sortable="false"/>
+                <Property Name="Recommendation" Type="Edm.String" MaxLength="15" sap:aggregation-role="dimension" sap:label="RECOMMENDATION" sap:creatable="false" sap:updatable="false"/>
+                <Property Name="Customer" Type="Edm.String" MaxLength="10" sap:aggregation-role="dimension" sap:label="Sold-to Party" sap:creatable="false" sap:updatable="false"/>
+                <Property Name="CreatedDayRange" Type="Edm.String" MaxLength="5" sap:aggregation-role="dimension" sap:label="CREATEDDAYRANGE" sap:creatable="false" sap:updatable="false"/>
+                <Property Name="Division" Type="Edm.String" MaxLength="2" sap:aggregation-role="dimension" sap:label="Division" sap:creatable="false" sap:updatable="false"/>
+                <Property Name="Createdon" Type="Edm.String" MaxLength="10" sap:aggregation-role="dimension" sap:text="Createdon_T" sap:label="Created On" sap:quickinfo="Record Created On" sap:creatable="false" sap:updatable="false" sap:semantics="yearmonthday"/>
+                <Property Name="Createdon_T" Type="Edm.String" MaxLength="10" sap:label="Created On (Description)" sap:quickinfo="Record Created On" sap:creatable="false" sap:updatable="false" sap:filterable="false"/>
+                <Property Name="BussinessArea" Type="Edm.String" MaxLength="4" sap:aggregation-role="dimension" sap:label="Business Area" sap:creatable="false" sap:updatable="false"/>
+                <Property Name="OrderNumber" Type="Edm.String" MaxLength="10" sap:aggregation-role="dimension" sap:label="Sales Document" sap:creatable="false" sap:updatable="false"/>
+                <Property Name="CompanyCode" Type="Edm.String" MaxLength="4" sap:aggregation-role="dimension" sap:label="CCode to Be Billed" sap:quickinfo="Company Code to Be Billed" sap:creatable="false" sap:updatable="false"/>
+                <Property Name="OrderCount" Type="Edm.Decimal" Precision="42" Scale="0" sap:aggregation-role="measure" sap:filterable="false" sap:text="OrderCount_F" sap:updatable="false" sap:label="ORDERCOUNT" sap:creatable="false"/>
+                <Property Name="OrderCount_F" Type="Edm.String" MaxLength="60" sap:label="ORDERCOUNT (Formatted)" sap:creatable="false" sap:updatable="false" sap:filterable="false"/>
+                <Property Name="IsInHold" Type="Edm.Decimal" Precision="42" Scale="0" sap:aggregation-role="measure" sap:filterable="false" sap:text="IsInHold_F" sap:updatable="false" sap:label="ISINHOLD" sap:creatable="false"/>
+                <Property Name="IsInHold_F" Type="Edm.String" MaxLength="60" sap:label="ISINHOLD (Formatted)" sap:creatable="false" sap:updatable="false" sap:filterable="false"/>
+                <Property Name="ApprovedOrders" Type="Edm.Decimal" Precision="42" Scale="0" sap:aggregation-role="measure" sap:filterable="false" sap:text="ApprovedOrders_F" sap:updatable="false" sap:label="APPROVEDORDERS" sap:creatable="false"/>
+                <Property Name="ApprovedOrders_F" Type="Edm.String" MaxLength="60" sap:label="APPROVEDORDERS (Formatted)" sap:creatable="false" sap:updatable="false" sap:filterable="false"/>
+                <Property Name="HighRiskOrders" Type="Edm.Decimal" Precision="42" Scale="0" sap:aggregation-role="measure" sap:filterable="false" sap:text="HighRiskOrders_F" sap:updatable="false" sap:label="HIGHRISKORDERS" sap:creatable="false"/>
+                <Property Name="HighRiskOrders_F" Type="Edm.String" MaxLength="60" sap:label="HIGHRISKORDERS (Formatted)" sap:creatable="false" sap:updatable="false" sap:filterable="false"/>
+                <NavigationProperty Name="Parameters" Relationship="ZC_CE_ORDER_KPI_QUERY_CDS.ZC_CE_ORDER_KPI_QUERYParametersToResult" FromRole="ToRole_ZC_CE_ORDER_KPI_QUERYParametersToResult" ToRole="FromRole_ZC_CE_ORDER_KPI_QUERYParametersToResult"/>
+            </EntityType>
+            <EntityType Name="ZC_CE_ORDER_KPI_QUERYParameters" sap:semantics="parameters" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="p_date"/>
+                    <PropertyRef Name="p_from_date"/>
+                </Key>
+                <Property Name="p_date" Type="Edm.DateTime" Nullable="false" Precision="0" sap:display-format="Date" sap:parameter="mandatory" sap:text="p_dateText" sap:label="Date" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="p_dateText" Type="Edm.String" MaxLength="60" sap:label="Date (Description) " sap:sortable="false" sap:filterable="false"/>
+                <Property Name="p_from_date" Type="Edm.DateTime" Nullable="false" Precision="0" sap:display-format="Date" sap:parameter="mandatory" sap:text="p_from_dateText" sap:label="Date" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="p_from_dateText" Type="Edm.String" MaxLength="60" sap:label="Date (Description) " sap:sortable="false" sap:filterable="false"/>
+                <NavigationProperty Name="Results" Relationship="ZC_CE_ORDER_KPI_QUERY_CDS.ZC_CE_ORDER_KPI_QUERYParametersToResult" FromRole="FromRole_ZC_CE_ORDER_KPI_QUERYParametersToResult" ToRole="ToRole_ZC_CE_ORDER_KPI_QUERYParametersToResult"/>
+            </EntityType>
+            <EntityType Name="ODataQueryAdditionalMetadata" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="ODataQueryMetadata"/>
+                </Key>
+                <Property Name="ODataQueryMetadata" Type="Edm.String" Nullable="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ODataQueryMetadataValue_Current" Type="Edm.String" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ODataQueryMetadataValueAtDefine" Type="Edm.String" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <Association Name="ZC_CE_ORDER_KPI_QUERYParametersToResult" sap:content-version="1">
+                <End Type="ZC_CE_ORDER_KPI_QUERY_CDS.ZC_CE_ORDER_KPI_QUERYParameters" Multiplicity="1" Role="FromRole_ZC_CE_ORDER_KPI_QUERYParametersToResult"/>
+                <End Type="ZC_CE_ORDER_KPI_QUERY_CDS.ZC_CE_ORDER_KPI_QUERYResult" Multiplicity="*" Role="ToRole_ZC_CE_ORDER_KPI_QUERYParametersToResult"/>
+            </Association>
+            <EntityContainer Name="ZC_CE_ORDER_KPI_QUERY_CDS_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="AdditionalMetadata" EntityType="ZC_CE_ORDER_KPI_QUERY_CDS.ODataQueryAdditionalMetadata" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZC_CE_ORDER_KPI_QUERYResults" EntityType="ZC_CE_ORDER_KPI_QUERY_CDS.ZC_CE_ORDER_KPI_QUERYResult" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="ZC_CE_ORDER_KPI_QUERY" EntityType="ZC_CE_ORDER_KPI_QUERY_CDS.ZC_CE_ORDER_KPI_QUERYParameters" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <AssociationSet Name="ZC_CE_ORDER_KPI_QUERYParametersToResult_" Association="ZC_CE_ORDER_KPI_QUERY_CDS.ZC_CE_ORDER_KPI_QUERYParametersToResult" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1">
+                    <End EntitySet="ZC_CE_ORDER_KPI_QUERY" Role="FromRole_ZC_CE_ORDER_KPI_QUERYParametersToResult"/>
+                    <End EntitySet="ZC_CE_ORDER_KPI_QUERYResults" Role="ToRole_ZC_CE_ORDER_KPI_QUERYParametersToResult"/>
+                </AssociationSet>
+            </EntityContainer>
+            <Annotation Term="Core.SchemaVersion" String="1.0.0" xmlns="http://docs.oasis-open.org/odata/ns/edm"/>
+            <atom:link rel="self" href="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/sap/ZC_CE_ORDER_KPI_QUERY_CDS/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="https://sandbox-app.alkemerp.com:8001/sap/opu/odata/sap/ZC_CE_ORDER_KPI_QUERY_CDS/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>
