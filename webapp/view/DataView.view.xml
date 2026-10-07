@@ -97,7 +97,7 @@
                 />
             </VBox>
 
-            <!-- Avg Delay Score -->
+            <!-- Avg Delay Score (day-range breakdown) -->
             <VBox class="kpiCard kpiCard--purple">
                 <HBox
                     justifyContent="SpaceBetween"
@@ -112,10 +112,15 @@
                         class="kpiIcon kpiIcon--purple"
                     />
                 </HBox>
-                <Text
-                    text="{kpiModel>/AvgDelayScore}"
-                    class="kpiValue kpiValue--purple"
-                />
+                <VBox
+                    class="sapUiTinyMarginTop"
+                    items="{kpiModel>/DelayRanges}"
+                >
+                    <Text
+                        text="{kpiModel>label} ({kpiModel>count})"
+                        class="kpiValue--purple kpiRangeText"
+                    />
+                </VBox>
             </VBox>
 
             <!-- Avg SOP Score -->

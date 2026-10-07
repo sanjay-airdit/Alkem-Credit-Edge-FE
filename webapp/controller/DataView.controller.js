@@ -52,7 +52,11 @@ sap.ui.define([
                 InHold: 0,
                 ApprovedOrders: 0,
                 HighRiskOrders: 0,
-                AvgDelayScore: 0,
+                DelayRanges: [
+                    { label: "1-10", count: 0 },
+                    { label: "11-20", count: 0 },
+                    { label: "21-31", count: 0 }
+                ],
                 avgSopScore: 0
             });
             this.getView().setModel(oKpiModel, "kpiModel");
@@ -820,7 +824,15 @@ sap.ui.define([
 
             oModel.read(this._getKpiEntityPath(), {
                 urlParameters: {
-                    "$select": "OrderCount,IsInHold,ApprovedOrders,HighRiskOrders,CreatedDayRange"
+                    "$select": [
+                        "OrderCount",
+                        "IsInHold",
+                        "ApprovedOrders",
+                        "HighRiskOrders",
+                        "CreatedDayRange_1_10",
+                        "CreatedDayRange_11_20",
+                        "CreatedDayRange_21_31"
+                    ].join(",")
                 },
                 filters: aFilters,
                 success: (oData) => {
@@ -835,16 +847,18 @@ sap.ui.define([
                     let iInHold = 0;
                     let iApproved = 0;
                     let iHighRisk = 0;
-                    let sAvgDelay = "";
+                    let iRange1 = 0;
+                    let iRange2 = 0;
+                    let iRange3 = 0;
 
                     aResults.forEach((oRow) => {
                         iTotalOrders += this._toNumber(oRow.OrderCount);
                         iInHold += this._toNumber(oRow.IsInHold);
                         iApproved += this._toNumber(oRow.ApprovedOrders);
                         iHighRisk += this._toNumber(oRow.HighRiskOrders);
-                        if (!sAvgDelay && oRow.CreatedDayRange) {
-                            sAvgDelay = oRow.CreatedDayRange;
-                        }
+                        iRange1 += this._toNumber(oRow.CreatedDayRange_1_10);
+                        iRange2 += this._toNumber(oRow.CreatedDayRange_11_20);
+                        iRange3 += this._toNumber(oRow.CreatedDayRange_21_31);
                     });
 
                     const oDefaults = oKpiModel.getData();
@@ -854,7 +868,11 @@ sap.ui.define([
                         InHold: iInHold,
                         ApprovedOrders: iApproved,
                         HighRiskOrders: iHighRisk,
-                        AvgDelayScore: sAvgDelay || "-"
+                        DelayRanges: [
+                            { label: "1-10", count: iRange1 },
+                            { label: "11-20", count: iRange2 },
+                            { label: "21-31", count: iRange3 }
+                        ]
                     });
                 },
                 error: (oError) => {
