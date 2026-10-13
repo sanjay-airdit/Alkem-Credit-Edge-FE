@@ -506,17 +506,36 @@
                         <smartTable:customToolbar>
                             <Toolbar>
                                 <ToolbarSpacer />
+                                <!-- Enabled only when at least one row is selected
+                                     and the current tab is not "Rejected" -->
+                                <Button
+                                    icon="sap-icon://accept"
+                                    class="sapUiTinyMarginEnd"
+                                    type="Accept"
+                                    text="Approve"
+                                    enabled="{= ${selectionModel>/count} > 0 &amp;&amp; ${filterModel>/statusTab} !== 'REJECTED' }"
+                                    press="onMultiApprove"
+                                />
+                                <Button
+                                    icon="sap-icon://decline"
+                                    type="Reject"
+                                    text="Reject"
+                                    enabled="{= ${selectionModel>/count} > 0 &amp;&amp; ${filterModel>/statusTab} !== 'REJECTED' }"
+                                    press="onMultiReject"
+                                />
                             </Toolbar>
                         </smartTable:customToolbar>
                         <Table
                             id="idTableAccount"
-                            mode="None"
+                            mode="MultiSelect"
                             growing="true"
                             growingScrollToLoad="true"
                             sticky="ColumnHeaders,HeaderToolbar,InfoToolbar"
+                            selectionChange="onTableSelectionChange"
+                            updateFinished="onTableUpdateFinished"
                         >
                             <columns>
-                                <Column width="28rem">
+                                <Column width="20rem">
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
@@ -528,7 +547,10 @@
                                         wrapping="false"
                                     />
                                 </Column>
-                                <Column hAlign="Center">
+                                <Column
+                                    hAlign="Center"
+                                    width="8rem"
+                                >
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
@@ -596,9 +618,50 @@
                             <items>
                                 <ColumnListItem vAlign="Middle">
                                     <cells>
-                                        <FormattedText
-                                            htmlText="{path: 'AISummaryText', formatter: '.formatSummaryHtml'}"
-                                        />
+                                        <!-- SUMMARY CELL: Read more / Show Less (per row) -->
+                                        <VBox>
+                                            <!-- TOP ROW: truncated text (collapsed only) + ONE toggle link.
+                                                 The link is always at the right end of this row,
+                                                 so "Read more" and "Show Less" stay in the same position. -->
+                                            <HBox
+                                                width="100%"
+                                                alignItems="Center"
+                                                justifyContent="End"
+                                                wrap="NoWrap"
+                                            >
+                                                <Text
+                                                    text="{path: 'AISummaryText', formatter: '.formatSummaryShort'}"
+                                                    maxLines="1"
+                                                >
+                                                    <layoutData>
+                                                        <FlexItemData
+                                                            growFactor="1"
+                                                            shrinkFactor="1"
+                                                            minWidth="0"
+                                                        />
+                                                    </layoutData>
+                                                </Text>
+                                                <Link
+                                                    text="Read more"
+                                                    press="onToggleSummary"
+                                                    class="sapUiTinyMarginBegin"
+                                                    visible="{path: 'AISummaryText', formatter: '.formatSummaryHasMore'}"
+                                                >
+                                                    <layoutData>
+                                                        <FlexItemData
+                                                            growFactor="0"
+                                                            shrinkFactor="0"
+                                                        />
+                                                    </layoutData>
+                                                </Link>
+                                            </HBox>
+
+                                            <!-- EXPANDED: full summary (hidden by default) -->
+                                            <FormattedText
+                                                visible="false"
+                                                htmlText="{path: 'AISummaryText', formatter: '.formatSummaryHtml'}"
+                                            />
+                                        </VBox>
                                         <ObjectStatus
                                             text="{AISummaryVerdict}"
                                             state="{path: 'AISummaryVerdict', formatter: '.formatter.riskState'}"

@@ -24,6 +24,15 @@
                             <PropertyValue Property="Value" Path="Customer" />
                             <PropertyValue Property="Label" String="Customer" />
                         </Record>
+                        <!-- Company Code -> shown as "CompanyCodeDescription (CompanyCode)" -->
+                        <!-- <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="CompanyCode" />
+                            <PropertyValue Property="Label" String="Company Code" />
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="Division" />
+                            <PropertyValue Property="Label" String="Division" />
+                        </Record> -->
                         <!-- <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="AISummaryText"/>
                             <PropertyValue Property="Label" String="Summary"/>
@@ -58,9 +67,23 @@
                     </Collection>
                 </Annotation>
             </Annotations>
+
+            <!-- COMPANY CODE: text = CompanyCodeDescription, arrangement = description first, code in brackets -->
             <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/CompanyCode">
-                <Annotation Term="Common.Label" String="Company Code to Be Billed" />
+                <Annotation Term="Common.Label" String="Company Code" />
+                <Annotation Term="Common.Text" Path="CompanyCodeDescription">
+                    <Annotation Term="UI.TextArrangement" EnumMember="UI.TextArrangementType/TextLast" />
+                </Annotation>
             </Annotations>
+
+            <!-- DIVISION: text = DivisionDescription, arrangement = description first, code in brackets -->
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/Division">
+                <Annotation Term="Common.Label" String="Division" />
+                <Annotation Term="Common.Text" Path="DivisionDescription">
+                    <Annotation Term="UI.TextArrangement" EnumMember="UI.TextArrangementType/TextLast" />
+                </Annotation>
+            </Annotations>
+
             <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/CreatedOn">
                 <Annotation Term="Common.Label" String="Created On" />
             </Annotations>
@@ -69,9 +92,6 @@
             </Annotations>
             <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/DistributionChannel">
                 <Annotation Term="Common.Label" String="Distribution Channel" />
-            </Annotations>
-            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/Division">
-                <Annotation Term="Common.Label" String="Division" />
             </Annotations>
             <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/RequestedDeliveryDate">
                 <Annotation Term="Common.Label" String="Requested Delivery Date" />
@@ -163,7 +183,7 @@
             <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/status">
                 <Annotation Term="Common.Label" String="Status" />
             </Annotations>
-            
+
         </Schema>
     </edmx:DataServices>
 </edmx:Edmx>

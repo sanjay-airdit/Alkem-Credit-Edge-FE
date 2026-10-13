@@ -34,6 +34,18 @@ sap.ui.define([
         // Name of the OData model (manifest.json) for ZC_CE_ORDER_KPI_QUERY_CDS
         _sKpiModelName: "ZC_CE_ORDER_KPI_QUERY_CDS",
 
+        _oDefaultCompanyCode: {
+            key: "1000",
+            text: "ALKEM LABORATORIES LTD. (1000)"
+        },
+
+        // Becomes true once 'CanChangeCompanyCode' has been read and applied.
+        // Until then the SmartTable bind is held back (see onBeforeRebindTable).
+        _bCompanyCodeResolved: false,
+
+        // Whether the user may change the Company Code filter (false until resolved)
+        _bCanChangeCompanyCode: false,
+
         _getDefaultFilterDates: function () {
             const oToday = new Date();
             return {
@@ -62,6 +74,9 @@ sap.ui.define([
             this.getView().setModel(oKpiModel, "kpiModel");
             this._sSearchQuery = "";
             this._iKpiRequestId = 0;
+
+            // --- Selection model (drives enabled state of the toolbar Approve / Reject buttons) ---
+            this.getView().setModel(new JSONModel({ count: 0 }), "selectionModel");
 
             // --- Filter bar model (shared by List + Grid views) ---
             // NOTE: Company Code / Order Number / Customer / Division / Business Area are MultiInputs (tokens),
@@ -160,6 +175,9 @@ sap.ui.define([
                 }
             });
 
+            // Company Code is locked + pre-filled until 'CanChangeCompanyCode' is known
+            this._applyCompanyCodeDefault(false);
+
             // --- Grid/card pagination setup ---
             this._iPageSize = 20;
             this._iJumpSize = 9;
@@ -184,15 +202,119 @@ sap.ui.define([
             const oSmartTable = this.byId("idSmartTable");
             const customizeConfig = {
                 autoColumnWidth: {
-                    '*': { min: 2, max: 6, gap: 1, truncateLabel: false }
+                    '*': { min: 2, max: 6, gap: 1, truncateLabel: false },
+                    'Customer': { min: 2, max: 4, gap: 1, truncateLabel: false }
                 }
             };
             oSmartTable.setCustomizeConfig(customizeConfig);
         },
 
-        /* =========================================================== */
-        /* VALUE HELP + SUGGESTIONS                                    */
-        /* =========================================================== */
+        _applyCompanyCodeDefault: function (bEditable) {
+            const oInput = this.byId(this._mVHConfig.companyCode.inputId);
+            if (!oInput) {
+                return;
+            }
+
+            oInput.removeAllTokens();
+            oInput.setValue("");
+            oInput.addToken(new Token({
+                key: this._oDefaultCompanyCode.key,
+                text: this._oDefaultCompanyCode.text
+            }));
+
+            // editable=false also hides the value help icon and the token delete icon
+            oInput.setEditable(!!bEditable);
+            oInput.setShowValueHelp(!!bEditable);
+
+            // When the filter is locked, the suggestion popup must not open either
+            // (startSuggestion="0" would otherwise show it on focus / click)
+            oInput.setShowSuggestion(!!bEditable);
+        },
+
+        _loadCompanyCodePermission: function () {
+            const oView = this.getView();
+            const oModel = oView.getModel(this._sKpiModelName)
+                || this.getOwnerComponent().getModel(this._sKpiModelName);
+
+            // KPI service not available -> safe fallback: default value, filter locked
+            if (!oModel) {
+                this._onCompanyCodePermissionResolved(false);
+                return;
+            }
+
+            oModel.read(this._getKpiEntityPath(), {
+                urlParameters: {
+                    "$select": "CanChangeCompanyCode"
+                },
+                success: (oData) => {
+                    const aResults = (oData && oData.results) || [];
+
+                    // 'X' -> can change. Empty -> cannot change.
+                    // If several rows come back, a single 'X' enables the filter.
+                    const bCanChange = aResults.some((oRow) =>
+                        String((oRow && oRow.CanChangeCompanyCode) || "").trim().toUpperCase() === "X"
+                    );
+
+                    this._onCompanyCodePermissionResolved(bCanChange);
+                },
+                error: () => {
+                    // Safe fallback: default value, filter locked
+                    this._onCompanyCodePermissionResolved(false);
+                }
+            });
+        },
+
+        _onCompanyCodePermissionResolved: function (bCanChange) {
+            this._bCanChangeCompanyCode = !!bCanChange;
+            this._bCompanyCodeResolved = true;
+
+            this._applyCompanyCodeDefault(this._bCanChangeCompanyCode);
+
+            // First real data load (now including the Company Code filter)
+            const oSmartTable = this.byId("idSmartTable");
+            if (oSmartTable) {
+                oSmartTable.rebindTable(true);
+            }
+            this._loadGridPage(1);
+            this._loadKpiData();
+        },
+
+        onTableSelectionChange: function () {
+            this._updateSelectionState();
+        },
+
+        // Rebind / growing / refresh can change the selection, so re-sync the button state
+        onTableUpdateFinished: function () {
+            this._updateSelectionState();
+        },
+
+        _updateSelectionState: function () {
+            const oTable = this.byId("idTableAccount");
+            const iCount = oTable ? oTable.getSelectedItems().length : 0;
+            const oSelectionModel = this.getView().getModel("selectionModel");
+            if (oSelectionModel) {
+                oSelectionModel.setProperty("/count", iCount);
+            }
+        },
+
+        _clearTableSelection: function () {
+            const oTable = this.byId("idTableAccount");
+            if (oTable) {
+                oTable.removeSelections(true);
+            }
+            this._updateSelectionState();
+        },
+
+        _getSelectedOrders: function () {
+            const oTable = this.byId("idTableAccount");
+            if (!oTable) {
+                return [];
+            }
+            return oTable.getSelectedItems()
+                .map((oItem) => oItem.getBindingContext() && oItem.getBindingContext().getObject())
+                .filter((oOrder) => oOrder && oOrder.OrderNumber);
+        },
+
 
         _createValidator: function (cfg) {
             return function (oArgs) {
@@ -230,6 +352,11 @@ sap.ui.define([
         onBusinessAreaSuggest: function (oEvent) { this._onSuggest(oEvent, "businessArea"); },
 
         _onSuggest: function (oEvent, sName) {
+            // Company Code is locked -> no suggestions at all
+            if (sName === "companyCode" && !this._bCanChangeCompanyCode) {
+                return;
+            }
+
             const cfg = this._mVHConfig[sName];
             const sValue = oEvent.getParameter("suggestValue");
             const oBinding = oEvent.getSource().getBinding("suggestionRows");
@@ -254,6 +381,12 @@ sap.ui.define([
         _openValueHelp: function (sName) {
             const cfg = this._mVHConfig[sName];
             const oInput = this.byId(cfg.inputId);
+
+            // Company Code value help is not allowed when the user cannot change it
+            if (sName === "companyCode" && !this._bCanChangeCompanyCode) {
+                return;
+            }
+
             const oModel = this.getView().getModel() || this.getOwnerComponent().getModel();
             const oBasicSearch = new SearchField();
             let oDialog;
@@ -476,7 +609,13 @@ sap.ui.define([
         _commitPendingText: function () {
             Object.keys(this._mVHConfig).forEach((sName) => {
                 const oInput = this.byId(this._mVHConfig[sName].inputId);
-                const sText = ((oInput && oInput.getValue()) || "").trim();
+
+                // Locked inputs (Company Code when it cannot be changed) are never modified
+                if (!oInput || !oInput.getEditable()) {
+                    return;
+                }
+
+                const sText = (oInput.getValue() || "").trim();
                 if (sText) {
                     oInput.addToken(new Token({ key: sText, text: sText }));
                     oInput.setValue("");
@@ -484,22 +623,18 @@ sap.ui.define([
             });
         },
 
-        /* =========================================================== */
-        /* DATA LOADING                                                */
-        /* =========================================================== */
 
         _preloadGridData: function () {
             const oModel = this.getOwnerComponent().getModel();
 
             if (oModel) {
-                this._loadGridPage(1);
-                this._loadKpiData();
+                // Reads CanChangeCompanyCode first; grid / KPI / list load afterwards
+                this._loadCompanyCodePermission();
             } else {
                 const oView = this.getView();
                 oView.attachEventOnce("modelContextChange", () => {
-                    if (this.getView().getModel() && !this._bGridLoaded) {
-                        this._loadGridPage(1);
-                        this._loadKpiData();
+                    if (this.getView().getModel() && !this._bCompanyCodeResolved) {
+                        this._loadCompanyCodePermission();
                     }
                 });
             }
@@ -608,12 +743,18 @@ sap.ui.define([
         },
 
         onBeforeRebindTable: function (oEvent) {
+            if (!this._bCompanyCodeResolved) {
+                oEvent.getParameter("bindingParams").preventTableBind = true;
+                return;
+            }
+
             const oSmartTable = oEvent.getSource();
             const mBindingParams = oEvent.getParameter("bindingParams");
-
             const oDates = this._getFormattedFilterDates();
 
-            oSmartTable.setEntitySet(`ZC_CE_OrdersOnHold(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`);
+            oSmartTable.setTableBindingPath(
+                `/ZC_CE_OrdersOnHold(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`
+            );
 
             const oCombinedFilter = this._buildODataFilters();
             if (oCombinedFilter) {
@@ -635,6 +776,8 @@ sap.ui.define([
         },
 
         _rebindWithSearch: function () {
+            this._clearTableSelection();
+
             const oSmartTable = this.getView().byId("idSmartTable");
             if (oSmartTable) {
                 oSmartTable.rebindTable(true);
@@ -645,6 +788,7 @@ sap.ui.define([
 
         onFilterSearch: function () {
             this._commitPendingText();
+            this._clearTableSelection();
 
             const oSmartTable = this.byId("idSmartTable");
             if (oSmartTable) {
@@ -664,14 +808,20 @@ sap.ui.define([
                 statusTab: oFilterModel.getProperty("/statusTab") || this._sDefaultStatusTab // keep current tab on clear
             });
 
-            // Clear the value-help MultiInputs
+            // Clear the value-help MultiInputs (Company Code is reset to its default below)
             Object.keys(this._mVHConfig).forEach((sName) => {
+                if (sName === "companyCode") {
+                    return;
+                }
                 const oInput = this.byId(this._mVHConfig[sName].inputId);
                 if (oInput) {
                     oInput.removeAllTokens();
                     oInput.setValue("");
                 }
             });
+
+            // Company Code -> back to the default value, editable state unchanged
+            this._applyCompanyCodeDefault(this._bCanChangeCompanyCode);
 
             this.onFilterSearch();
         },
@@ -785,10 +935,6 @@ sap.ui.define([
             });
         },
 
-        /* =========================================================== */
-        /* KPI  (ZC_CE_ORDER_KPI_QUERY)                                */
-        /* =========================================================== */
-
         // KPI entity path with the date parameters, e.g.
         // /ZC_CE_ORDER_KPI_QUERY(p_date=datetime'2023-09-30T00:00:00',p_from_date=datetime'2023-09-01T00:00:00')/Results
         _getKpiEntityPath: function () {
@@ -831,7 +977,8 @@ sap.ui.define([
                         "HighRiskOrders",
                         "CreatedDayRange_1_10",
                         "CreatedDayRange_11_20",
-                        "CreatedDayRange_21_31"
+                        "CreatedDayRange_21_31",
+                        "CanChangeCompanyCode"
                     ].join(",")
                 },
                 filters: aFilters,
@@ -975,6 +1122,8 @@ sap.ui.define([
         },
 
         _refreshAllViews: function () {
+            this._clearTableSelection();
+
             const oSmartTable = this.byId("idSmartTable");
             if (oSmartTable) {
                 oSmartTable.rebindTable(true);
@@ -986,6 +1135,9 @@ sap.ui.define([
             this._loadKpiData();
         },
 
+        /* =========================================================== */
+        /* SINGLE-ORDER ACTIONS (row / card buttons)                   */
+        /* =========================================================== */
 
         onApprove: function (oEvent) {
             const oOrder = this._getOrderFromEvent(oEvent);
@@ -1040,6 +1192,155 @@ sap.ui.define([
                 confirmButtonText: "ReInitiate"
             });
         },
+
+        /* =========================================================== */
+        /* BULK ACTIONS (toolbar buttons on the selected rows)         */
+        /* =========================================================== */
+
+        onMultiApprove: function () {
+            const aOrders = this._getSelectedOrders();
+
+            if (!aOrders.length) {
+                MessageBox.warning("Please select at least one order.");
+                return;
+            }
+
+            this._openCommentDialog({
+                action: "multiApprove",
+                orders: aOrders,
+                title: `Approve ${aOrders.length} Order(s)`,
+                confirmButtonText: "Approve"
+            });
+        },
+
+        onMultiReject: function () {
+            const aOrders = this._getSelectedOrders();
+
+            if (!aOrders.length) {
+                MessageBox.warning("Please select at least one order.");
+                return;
+            }
+
+            this._openCommentDialog({
+                action: "multiReject",
+                orders: aOrders,
+                title: `Reject ${aOrders.length} Order(s)`,
+                confirmButtonText: "Reject"
+            });
+        },
+
+        // Promise wrapper around a function import call
+        _callFunctionImport: function (oModel, sFunctionPath, mUrlParameters) {
+            return new Promise((resolve, reject) => {
+                oModel.callFunction(sFunctionPath, {
+                    method: "POST",
+                    urlParameters: mUrlParameters,
+                    success: (oData, oResponse) => resolve({ oData, oResponse }),
+                    error: (oError) => reject(oError)
+                });
+            });
+        },
+
+        // Safely reads the sap-message response header -> { severity, message }
+        _parseSapMessage: function (oResponse) {
+            const sHeader = oResponse && oResponse.headers && oResponse.headers["sap-message"];
+            if (!sHeader) {
+                return { severity: "", message: "" };
+            }
+            try {
+                const oMessage = JSON.parse(sHeader);
+                return {
+                    severity: oMessage.severity || "",
+                    message: oMessage.message || ""
+                };
+            } catch (e) {
+                return { severity: "", message: "" };
+            }
+        },
+
+        // Promise version of the credit block release (used by bulk approve)
+        _releaseCreditBlockAsync: function (sOrderNumber, sDocCategory) {
+            const oCreditModel = this.getOwnerComponent().getModel("API_SLS_DOC_WITH_CREDIT_BLOCK");
+
+            if (!oCreditModel) {
+                return Promise.reject(new Error("Credit block release service is not configured."));
+            }
+
+            return this._callFunctionImport(oCreditModel, "/ReleaseCreditBlock", {
+                SalesDocument: sOrderNumber,
+                SDDocumentCategory: sDocCategory
+            });
+        },
+
+        // Processes one order for the bulk run -> resolves { orderNumber, ok, message }
+        _processBulkOrder: async function (sAction, oOrder, sComment) {
+            const sOrderNumber = oOrder.OrderNumber;
+            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
+
+            try {
+                const sFunction = sAction === "multiApprove" ? "/approve" : "/reject";
+                const { oResponse } = await this._callFunctionImport(oModel, sFunction, {
+                    Vbeln: sOrderNumber,
+                    UserComment: sComment
+                });
+
+                const oSapMessage = this._parseSapMessage(oResponse);
+
+                if (oSapMessage.severity && oSapMessage.severity.includes("error")) {
+                    return { orderNumber: sOrderNumber, ok: false, message: oSapMessage.message };
+                }
+
+                // Last approval level reached -> release the credit block as well
+                if (sAction === "multiApprove"
+                    && oSapMessage.message.includes("Final approval completed")
+                    && oSapMessage.message.includes("ready for release")) {
+                    await this._releaseCreditBlockAsync(sOrderNumber, oOrder.SDDocumentCategory || "C");
+                }
+
+                return { orderNumber: sOrderNumber, ok: true, message: oSapMessage.message };
+            } catch (oError) {
+                return {
+                    orderNumber: sOrderNumber,
+                    ok: false,
+                    message: (oError && oError.message) || "Request failed"
+                };
+            }
+        },
+
+        // Runs the action for every selected order ONE BY ONE (avoids parallel locks on the SAP side),
+        // then shows a single summary and refreshes the views once.
+        _executeBulk: async function (sAction, aOrders, sComment) {
+            const sLabel = sAction === "multiApprove" ? "Approved" : "Rejected";
+            const aSuccess = [];
+            const aFailed = [];
+
+            BusyIndicator.show(0);
+
+            for (const oOrder of aOrders) {
+                const oResult = await this._processBulkOrder(sAction, oOrder, sComment);
+                (oResult.ok ? aSuccess : aFailed).push(oResult);
+            }
+
+            BusyIndicator.hide();
+            this._refreshAllViews();
+
+            if (!aFailed.length) {
+                MessageBox.success(`${aSuccess.length} order(s) ${sLabel}`);
+                return;
+            }
+
+            const sFailedText = aFailed
+                .map((oFail) => `${oFail.orderNumber}${oFail.message ? " - " + oFail.message : ""}`)
+                .join("\n");
+
+            const sMessage = `${aSuccess.length} order(s) ${sLabel}, ${aFailed.length} failed.`;
+
+            MessageBox.warning(sMessage, {
+                title: "Bulk action result",
+                details: sFailedText.replace(/\n/g, "<br>")
+            });
+        },
+
 
         _openCommentDialog: function (oPending) {
             this._oPendingAction = oPending;
@@ -1119,6 +1420,8 @@ sap.ui.define([
                 this._executeReject(oPending.orderNumber, sComment);
             } else if (oPending.action === "reinitiate") {
                 this._executeReInitiate(oPending.orderNumber, oPending.docCategory, sComment);
+            } else if (oPending.action === "multiApprove" || oPending.action === "multiReject") {
+                this._executeBulk(oPending.action, oPending.orders, sComment);
             }
 
             this._oPendingAction = null;
@@ -1375,6 +1678,45 @@ sap.ui.define([
 
             closeList();
             return sHtml;
+        },
+
+        _getSummaryPlainText: function (sText) {
+            if (!sText) {
+                return "";
+            }
+            return String(sText)
+                .replace(/\r\n/g, "\n")
+                .replace(/^\s*#{1,6}\s+/gm, "")     // headers
+                .replace(/^\s*[*-]\s+/gm, "")       // bullets
+                .replace(/\*\*(.+?)\*\*/g, "$1")    // bold
+                .replace(/\s+/g, " ")               // newlines / extra spaces -> single space
+                .trim();
+        },
+
+        // Collapsed text: the whole summary on ONE line; the Text control (maxLines=1)
+        // cuts it to the column width and adds "..."
+        formatSummaryShort: function (sText) {
+            return this._getSummaryPlainText(sText) || "No summary available.";
+        },
+
+        // "Read more" link is shown whenever there is a summary
+        formatSummaryHasMore: function (sText) {
+            return !!this._getSummaryPlainText(sText);
+        },
+
+        // Read more <-> Show Less: one link, always in the same position (this row only)
+        onToggleSummary: function (oEvent) {
+            const oLink = oEvent.getSource();
+            const oTopRow = oLink.getParent();                  // HBox: [Text, Link]
+            const oCell = oTopRow.getParent();                  // outer VBox
+            const oShortText = oTopRow.getItems()[0];           // truncated one-line Text
+            const oFullText = oCell.getItems()[1];              // FormattedText (full summary)
+
+            const bExpand = !oFullText.getVisible();
+
+            oFullText.setVisible(bExpand);
+            oShortText.setVisible(!bExpand);
+            oLink.setText(bExpand ? "Show Less" : "Read more");
         },
 
         onViewSummary: function (oEvent) {
