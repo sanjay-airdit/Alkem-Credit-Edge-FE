@@ -22,10 +22,17 @@ sap.ui.define([
     "sap/ui/comp/filterbar/FilterBar",
     "sap/ui/comp/filterbar/FilterGroupItem",
     "creditedge/controller/formatter",
-    "sap/ui/core/BusyIndicator"
+    "sap/ui/core/BusyIndicator",
+    "sap/ui/model/type/Float",
+    "sap/m/p13n/Popup",
+    "sap/m/p13n/SelectionPanel",
+    "sap/m/Popover",
+    "sap/m/HBox",
+    "sap/ui/comp/state/UIState"
 ], function (Controller, JSONModel, Filter, FilterOperator, TypeString, DateFormat, Fragment, Dialog, Button,
     FormattedText, MessageBox, Token, Input, Label, Text, SearchField, ColumnListItem, MColumn, UIColumn,
-    ValueHelpDialog, FilterBar, FilterGroupItem, formatter, BusyIndicator) {
+    ValueHelpDialog, FilterBar, FilterGroupItem, formatter, BusyIndicator, TypeFloat,
+    P13nPopup, SelectionPanel, Popover, HBox, UIState) {
     "use strict";
     return Controller.extend("creditedge.controller.DataView", {
 
@@ -39,12 +46,58 @@ sap.ui.define([
             text: "ALKEM LABORATORIES LTD. (1000)"
         },
 
+        // _oDefaultCompanyCode: {
+        //     key: "3600",
+        //     text: "Alkem Wellness Limited (3600)"
+        // },
+
         // Becomes true once 'CanChangeCompanyCode' has been read and applied.
         // Until then the SmartTable bind is held back (see onBeforeRebindTable).
         _bCompanyCodeResolved: false,
 
         // Whether the user may change the Company Code filter (false until resolved)
         _bCanChangeCompanyCode: false,
+
+        // Key under which the user's filter visibility is stored in the browser
+        _sFilterConfigStorageKey: "creditedge.dataview.filterVisibility",
+
+        // Key under which the user's SmartTable layout (columns / order / sort / group) is stored
+        _sTableConfigStorageKey: "creditedge.dataview.tableLayout",
+
+        // Layout as delivered by the view (captured before the saved one is applied) -> used by "Reset Layout"
+        _oDefaultTableLayout: null,
+
+        // True while a saved layout is being applied (prevents saving it back)
+        _bRestoringTableLayout: false,
+
+        // Filters that can be configured. locked: true -> always visible (cannot be hidden)
+        // keys must match the keys used in the view (filterConfigModel>/visible/<key>)
+        _aFilterDefs: [
+            { key: "fromDate", label: "From Date", locked: true },
+            { key: "toDate", label: "To Date", locked: true },
+            { key: "companyCode", label: "Company Code" },
+            { key: "orderNumber", label: "Order Number" },
+            { key: "customer", label: "Customer" },
+            { key: "division", label: "Division" },
+            { key: "businessArea", label: "Business Area" },
+            { key: "utilization", label: "Utilization %" },
+            { key: "outstanding", label: "Outstanding Amount" },
+            { key: "recommendation", label: "Recommendation" }
+        ],
+
+        // Visible by default
+        _mDefaultVisibleFilters: {
+            fromDate: true,
+            toDate: true,
+            companyCode: true,
+            orderNumber: true,
+            customer: true,
+            division: false,
+            businessArea: false,
+            utilization: false,
+            outstanding: false,
+            recommendation: false
+        },
 
         _getDefaultFilterDates: function () {
             const oToday = new Date();
@@ -79,7 +132,8 @@ sap.ui.define([
             this.getView().setModel(new JSONModel({ count: 0 }), "selectionModel");
 
             // --- Filter bar model (shared by List + Grid views) ---
-            // NOTE: Company Code / Order Number / Customer / Division / Business Area are MultiInputs (tokens),
+            // NOTE: Company Code / Order Number / Customer / Division / Business Area /
+            // Utilization % / Outstanding Amount are MultiInputs (tokens),
             // so they are no longer stored in this model.
             // recommendation is an array of selected keys (Approve / Hold / Reject)
             const oDefaultDates = this._getDefaultFilterDates();
@@ -91,7 +145,15 @@ sap.ui.define([
             });
             this.getView().setModel(oFilterModel, "filterModel");
 
+            // --- Filter visibility (Settings button) ---
+            this.getView().setModel(
+                new JSONModel({ visible: this._loadFilterVisibility() }),
+                "filterConfigModel"
+            );
+
             // --- Value help configuration ---
+            // rangeOnly: true  -> no value help entity; only the "Define Conditions" tab is offered
+            // numeric:   true  -> typed text must be a number
             this._mVHConfig = {
                 companyCode: {
                     inputId: "idCompanyCodeFilter",
@@ -163,6 +225,22 @@ sap.ui.define([
                         { field: "BusinessArea_Text", label: "Description" }
                     ],
                     searchFields: ["BusinessArea", "BusinessArea_Text"]
+                },
+                utilization: {
+                    inputId: "idUtilizationFilter",
+                    filterPath: "AIUtilizationPercentage",
+                    title: "Utilization %",
+                    key: "AIUtilizationPercentage",
+                    numeric: true,
+                    rangeOnly: true
+                },
+                outstanding: {
+                    inputId: "idOutstandingFilter",
+                    filterPath: "OutstandingAmount",
+                    title: "Outstanding Amount",
+                    key: "OutstandingAmount",
+                    numeric: true,
+                    rangeOnly: true
                 }
             };
 
@@ -202,8 +280,11 @@ sap.ui.define([
             const oSmartTable = this.byId("idSmartTable");
             const customizeConfig = {
                 autoColumnWidth: {
-                    '*': { min: 2, max: 6, gap: 1, truncateLabel: false },
-                    'Customer': { min: 2, max: 4, gap: 1, truncateLabel: false }
+                    'Customer': { min: 2, max: 15, gap: 1, truncateLabel: false },
+                    'CreditEsposure': { min: 2, max: 8, gap: 1, truncateLabel: false },
+                    'Division': { min: 2, max: 4, gap: 1, truncateLabel: false },
+                    'AIUtilizationPercentage': { min: 2, max: 5, gap: 1, truncateLabel: false },
+                    'CurrentOrderValue': { min: 2, max: 8, gap: 1, truncateLabel: false },
                 }
             };
             oSmartTable.setCustomizeConfig(customizeConfig);
@@ -215,11 +296,16 @@ sap.ui.define([
                 return;
             }
 
+            const sFullText = this._oDefaultCompanyCode.text;
+
             oInput.removeAllTokens();
             oInput.setValue("");
+
+            // The token carries its own tooltip (always, enabled or disabled)
             oInput.addToken(new Token({
                 key: this._oDefaultCompanyCode.key,
-                text: this._oDefaultCompanyCode.text
+                text: sFullText,
+                tooltip: sFullText
             }));
 
             // editable=false also hides the value help icon and the token delete icon
@@ -229,6 +315,85 @@ sap.ui.define([
             // When the filter is locked, the suggestion popup must not open either
             // (startSuggestion="0" would otherwise show it on focus / click)
             oInput.setShowSuggestion(!!bEditable);
+
+            // Tooltip on the input itself - always shown, whether enabled or disabled
+            oInput.setTooltip(sFullText);
+
+            // A non-editable MultiInput can render its inner elements without the title
+            // attribute, so copy the tooltip onto the rendered DOM as well
+            this._applyCompanyCodeTooltipToDom(oInput, sFullText);
+
+            // Click on the locked field -> popover with the full text (+ copy icon)
+            if (!this._oCompanyCodeClickDelegate) {
+                this._oCompanyCodeClickDelegate = {
+                    ontap: () => {
+                        if (!this._bCanChangeCompanyCode) {
+                            this._openCompanyCodePopover(oInput);
+                        }
+                    }
+                };
+                oInput.addEventDelegate(this._oCompanyCodeClickDelegate);
+            }
+        },
+
+        // Popover that shows the complete default Company Code text when the locked
+        // (non-editable) field is clicked
+        _openCompanyCodePopover: function (oInput) {
+            const sText = this._oDefaultCompanyCode.text;
+
+            if (!this._oCompanyCodePopover) {
+                this._oCompanyCodePopover = new Popover({
+                    showHeader: false,
+                    placement: "Bottom",
+                    content: [
+                        new HBox({
+                            alignItems: "Center",
+                            justifyContent: "SpaceBetween",
+                            items: [
+                                new Text({ text: sText }).addStyleClass("sapUiTinyMargin"),
+                            ]
+                        })
+                    ]
+                });
+                this.getView().addDependent(this._oCompanyCodePopover);
+            }
+
+            if (this._oCompanyCodePopover.isOpen()) {
+                this._oCompanyCodePopover.close();
+            } else {
+                this._oCompanyCodePopover.openBy(oInput);
+            }
+        },
+
+        // Puts the tooltip on the rendered DOM of the Company Code MultiInput (root, inner
+        // input, tokenizer and tokens), now and after every re-render
+        _applyCompanyCodeTooltipToDom: function (oInput, sText) {
+            const fnSet = () => {
+                const oDom = oInput.getDomRef();
+                if (!oDom) {
+                    return;
+                }
+                oDom.setAttribute("title", sText);
+                oDom.querySelectorAll(".sapMInputBaseInner, .sapMTokenizer, .sapMToken")
+                    .forEach((oEl) => oEl.setAttribute("title", sText));
+            };
+
+            if (!this._oCompanyCodeTooltipDelegate) {
+                this._oCompanyCodeTooltipDelegate = {
+                    onAfterRendering: () => {
+                        fnSet();
+                    }
+                };
+                oInput.addEventDelegate(this._oCompanyCodeTooltipDelegate);
+            }
+
+            // keep the latest text for the delegate
+            this._sCompanyCodeTooltipText = sText;
+            this._oCompanyCodeTooltipDelegate.onAfterRendering = () => {
+                fnSet();
+            };
+
+            fnSet();
         },
 
         _loadCompanyCodePermission: function () {
@@ -333,6 +498,14 @@ sap.ui.define([
                 if (!sText) {
                     return null;
                 }
+                // Numeric fields: only accept numbers
+                if (cfg.numeric) {
+                    const sNum = sText.replace(/,/g, "");
+                    if (isNaN(Number(sNum))) {
+                        return null;
+                    }
+                    return new Token({ key: sNum, text: sNum });
+                }
                 return new Token({ key: sText, text: sText });
             };
         },
@@ -343,6 +516,8 @@ sap.ui.define([
         onCustomerValueHelp: function () { this._openValueHelp("customer"); },
         onDivisionValueHelp: function () { this._openValueHelp("division"); },
         onBusinessAreaValueHelp: function () { this._openValueHelp("businessArea"); },
+        onUtilizationValueHelp: function () { this._openValueHelp("utilization"); },
+        onOutstandingValueHelp: function () { this._openValueHelp("outstanding"); },
 
         // ---- Suggest handlers (one per filter) ----
         onCompanyCodeSuggest: function (oEvent) { this._onSuggest(oEvent, "companyCode"); },
@@ -384,6 +559,12 @@ sap.ui.define([
 
             // Company Code value help is not allowed when the user cannot change it
             if (sName === "companyCode" && !this._bCanChangeCompanyCode) {
+                return;
+            }
+
+            // Numeric fields without a value help entity -> "Define Conditions" only
+            if (cfg.rangeOnly) {
+                this._openRangeOnlyValueHelp(cfg, oInput);
                 return;
             }
 
@@ -476,6 +657,36 @@ sap.ui.define([
 
                 oDialog.update();
             });
+
+            oDialog.setTokens(oInput.getTokens());
+            oDialog.open();
+        },
+
+        // Value help for numeric fields without a value-help entity: "Define Conditions" only
+        _openRangeOnlyValueHelp: function (cfg, oInput) {
+            const oDialog = new ValueHelpDialog({
+                title: cfg.title,
+                supportRanges: true,
+                supportRangesOnly: true,
+                key: cfg.key,
+                ok: (oEvent) => {
+                    oInput.setTokens(oEvent.getParameter("tokens"));
+                    oDialog.close();
+                },
+                cancel: () => oDialog.close(),
+                afterClose: () => oDialog.destroy()
+            });
+            this.getView().addDependent(oDialog);
+
+            oDialog.setRangeKeyFields([{
+                label: cfg.title,
+                key: cfg.key,
+                type: "numeric",
+                typeInstance: new TypeFloat({ groupingEnabled: false })
+            }]);
+
+            // "Empty" makes no sense for a numeric measure
+            oDialog.setIncludeRangeOperations(["EQ", "BT", "LT", "LE", "GT", "GE"], "numeric");
 
             oDialog.setTokens(oInput.getTokens());
             oDialog.open();
@@ -608,7 +819,8 @@ sap.ui.define([
         // Text typed into a MultiInput but not confirmed with Enter -> becomes a token
         _commitPendingText: function () {
             Object.keys(this._mVHConfig).forEach((sName) => {
-                const oInput = this.byId(this._mVHConfig[sName].inputId);
+                const cfg = this._mVHConfig[sName];
+                const oInput = this.byId(cfg.inputId);
 
                 // Locked inputs (Company Code when it cannot be changed) are never modified
                 if (!oInput || !oInput.getEditable()) {
@@ -617,7 +829,15 @@ sap.ui.define([
 
                 const sText = (oInput.getValue() || "").trim();
                 if (sText) {
-                    oInput.addToken(new Token({ key: sText, text: sText }));
+                    if (!cfg.numeric) {
+                        oInput.addToken(new Token({ key: sText, text: sText }));
+                    } else {
+                        // Numeric fields: ignore text that is not a number
+                        const sNum = sText.replace(/,/g, "");
+                        if (!isNaN(Number(sNum))) {
+                            oInput.addToken(new Token({ key: sNum, text: sNum }));
+                        }
+                    }
                     oInput.setValue("");
                 }
             });
@@ -711,7 +931,8 @@ sap.ui.define([
                 );
             }
 
-            // Value-help based filters (Company Code, Order Number, Customer, Division, Business Area)
+            // Value-help based filters (Company Code, Order Number, Customer, Division,
+            // Business Area, Utilization %, Outstanding Amount)
             Object.keys(this._mVHConfig).forEach((sName) => {
                 const oFilter = this._buildTokenFilter(this._mVHConfig[sName]);
                 if (oFilter) {
@@ -826,6 +1047,265 @@ sap.ui.define([
             this.onFilterSearch();
         },
 
+        /* =========================================================== */
+        /* FILTER SETTINGS (choose which filters are visible)          */
+        /* Uses the standard p13n popup (sap.m.p13n.Popup +            */
+        /* SelectionPanel) -> same look as the "Adapt Filters" dialog  */
+        /* =========================================================== */
+
+        // Saved visibility merged with the defaults; locked filters are always visible
+        _loadFilterVisibility: function () {
+            const mVisible = Object.assign({}, this._mDefaultVisibleFilters);
+
+            try {
+                const sStored = window.localStorage.getItem(this._sFilterConfigStorageKey);
+                if (sStored) {
+                    const mStored = JSON.parse(sStored);
+                    Object.keys(mVisible).forEach((sKey) => {
+                        if (typeof mStored[sKey] === "boolean") {
+                            mVisible[sKey] = mStored[sKey];
+                        }
+                    });
+                }
+            } catch (e) {
+                // storage not available / corrupt -> use defaults
+            }
+
+            this._aFilterDefs.forEach((oDef) => {
+                if (oDef.locked) {
+                    mVisible[oDef.key] = true;
+                }
+            });
+            return mVisible;
+        },
+
+        _saveFilterVisibility: function (mVisible) {
+            try {
+                window.localStorage.setItem(this._sFilterConfigStorageKey, JSON.stringify(mVisible));
+            } catch (e) {
+                // ignore - the setting just won't persist
+            }
+        },
+
+        // Builds the data array for the SelectionPanel from a visibility map.
+        // Locked filters (From / To Date) are always visible, so they are not offered.
+        _getAdaptFilterData: function (mVisible) {
+            return this._aFilterDefs
+                .filter((oDef) => !oDef.locked)
+                .map((oDef) => ({
+                    name: oDef.key,
+                    label: oDef.label,
+                    visible: !!mVisible[oDef.key]
+                }));
+        },
+
+        onOpenFilterSettings: function (oEvent) {
+            const oConfigModel = this.getView().getModel("filterConfigModel");
+
+            if (!this._oAdaptPanel) {
+                this._oAdaptPanel = new SelectionPanel({
+                    fieldColumn: "Field",
+                    activeColumn: "Active"
+                });
+
+                this._oAdaptPopup = new P13nPopup({
+                    title: "Adapt Filters",
+                    // Text shown in the confirmation dialog after clicking "Reset"
+                    warningText: "Resetting will restore the default filters. Do you want to continue?",
+                    panels: [this._oAdaptPanel],
+                    reset: () => {
+                        this._oAdaptPanel.setP13nData(
+                            this._getAdaptFilterData(this._mDefaultVisibleFilters)
+                        );
+                    },
+                    close: (oCloseEvent) => {
+                        if (oCloseEvent.getParameter("reason") === "Ok") {
+                            this._applyFilterVisibility(this._oAdaptPanel.getP13nData());
+                        }
+                    }
+                });
+                this.getView().addDependent(this._oAdaptPopup);
+            }
+
+            // Always start from the currently saved state (so Cancel discards changes)
+            this._oAdaptPanel.setP13nData(
+                this._getAdaptFilterData(oConfigModel.getProperty("/visible"))
+            );
+            this._oAdaptPopup.open(oEvent.getSource());
+        },
+
+        _applyFilterVisibility: function (aPanelData) {
+            const oConfigModel = this.getView().getModel("filterConfigModel");
+            const mOld = oConfigModel.getProperty("/visible");
+            const mNew = Object.assign({}, mOld);
+
+            (aPanelData || []).forEach((oItem) => {
+                mNew[oItem.name] = !!oItem.visible;
+            });
+
+            this._aFilterDefs.forEach((oDef) => {
+                if (oDef.locked) {
+                    mNew[oDef.key] = true;
+                }
+            });
+
+            // Hidden filters must not keep influencing the result -> clear their values
+            let bValueCleared = false;
+            this._aFilterDefs.forEach((oDef) => {
+                if (mOld[oDef.key] && !mNew[oDef.key]) {
+                    if (this._clearFilterValue(oDef.key)) {
+                        bValueCleared = true;
+                    }
+                }
+            });
+
+            oConfigModel.setProperty("/visible", mNew);
+            this._saveFilterVisibility(mNew);
+
+            // Reload only if a filter that was actually in use got hidden
+            if (bValueCleared) {
+                this.onFilterSearch();
+            }
+        },
+
+        // Resets one filter to its "empty" state. Returns true if the value changed.
+        _clearFilterValue: function (sKey) {
+            const oFilterModel = this.getView().getModel("filterModel");
+
+            if (sKey === "fromDate" || sKey === "toDate") {
+                const oDefaults = this._getDefaultFilterDates();
+                const oCurrent = oFilterModel.getProperty("/" + sKey);
+                oFilterModel.setProperty("/" + sKey, oDefaults[sKey]);
+                return !oCurrent || oCurrent.getTime() !== oDefaults[sKey].getTime();
+            }
+
+            if (sKey === "recommendation") {
+                const aCurrent = oFilterModel.getProperty("/recommendation") || [];
+                oFilterModel.setProperty("/recommendation", []);
+                return aCurrent.length > 0;
+            }
+
+            const cfg = this._mVHConfig[sKey];
+            const oInput = cfg && this.byId(cfg.inputId);
+            if (!oInput) {
+                return false;
+            }
+
+            // Company Code goes back to its default (keeps the permission-based restriction)
+            if (sKey === "companyCode") {
+                const aTokens = oInput.getTokens();
+                const bChanged = aTokens.length !== 1
+                    || aTokens[0].getKey() !== this._oDefaultCompanyCode.key;
+                this._applyCompanyCodeDefault(this._bCanChangeCompanyCode);
+                return bChanged;
+            }
+
+            const bHadValue = oInput.getTokens().length > 0 || !!(oInput.getValue() || "").trim();
+            oInput.removeAllTokens();
+            oInput.setValue("");
+            return bHadValue;
+        },
+
+        // SmartTable 'initialise' event: fires once, before the first real bind
+        onSmartTableInitialise: function (oEvent) {
+            const oSmartTable = oEvent.getSource();
+
+            // Remember the layout defined in the view (needed for "Reset Layout")
+            const oCurrent = oSmartTable.getUiState();
+            this._oDefaultTableLayout = oCurrent && oCurrent.getPresentationVariant()
+                ? JSON.parse(JSON.stringify(oCurrent.getPresentationVariant()))
+                : null;
+
+            this._restoreTableLayout(oSmartTable);
+        },
+
+        // SmartTable 'uiStateChange' event: fires after the user changed columns / sort / group
+        onSmartTableUiStateChange: function (oEvent) {
+            if (this._bRestoringTableLayout) {
+                return;
+            }
+            const oSmartTable = oEvent.getSource();
+
+            // Several changes in a row (e.g. OK in the settings dialog) -> save once
+            clearTimeout(this._iTableLayoutSaveTimer);
+            this._iTableLayoutSaveTimer = setTimeout(() => {
+                this._saveTableLayout(oSmartTable);
+            }, 300);
+        },
+
+        _saveTableLayout: function (oSmartTable) {
+            try {
+                const oUiState = oSmartTable.getUiState();
+                const oPresentationVariant = oUiState && oUiState.getPresentationVariant();
+                if (!oPresentationVariant) {
+                    return;
+                }
+                const sNew = JSON.stringify(oPresentationVariant);
+
+                // nothing changed (e.g. event caused by restoring) -> skip
+                if (window.localStorage.getItem(this._sTableConfigStorageKey) === sNew) {
+                    return;
+                }
+                window.localStorage.setItem(this._sTableConfigStorageKey, sNew);
+            } catch (e) {
+                // storage not available - the layout just won't persist
+            }
+        },
+
+        _restoreTableLayout: function (oSmartTable) {
+            let oSaved = null;
+
+            try {
+                const sStored = window.localStorage.getItem(this._sTableConfigStorageKey);
+                if (sStored) {
+                    oSaved = JSON.parse(sStored);
+                }
+            } catch (e) {
+                // storage not available / corrupt -> keep the view defaults
+                return;
+            }
+
+            if (!oSaved) {
+                return;
+            }
+
+            this._applyTableLayout(oSmartTable, oSaved);
+        },
+
+        _applyTableLayout: function (oSmartTable, oPresentationVariant) {
+            this._bRestoringTableLayout = true;
+            try {
+                oSmartTable.setUiState(new UIState({
+                    presentationVariant: oPresentationVariant,
+                    selectionVariant: {}
+                }));
+            } catch (e) {
+                // saved layout no longer matches the table (e.g. a column was removed) -> ignore it
+                try {
+                    window.localStorage.removeItem(this._sTableConfigStorageKey);
+                } catch (e2) { /* ignore */ }
+            }
+            // release the guard after the table has finished reacting
+            setTimeout(() => {
+                this._bRestoringTableLayout = false;
+            }, 500);
+        },
+
+        // "Reset Layout" button in the table toolbar
+        onResetTableLayout: function () {
+            const oSmartTable = this.byId("idSmartTable");
+
+            try {
+                window.localStorage.removeItem(this._sTableConfigStorageKey);
+            } catch (e) { /* ignore */ }
+
+            if (oSmartTable && this._oDefaultTableLayout) {
+                this._applyTableLayout(oSmartTable, this._oDefaultTableLayout);
+                oSmartTable.rebindTable(true);
+            }
+            sap.m.MessageToast.show("Table layout reset to default.");
+        },
+
         // IconTabBar select handler for the status tabs
         onStatusTabSelect: function (oEvent) {
             const sKey = oEvent.getParameter("key");
@@ -886,6 +1366,7 @@ sap.ui.define([
             const aSelectFields = [
                 "OrderNumber",
                 "Customer",
+                "CustomerName",
                 "AISummaryText",
                 "AISummaryVerdict",
                 "AISopValueScore",
@@ -894,6 +1375,7 @@ sap.ui.define([
                 "CurrentOrderValue",
                 "Currency",
                 "AIUtilizationPercentage",
+                "OutstandingAmount",
                 "CreditEsposure",
                 "SDDocumentCategory",
                 "Grade",
@@ -948,7 +1430,8 @@ sap.ui.define([
         },
 
         // Loads KPI data with the SAME filters as the list / grid
-        // (status tab, recommendation, search, company code, order number, customer, division, business area)
+        // (status tab, recommendation, search, company code, order number, customer, division,
+        //  business area, utilization %, outstanding amount)
         _loadKpiData: function () {
             const oView = this.getView();
             const oModel = oView.getModel(this._sKpiModelName)

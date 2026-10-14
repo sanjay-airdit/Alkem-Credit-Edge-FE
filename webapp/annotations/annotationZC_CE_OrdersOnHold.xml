@@ -28,11 +28,11 @@
                         <!-- <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="CompanyCode" />
                             <PropertyValue Property="Label" String="Company Code" />
-                        </Record>
+                        </Record> -->
                         <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="Division" />
                             <PropertyValue Property="Label" String="Division" />
-                        </Record> -->
+                        </Record>
                         <!-- <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="AISummaryText"/>
                             <PropertyValue Property="Label" String="Summary"/>
@@ -42,10 +42,10 @@
                             <PropertyValue Property="Label" String="Recommendation"/>
                         </Record> -->
                         <!-- Hold Reason -->
-                        <Record Type="UI.DataField">
+                        <!-- <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="HoldReason" />
                             <PropertyValue Property="Label" String="Hold Reason" />
-                        </Record>
+                        </Record> -->
 
                         <!-- Cumulative Score -->
                         <Record Type="UI.DataField">
@@ -54,12 +54,12 @@
                         </Record>
                         <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="AIUtilizationPercentage" />
-                            <PropertyValue Property="Label" String="Utilization Percentage" />
+                            <PropertyValue Property="Label" String="Utilization %" />
                         </Record>
-                        <Record Type="UI.DataField">
+                        <!-- <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="BusinessArea" />
                             <PropertyValue Property="Label" String="Business Area" />
-                        </Record>
+                        </Record> -->
                         <Record Type="UI.DataField">
                             <PropertyValue Property="Value" Path="CreditEsposure" />
                             <PropertyValue Property="Label" String="Credit Exposure" />
@@ -80,7 +80,14 @@
             <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/Division">
                 <Annotation Term="Common.Label" String="Division" />
                 <Annotation Term="Common.Text" Path="DivisionDescription">
-                    <Annotation Term="UI.TextArrangement" EnumMember="UI.TextArrangementType/TextLast" />
+                    <Annotation Term="UI.TextArrangement" EnumMember="UI.TextArrangementType/TextFirst" />
+                </Annotation>
+            </Annotations>
+
+            <Annotations Target="SAP.ZC_CE_OrdersOnHoldType/Customer">
+                <Annotation Term="Common.Label" String="Customer" />
+                <Annotation Term="Common.Text" Path="CustomerName">
+                    <Annotation Term="UI.TextArrangement" EnumMember="UI.TextArrangementType/TextFirst" />
                 </Annotation>
             </Annotations>
 

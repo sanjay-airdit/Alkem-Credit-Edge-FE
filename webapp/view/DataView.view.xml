@@ -169,6 +169,12 @@
                         press="onFilterSearch"
                     />
                     <Button
+                        id="idFilterSettingsButton"
+                        icon="sap-icon://action-settings"
+                        tooltip="Adapt Filters"
+                        press="onOpenFilterSettings"
+                    />
+                    <Button
                         id="idFilterClearButton"
                         text="Clear"
                         press="onFilterClear"
@@ -199,7 +205,10 @@
                 wrap="Wrap"
                 alignItems="End"
             >
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/fromDate}"
+                >
                     <Label
                         text="From Date"
                         labelFor="idFromDate"
@@ -213,7 +222,10 @@
                     />
                 </VBox>
 
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/toDate}"
+                >
                     <Label
                         text="To Date"
                         labelFor="idToDate"
@@ -228,7 +240,10 @@
                 </VBox>
 
                 <!-- COMPANY CODE  (I_CompanyCode) -->
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/companyCode}"
+                >
                     <Label
                         text="Company Code"
                         labelFor="idCompanyCodeFilter"
@@ -268,7 +283,10 @@
                 </VBox>
 
                 <!-- ORDER NUMBER  (I_SalesDocument) -->
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/orderNumber}"
+                >
                     <Label
                         text="Order Number"
                         labelFor="idOrderNumberFilter"
@@ -312,7 +330,10 @@
                 </VBox>
 
                 <!-- CUSTOMER  (I_Customer) -->
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/customer}"
+                >
                     <Label
                         text="Customer"
                         labelFor="idCustomerFilter"
@@ -352,7 +373,10 @@
                 </VBox>
 
                 <!-- DIVISION  (I_Division) -->
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/division}"
+                >
                     <Label
                         text="Division"
                         labelFor="idDivisionFilter"
@@ -392,7 +416,10 @@
                 </VBox>
 
                 <!-- BUSINESS AREA  (I_BusinessArea) -->
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/businessArea}"
+                >
                     <Label
                         text="Business Area"
                         labelFor="idBusinessAreaFilter"
@@ -431,8 +458,49 @@
                     </MultiInput>
                 </VBox>
 
+                <!-- UTILIZATION %  (AIUtilizationPercentage) - range-only value help -->
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/utilization}"
+                >
+                    <Label
+                        text="Utilization %"
+                        labelFor="idUtilizationFilter"
+                    />
+                    <MultiInput
+                        id="idUtilizationFilter"
+                        width="14rem"
+                        placeholder="Utilization %"
+                        showValueHelp="true"
+                        showSuggestion="false"
+                        valueHelpRequest="onUtilizationValueHelp"
+                    />
+                </VBox>
+
+                <!-- OUTSTANDING AMOUNT  (OutstandingAmount) - range-only value help -->
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/outstanding}"
+                >
+                    <Label
+                        text="Outstanding Amount"
+                        labelFor="idOutstandingFilter"
+                    />
+                    <MultiInput
+                        id="idOutstandingFilter"
+                        width="14rem"
+                        placeholder="Outstanding Amount"
+                        showValueHelp="true"
+                        showSuggestion="false"
+                        valueHelpRequest="onOutstandingValueHelp"
+                    />
+                </VBox>
+
                 <!-- RECOMMENDATION (multi-select: Approve / Hold / Reject) -->
-                <VBox class="sapUiTinyMarginEnd sapUiSmallMarginBottom">
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/recommendation}"
+                >
                     <Label
                         text="Recommendation"
                         labelFor="idRecommendationFilter"
@@ -499,6 +567,8 @@
                         showRowCount="true"
                         enableAutoBinding="true"
                         enableAutoColumnWidth="true"
+                        initialise="onSmartTableInitialise"
+                        uiStateChange="onSmartTableUiStateChange"
                         beforeRebindTable="onBeforeRebindTable"
                         height="100%"
                         width="100%"
@@ -535,7 +605,7 @@
                             updateFinished="onTableUpdateFinished"
                         >
                             <columns>
-                                <Column width="20rem">
+                                <Column width="16rem">
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
@@ -562,7 +632,12 @@
                                         wrapping="false"
                                     />
                                 </Column>
-                                <Column>
+
+                                <!-- The three score columns below are HIDDEN BY DEFAULT.
+                                     visible="false" keeps them listed (unchecked) in the
+                                     SmartTable settings (p13n) dialog; when the user ticks
+                                     them there, they become visible. -->
+                                <Column visible="false">
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
@@ -574,7 +649,7 @@
                                         wrapping="false"
                                     />
                                 </Column>
-                                <Column>
+                                <Column visible="false">
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
@@ -586,7 +661,7 @@
                                         wrapping="false"
                                     />
                                 </Column>
-                                <Column>
+                                <Column visible="false">
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
@@ -598,6 +673,7 @@
                                         wrapping="false"
                                     />
                                 </Column>
+
                                 <Column
                                     hAlign="Center"
                                     width="8rem"
@@ -888,6 +964,9 @@
                                                     />
                                                     <Text
                                                         text="Utilization: {ordersModel>AIUtilizationPercentage}"
+                                                    />
+                                                    <Text
+                                                        text="Outstanding: {ordersModel>OutstandingAmount}"
                                                     />
                                                 </VBox>
                                                 <HBox>

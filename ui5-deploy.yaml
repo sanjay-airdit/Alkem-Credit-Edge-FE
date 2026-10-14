@@ -21,7 +21,7 @@ builder:
           name: ZCREDIT_EDGE
           description: Credit Edge
           package: ZCREDIT_EDGE
-          transport: SNDK920598
+          transport: SNDK920806
         exclude:
           - /test/
           - /localService/
