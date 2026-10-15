@@ -41,15 +41,15 @@ sap.ui.define([
         // Name of the OData model (manifest.json) for ZC_CE_ORDER_KPI_QUERY_CDS
         _sKpiModelName: "ZC_CE_ORDER_KPI_QUERY_CDS",
 
-        _oDefaultCompanyCode: {
-            key: "1000",
-            text: "ALKEM LABORATORIES LTD. (1000)"
-        },
-
         // _oDefaultCompanyCode: {
-        //     key: "3600",
-        //     text: "Alkem Wellness Limited (3600)"
+        //     key: "1000",
+        //     text: "ALKEM LABORATORIES LTD. (1000)"
         // },
+
+        _oDefaultCompanyCode: {
+            key: "3600",
+            text: "Alkem Wellness Limited (3600)"
+        },
 
         // Becomes true once 'CanChangeCompanyCode' has been read and applied.
         // Until then the SmartTable bind is held back (see onBeforeRebindTable).
@@ -1724,24 +1724,55 @@ sap.ui.define([
             });
         },
 
+        // Builds the value sent for the Vbeln parameter: an ARRAY of order numbers.
+        // OData V2 function-import URL parameters are always sent as text, so the array is
+        // serialised here in ONE place. Default: JSON array string -> '["100","200"]'.
+        // If the backend expects something else (e.g. comma separated), change only this line.
+        _buildVbelnParam: function (aOrderNumbers) {
+            return JSON.stringify(aOrderNumbers);
+        },
+
         // Safely reads the sap-message response header -> { severity, message }
+        // Also looks into the 'details' of the message (SAP puts further messages there).
         _parseSapMessage: function (oResponse) {
             const sHeader = oResponse && oResponse.headers && oResponse.headers["sap-message"];
             if (!sHeader) {
-                return { severity: "", message: "" };
+                return { severity: "", message: "", hasError: false };
             }
             try {
                 const oMessage = JSON.parse(sHeader);
+                const aDetails = Array.isArray(oMessage.details) ? oMessage.details : [];
+                const aAll = [oMessage, ...aDetails];
+
+                const hasError = aAll.some((o) => String(o.severity || "").includes("error"));
+                const sAllText = aAll
+                    .map((o) => o.message)
+                    .filter(Boolean)
+                    .join("\n");
+
                 return {
                     severity: oMessage.severity || "",
-                    message: oMessage.message || ""
+                    message: sAllText || oMessage.message || "",
+                    hasError: hasError
                 };
             } catch (e) {
-                return { severity: "", message: "" };
+                return { severity: "", message: "", hasError: false };
             }
         },
 
-        // Promise version of the credit block release (used by bulk approve)
+        // Extracts a readable text from a failed OData request
+        _getErrorMessage: function (oError, sFallback) {
+            try {
+                const oBody = JSON.parse(oError.responseText);
+                const sText = oBody?.error?.message?.value;
+                if (sText) {
+                    return sText;
+                }
+            } catch (e) { /* not JSON -> fall through */ }
+            return (oError && oError.message) || sFallback;
+        },
+
+        // Promise version of the credit block release
         _releaseCreditBlockAsync: function (sOrderNumber, sDocCategory) {
             const oCreditModel = this.getOwnerComponent().getModel("API_SLS_DOC_WITH_CREDIT_BLOCK");
 
@@ -1755,73 +1786,98 @@ sap.ui.define([
             });
         },
 
-        // Processes one order for the bulk run -> resolves { orderNumber, ok, message }
-        _processBulkOrder: async function (sAction, oOrder, sComment) {
-            const sOrderNumber = oOrder.OrderNumber;
-            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
-
-            try {
-                const sFunction = sAction === "multiApprove" ? "/approve" : "/reject";
-                const { oResponse } = await this._callFunctionImport(oModel, sFunction, {
-                    Vbeln: sOrderNumber,
-                    UserComment: sComment
-                });
-
-                const oSapMessage = this._parseSapMessage(oResponse);
-
-                if (oSapMessage.severity && oSapMessage.severity.includes("error")) {
-                    return { orderNumber: sOrderNumber, ok: false, message: oSapMessage.message };
-                }
-
-                // Last approval level reached -> release the credit block as well
-                if (sAction === "multiApprove"
-                    && oSapMessage.message.includes("Final approval completed")
-                    && oSapMessage.message.includes("ready for release")) {
-                    await this._releaseCreditBlockAsync(sOrderNumber, oOrder.SDDocumentCategory || "C");
-                }
-
-                return { orderNumber: sOrderNumber, ok: true, message: oSapMessage.message };
-            } catch (oError) {
-                return {
-                    orderNumber: sOrderNumber,
-                    ok: false,
-                    message: (oError && oError.message) || "Request failed"
-                };
-            }
+        // Normalises the order objects (single or multi) to { OrderNumber, SDDocumentCategory }
+        _toActionOrders: function (aOrders) {
+            return (aOrders || [])
+                .filter((oOrder) => oOrder && oOrder.OrderNumber)
+                .map((oOrder) => ({
+                    OrderNumber: oOrder.OrderNumber,
+                    SDDocumentCategory: oOrder.SDDocumentCategory || "C"
+                }));
         },
 
-        // Runs the action for every selected order ONE BY ONE (avoids parallel locks on the SAP side),
-        // then shows a single summary and refreshes the views once.
-        _executeBulk: async function (sAction, aOrders, sComment) {
-            const sLabel = sAction === "multiApprove" ? "Approved" : "Rejected";
-            const aSuccess = [];
-            const aFailed = [];
+        // sAction: "approve" | "reject"
+        // aOrders: [{ OrderNumber, SDDocumentCategory }]  (1 entry for single, N for multi)
+        // ONE backend call with Vbeln = [ "...", "..." ]
+        _executeApprovalAction: async function (sAction, aOrders, sComment) {
+            const bApprove = sAction === "approve";
+            const sLabel = bApprove ? "Approved" : "Rejected";
+            const aActionOrders = this._toActionOrders(aOrders);
 
-            BusyIndicator.show(0);
-
-            for (const oOrder of aOrders) {
-                const oResult = await this._processBulkOrder(sAction, oOrder, sComment);
-                (oResult.ok ? aSuccess : aFailed).push(oResult);
-            }
-
-            BusyIndicator.hide();
-            this._refreshAllViews();
-
-            if (!aFailed.length) {
-                MessageBox.success(`${aSuccess.length} order(s) ${sLabel}`);
+            if (!aActionOrders.length) {
+                MessageBox.error("No order selected.");
                 return;
             }
 
-            const sFailedText = aFailed
-                .map((oFail) => `${oFail.orderNumber}${oFail.message ? " - " + oFail.message : ""}`)
-                .join("\n");
+            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
+            const aOrderNumbers = aActionOrders.map((oOrder) => oOrder.OrderNumber);
 
-            const sMessage = `${aSuccess.length} order(s) ${sLabel}, ${aFailed.length} failed.`;
+            BusyIndicator.show(0);
 
-            MessageBox.warning(sMessage, {
-                title: "Bulk action result",
-                details: sFailedText.replace(/\n/g, "<br>")
-            });
+            try {
+                const { oResponse } = await this._callFunctionImport(
+                    oModel,
+                    bApprove ? "/approve" : "/reject",
+                    {
+                        Vbeln: this._buildVbelnParam(aOrderNumbers),
+                        UserComment: sComment
+                    }
+                );
+
+                const oSapMessage = this._parseSapMessage(oResponse);
+
+                if (oSapMessage.hasError) {
+                    BusyIndicator.hide();
+                    // some orders may have been processed -> refresh so the lists are correct
+                    this._refreshAllViews();
+                    MessageBox.error(oSapMessage.message || `Failed to ${sAction} order(s).`);
+                    return;
+                }
+
+                // Last approval level reached -> release the credit block as well.
+                // The release API works per document, so it runs one by one.
+                const aReleaseFailed = [];
+                if (bApprove
+                    && oSapMessage.message.includes("Final approval completed")
+                    && oSapMessage.message.includes("ready for release")) {
+
+                    for (const oOrder of aActionOrders) {
+                        try {
+                            await this._releaseCreditBlockAsync(oOrder.OrderNumber, oOrder.SDDocumentCategory);
+                        } catch (oReleaseError) {
+                            aReleaseFailed.push(
+                                `${oOrder.OrderNumber} - ${this._getErrorMessage(oReleaseError, "Credit block release failed")}`
+                            );
+                        }
+                    }
+                }
+
+                BusyIndicator.hide();
+                this._refreshAllViews();
+
+                if (aReleaseFailed.length) {
+                    MessageBox.warning(
+                        `${sLabel}, but the credit block could not be released for ${aReleaseFailed.length} order(s).`,
+                        {
+                            title: "Credit block release",
+                            details: aReleaseFailed.join("<br>")
+                        }
+                    );
+                    return;
+                }
+
+                if (aActionOrders.length === 1) {
+                    MessageBox.success(`Order Number - ${aActionOrders[0].OrderNumber} ${sLabel}`);
+                } else {
+                    MessageBox.success(`${aActionOrders.length} order(s) ${sLabel}`);
+                }
+            } catch (oError) {
+                BusyIndicator.hide();
+                const sFallback = aActionOrders.length === 1
+                    ? `Failed to ${sAction} order ${aActionOrders[0].OrderNumber}`
+                    : `Failed to ${sAction} ${aActionOrders.length} order(s)`;
+                MessageBox.error(this._getErrorMessage(oError, sFallback));
+            }
         },
 
 
@@ -1897,81 +1953,22 @@ sap.ui.define([
                 return;
             }
 
-            if (oPending.action === "approve") {
-                this._executeApprove(oPending.orderNumber, oPending.docCategory, sComment);
-            } else if (oPending.action === "reject") {
-                this._executeReject(oPending.orderNumber, sComment);
+            if (oPending.action === "approve" || oPending.action === "reject") {
+                // single order -> array with one entry
+                this._executeApprovalAction(
+                    oPending.action,
+                    [{ OrderNumber: oPending.orderNumber, SDDocumentCategory: oPending.docCategory }],
+                    sComment
+                );
+            } else if (oPending.action === "multiApprove") {
+                this._executeApprovalAction("approve", oPending.orders, sComment);
+            } else if (oPending.action === "multiReject") {
+                this._executeApprovalAction("reject", oPending.orders, sComment);
             } else if (oPending.action === "reinitiate") {
                 this._executeReInitiate(oPending.orderNumber, oPending.docCategory, sComment);
-            } else if (oPending.action === "multiApprove" || oPending.action === "multiReject") {
-                this._executeBulk(oPending.action, oPending.orders, sComment);
             }
 
             this._oPendingAction = null;
-        },
-
-        _executeApprove: function (sOrderNumber, sDocCategory, sUserComment) {
-            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
-
-            BusyIndicator.show(0);
-
-            oModel.callFunction("/approve", {
-                method: "POST",
-                urlParameters: {
-                    Vbeln: sOrderNumber,
-                    UserComment: sUserComment
-                },
-                success: (oData, oResponse) => {
-                    BusyIndicator.hide();
-
-                    const oSapMessage = JSON.parse(oResponse?.headers['sap-message']);
-                    const sSeverity = oSapMessage?.severity;
-                    const sMessageText = oSapMessage?.message || "";
-
-                    if (sSeverity && sSeverity.includes('error')) {
-                        return MessageBox.error(sMessageText);
-                    }
-
-                    if (sMessageText.includes("Final approval completed") && sMessageText.includes("ready for release")) {
-                        this._releaseCreditBlock(sOrderNumber, sDocCategory);
-                        return;
-                    }
-
-                    this._refreshAllViews();
-                    MessageBox.success(`Order Number - ${sOrderNumber} Approved`);
-                },
-                error: (oError) => {
-                    BusyIndicator.hide();
-                    MessageBox.error("Failed to approve order " + sOrderNumber);
-                }
-            });
-        },
-
-        _executeReject: function (sOrderNumber, sUserComment) {
-            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
-
-            BusyIndicator.show(0);
-
-            oModel.callFunction("/reject", {
-                method: "POST",
-                urlParameters: {
-                    Vbeln: sOrderNumber,
-                    UserComment: sUserComment
-                },
-                success: (oData, oResponse) => {
-                    BusyIndicator.hide();
-                    const severity = JSON.parse(oResponse?.headers['sap-message'])?.severity;
-                    if (severity.includes('error')) {
-                        return MessageBox.error(`${JSON.parse(oResponse?.headers['sap-message'])?.message}`);
-                    }
-                    MessageBox.success(`Order Number - ${sOrderNumber} Rejected`);
-                    this._refreshAllViews();
-                },
-                error: (oError) => {
-                    BusyIndicator.hide();
-                    MessageBox.error(`Failed to Reject Order Number - ${sOrderNumber}`);
-                }
-            });
         },
 
         _executeReInitiate: function (sOrderNumber, sDocCategory, sUserComment) {
@@ -1993,34 +1990,6 @@ sap.ui.define([
                 error: (oError) => {
                     BusyIndicator.hide();
                     MessageBox.error("Failed to reinitiate order " + sOrderNumber);
-                }
-            });
-        },
-
-        _releaseCreditBlock: function (sOrderNumber, sDocCategory) {
-            const oCreditModel = this.getOwnerComponent().getModel("API_SLS_DOC_WITH_CREDIT_BLOCK");
-
-            if (!oCreditModel) {
-                MessageBox.error("Credit block release service is not configured.");
-                return;
-            }
-
-            BusyIndicator.show(0);
-
-            oCreditModel.callFunction("/ReleaseCreditBlock", {
-                method: "POST",
-                urlParameters: {
-                    SalesDocument: sOrderNumber,
-                    SDDocumentCategory: sDocCategory
-                },
-                success: (oData, oResponse) => {
-                    BusyIndicator.hide();
-                    MessageBox.success(`Credit block released for Order ${sOrderNumber}`);
-                    this._refreshAllViews();
-                },
-                error: (oError) => {
-                    BusyIndicator.hide();
-                    MessageBox.error(`Failed to release credit block for Order ${sOrderNumber}`);
                 }
             });
         },
