@@ -171,7 +171,7 @@
     background: var(--sapPositiveBackground, #e6f5ea);
 }
 
-/* Red - High Risk Orders (Negative/Error) */
+/* Red - Rejected Orders (Negative/Error) */
 .kpiCard--red {
     border-top-color: var(--sapNegativeColor, #a12b2b);
 }
@@ -183,6 +183,20 @@
 .kpiIcon--red {
     color: var(--sapNegativeColor, #a12b2b);
     background: var(--sapNegativeBackground, #fbe8e8);
+}
+
+/* Teal - Recommended to Reject (fixed colours so it never looks like the red card) */
+.kpiCard--teal {
+    border-top-color: #0f766e;
+}
+
+.kpiValue--teal {
+    color: #0f766e;
+}
+
+.kpiIcon--teal {
+    color: #0f766e;
+    background: #e0f2f1;
 }
 
 /* Purple - Avg Delay Score (Brand/Accent) */
@@ -217,6 +231,13 @@
     font-size: 1rem;
     font-weight: 600;
     line-height: 1.5rem;
+}
+
+/* Avg Delay Score: three columns (range on top, count below) with a divider between them */
+.delayRangeBox>.sapMFlexItem+.sapMFlexItem {
+    margin-left: 0.75rem;
+    padding-left: 0.75rem;
+    border-left: 1px solid var(--sapContent_ForegroundBorderColor, #cccccc);
 }
 
 

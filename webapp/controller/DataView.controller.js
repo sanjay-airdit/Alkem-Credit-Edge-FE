@@ -41,15 +41,15 @@ sap.ui.define([
         // Name of the OData model (manifest.json) for ZC_CE_ORDER_KPI_QUERY_CDS
         _sKpiModelName: "ZC_CE_ORDER_KPI_QUERY_CDS",
 
-        // _oDefaultCompanyCode: {
-        //     key: "1000",
-        //     text: "ALKEM LABORATORIES LTD. (1000)"
-        // },
-
         _oDefaultCompanyCode: {
-            key: "3600",
-            text: "Alkem Wellness Limited (3600)"
+            key: "1000",
+            text: "ALKEM LABORATORIES LTD. (1000)"
         },
+
+        // _oDefaultCompanyCode: {
+        //     key: "3600",
+        //     text: "Alkem Wellness Limited (3600)"
+        // },
 
         // Becomes true once 'CanChangeCompanyCode' has been read and applied.
         // Until then the SmartTable bind is held back (see onBeforeRebindTable).
@@ -116,6 +116,7 @@ sap.ui.define([
                 TotalOrders: 0,
                 InHold: 0,
                 ApprovedOrders: 0,
+                RejectedOrders: 0,
                 HighRiskOrders: 0,
                 DelayRanges: [
                     { label: "1-10", count: 0 },
@@ -1457,6 +1458,7 @@ sap.ui.define([
                         "OrderCount",
                         "IsInHold",
                         "ApprovedOrders",
+                        "RejectedOrders",
                         "HighRiskOrders",
                         "CreatedDayRange_1_10",
                         "CreatedDayRange_11_20",
@@ -1476,6 +1478,7 @@ sap.ui.define([
                     let iTotalOrders = 0;
                     let iInHold = 0;
                     let iApproved = 0;
+                    let iRejected = 0;
                     let iHighRisk = 0;
                     let iRange1 = 0;
                     let iRange2 = 0;
@@ -1485,6 +1488,7 @@ sap.ui.define([
                         iTotalOrders += this._toNumber(oRow.OrderCount);
                         iInHold += this._toNumber(oRow.IsInHold);
                         iApproved += this._toNumber(oRow.ApprovedOrders);
+                        iRejected += this._toNumber(oRow.RejectedOrders);
                         iHighRisk += this._toNumber(oRow.HighRiskOrders);
                         iRange1 += this._toNumber(oRow.CreatedDayRange_1_10);
                         iRange2 += this._toNumber(oRow.CreatedDayRange_11_20);
@@ -1497,6 +1501,7 @@ sap.ui.define([
                         TotalOrders: iTotalOrders,
                         InHold: iInHold,
                         ApprovedOrders: iApproved,
+                        RejectedOrders: iRejected,
                         HighRiskOrders: iHighRisk,
                         DelayRanges: [
                             { label: "1-10", count: iRange1 },

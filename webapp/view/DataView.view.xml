@@ -76,8 +76,29 @@
                 />
             </VBox>
 
-            <!-- High Risk Orders -->
+            <!-- Rejected Orders (NEW - red) -->
             <VBox class="kpiCard kpiCard--red">
+                <HBox
+                    justifyContent="SpaceBetween"
+                    alignItems="Center"
+                >
+                    <Text
+                        text="Rejected"
+                        class="kpiTitle"
+                    />
+                    <core:Icon
+                        src="sap-icon://decline"
+                        class="kpiIcon kpiIcon--red"
+                    />
+                </HBox>
+                <Text
+                    text="{kpiModel>/RejectedOrders}"
+                    class="kpiValue kpiValue--red"
+                />
+            </VBox>
+
+            <!-- Recommended to Reject (colour changed from red to teal) -->
+            <VBox class="kpiCard kpiCard--teal">
                 <HBox
                     justifyContent="SpaceBetween"
                     alignItems="Center"
@@ -88,12 +109,12 @@
                     />
                     <core:Icon
                         src="sap-icon://alert"
-                        class="kpiIcon kpiIcon--red"
+                        class="kpiIcon kpiIcon--teal"
                     />
                 </HBox>
                 <Text
                     text="{kpiModel>/HighRiskOrders}"
-                    class="kpiValue kpiValue--red"
+                    class="kpiValue kpiValue--teal"
                 />
             </VBox>
 
@@ -112,15 +133,21 @@
                         class="kpiIcon kpiIcon--purple"
                     />
                 </HBox>
-                <VBox
-                    class="sapUiTinyMarginTop"
+                <HBox
+                    class="sapUiTinyMarginTop delayRangeBox"
                     items="{kpiModel>/DelayRanges}"
                 >
-                    <Text
-                        text="{kpiModel>label} ({kpiModel>count})"
-                        class="kpiValue--purple kpiRangeText"
-                    />
-                </VBox>
+                    <VBox alignItems="Center">
+                        <Text
+                            text="{kpiModel>label}"
+                            class="kpiValue--purple kpiRangeText"
+                        />
+                        <Text
+                            text="({kpiModel>count})"
+                            class="kpiValue--purple kpiRangeText"
+                        />
+                    </VBox>
+                </HBox>
             </VBox>
 
             <!-- Avg SOP Score -->
