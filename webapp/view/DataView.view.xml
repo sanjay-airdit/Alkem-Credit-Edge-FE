@@ -573,6 +573,10 @@
                     text="On Hold"
                 />
                 <IconTabFilter
+                    key="APPROVED"
+                    text="Approved"
+                />
+                <IconTabFilter
                     key="REJECTED"
                     text="Rejected"
                 />
@@ -604,20 +608,20 @@
                             <Toolbar>
                                 <ToolbarSpacer />
                                 <!-- Enabled only when at least one row is selected
-                                     and the current tab is not "Rejected" -->
+                                     and the current tab is "On Hold" (not Approved / Rejected) -->
                                 <Button
                                     icon="sap-icon://accept"
                                     class="sapUiTinyMarginEnd"
                                     type="Accept"
                                     text="Approve"
-                                    enabled="{= ${selectionModel>/count} > 0 &amp;&amp; ${filterModel>/statusTab} !== 'REJECTED' }"
+                                    enabled="{= ${selectionModel>/count} > 0 &amp;&amp; ${filterModel>/statusTab} !== 'REJECTED' &amp;&amp; ${filterModel>/statusTab} !== 'APPROVED' }"
                                     press="onMultiApprove"
                                 />
                                 <Button
                                     icon="sap-icon://decline"
                                     type="Reject"
                                     text="Reject"
-                                    enabled="{= ${selectionModel>/count} > 0 &amp;&amp; ${filterModel>/statusTab} !== 'REJECTED' }"
+                                    enabled="{= ${selectionModel>/count} > 0 &amp;&amp; ${filterModel>/statusTab} !== 'REJECTED' &amp;&amp; ${filterModel>/statusTab} !== 'APPROVED' }"
                                     press="onMultiReject"
                                 />
                             </Toolbar>
@@ -800,19 +804,19 @@
                                                 class="sapUiTinyMarginEnd"
                                                 type="Accept"
                                                 press="onApprove"
-                                                visible="{= ${status} !== 'REJECTED'}"
+                                                visible="{= ${filterModel>/statusTab} === 'HOLD'}"
                                             />
                                             <Button
                                                 icon="sap-icon://decline"
                                                 type="Reject"
                                                 press="onReject"
-                                                visible="{= ${status} !== 'REJECTED'}"
+                                                visible="{= ${filterModel>/statusTab} === 'HOLD'}"
                                             />
                                             <Button
                                                 icon="sap-icon://refresh"
                                                 type="Emphasized"
                                                 press="onReInitiate"
-                                                visible="{= ${status} === 'REJECTED'}"
+                                                visible="{= ${filterModel>/statusTab} === 'REJECTED'}"
                                             />
                                         </HBox>
                                     </cells>
@@ -1008,19 +1012,19 @@
                                                         type="Accept"
                                                         class="sapUiTinyMarginEnd"
                                                         press="onApprove"
-                                                        visible="{= ${ordersModel>status} !== 'REJECTED'}"
+                                                        visible="{= ${filterModel>/statusTab} === 'HOLD'}"
                                                     />
                                                     <Button
                                                         icon="sap-icon://decline"
                                                         type="Reject"
                                                         press="onReject"
-                                                        visible="{= ${ordersModel>status} !== 'REJECTED'}"
+                                                        visible="{= ${filterModel>/statusTab} === 'HOLD'}"
                                                     />
                                                     <Button
                                                         icon="sap-icon://refresh"
                                                         type="Emphasized"
                                                         press="onReInitiate"
-                                                        visible="{= ${ordersModel>status} === 'REJECTED'}"
+                                                        visible="{= ${filterModel>/statusTab} === 'REJECTED'}"
                                                     />
                                                 </HBox>
                                             </HBox>
