@@ -899,7 +899,9 @@ sap.ui.define([
             });
         },
 
-        _buildFilterBarFilters: function () {
+        // bExcludeStatusTab: true -> the status tab (On Hold / Approved / Rejected) is NOT
+        // added to the filters. Used for the KPI call, which must always cover all statuses.
+        _buildFilterBarFilters: function (bExcludeStatusTab) {
             const oFilterModel = this.getView().getModel("filterModel");
             if (!oFilterModel) {
                 return [];
@@ -908,8 +910,8 @@ sap.ui.define([
             const oData = oFilterModel.getData();
             const aFilters = [];
 
-            // Status tab filter (On Hold / Rejected)
-            if (oData.statusTab) {
+            // Status tab filter (On Hold / Approved / Rejected) - list + grid only
+            if (!bExcludeStatusTab && oData.statusTab) {
                 aFilters.push(new Filter({
                     path: "status",
                     operator: FilterOperator.EQ,
@@ -944,7 +946,8 @@ sap.ui.define([
             return aFilters;
         },
 
-        _buildODataFilters: function () {
+        // bExcludeStatusTab: true -> same filters, but without the status tab filter (KPI)
+        _buildODataFilters: function (bExcludeStatusTab) {
             const aAndFilters = [];
 
             const oSearchFilter = this._buildSearchFilter();
@@ -952,7 +955,7 @@ sap.ui.define([
                 aAndFilters.push(oSearchFilter);
             }
 
-            aAndFilters.push(...this._buildFilterBarFilters());
+            aAndFilters.push(...this._buildFilterBarFilters(bExcludeStatusTab));
 
             if (aAndFilters.length === 0) {
                 return null;
@@ -1430,9 +1433,10 @@ sap.ui.define([
             return isNaN(n) ? 0 : n;
         },
 
-        // Loads KPI data with the SAME filters as the list / grid
-        // (status tab, recommendation, search, company code, order number, customer, division,
-        //  business area, utilization %, outstanding amount)
+        // Loads KPI data with the SAME filters as the list / grid, EXCEPT the status tab
+        // (On Hold / Approved / Rejected): the KPI cards always show all statuses.
+        // (recommendation, search, company code, order number, customer, division,
+        //  business area, utilization %, outstanding amount are still applied)
         _loadKpiData: function () {
             const oView = this.getView();
             const oModel = oView.getModel(this._sKpiModelName)
@@ -1444,7 +1448,8 @@ sap.ui.define([
             }
 
             const aFilters = [];
-            const oCombinedFilter = this._buildODataFilters();
+            // true -> do not send the status tab filter to the KPI service
+            const oCombinedFilter = this._buildODataFilters(true);
             if (oCombinedFilter) {
                 aFilters.push(oCombinedFilter);
             }
