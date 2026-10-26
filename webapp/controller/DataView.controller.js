@@ -27,12 +27,11 @@ sap.ui.define([
     "sap/m/p13n/Popup",
     "sap/m/p13n/SelectionPanel",
     "sap/m/Popover",
-    "sap/m/HBox",
-    "sap/ui/comp/state/UIState"
+    "sap/m/HBox"
 ], function (Controller, JSONModel, Filter, FilterOperator, TypeString, DateFormat, Fragment, Dialog, Button,
     FormattedText, MessageBox, Token, Input, Label, Text, SearchField, ColumnListItem, MColumn, UIColumn,
     ValueHelpDialog, FilterBar, FilterGroupItem, formatter, BusyIndicator, TypeFloat,
-    P13nPopup, SelectionPanel, Popover, HBox, UIState) {
+    P13nPopup, SelectionPanel, Popover, HBox) {
     "use strict";
     return Controller.extend("creditedge.controller.DataView", {
 
@@ -61,14 +60,9 @@ sap.ui.define([
         // Key under which the user's filter visibility is stored in the browser
         _sFilterConfigStorageKey: "creditedge.dataview.filterVisibility",
 
-        // Key under which the user's SmartTable layout (columns / order / sort / group) is stored
-        _sTableConfigStorageKey: "creditedge.dataview.tableLayout",
-
-        // Layout as delivered by the view (captured before the saved one is applied) -> used by "Reset Layout"
-        _oDefaultTableLayout: null,
-
-        // True while a saved layout is being applied (prevents saving it back)
-        _bRestoringTableLayout: false,
+        // NOTE: the SmartTable layout (columns / order / sort / group) is no longer persisted
+        // manually. It is handled by SmartTable variant management
+        // (useVariantManagement + persistencyKey in the view).
 
         // Filters that can be configured. locked: true -> always visible (cannot be hidden)
         // keys must match the keys used in the view (filterConfigModel>/visible/<key>)
@@ -1210,104 +1204,10 @@ sap.ui.define([
             return bHadValue;
         },
 
-        // SmartTable 'initialise' event: fires once, before the first real bind
-        onSmartTableInitialise: function (oEvent) {
-            const oSmartTable = oEvent.getSource();
-
-            // Remember the layout defined in the view (needed for "Reset Layout")
-            const oCurrent = oSmartTable.getUiState();
-            this._oDefaultTableLayout = oCurrent && oCurrent.getPresentationVariant()
-                ? JSON.parse(JSON.stringify(oCurrent.getPresentationVariant()))
-                : null;
-
-            this._restoreTableLayout(oSmartTable);
-        },
-
-        // SmartTable 'uiStateChange' event: fires after the user changed columns / sort / group
-        onSmartTableUiStateChange: function (oEvent) {
-            if (this._bRestoringTableLayout) {
-                return;
-            }
-            const oSmartTable = oEvent.getSource();
-
-            // Several changes in a row (e.g. OK in the settings dialog) -> save once
-            clearTimeout(this._iTableLayoutSaveTimer);
-            this._iTableLayoutSaveTimer = setTimeout(() => {
-                this._saveTableLayout(oSmartTable);
-            }, 300);
-        },
-
-        _saveTableLayout: function (oSmartTable) {
-            try {
-                const oUiState = oSmartTable.getUiState();
-                const oPresentationVariant = oUiState && oUiState.getPresentationVariant();
-                if (!oPresentationVariant) {
-                    return;
-                }
-                const sNew = JSON.stringify(oPresentationVariant);
-
-                // nothing changed (e.g. event caused by restoring) -> skip
-                if (window.localStorage.getItem(this._sTableConfigStorageKey) === sNew) {
-                    return;
-                }
-                window.localStorage.setItem(this._sTableConfigStorageKey, sNew);
-            } catch (e) {
-                // storage not available - the layout just won't persist
-            }
-        },
-
-        _restoreTableLayout: function (oSmartTable) {
-            let oSaved = null;
-
-            try {
-                const sStored = window.localStorage.getItem(this._sTableConfigStorageKey);
-                if (sStored) {
-                    oSaved = JSON.parse(sStored);
-                }
-            } catch (e) {
-                // storage not available / corrupt -> keep the view defaults
-                return;
-            }
-
-            if (!oSaved) {
-                return;
-            }
-
-            this._applyTableLayout(oSmartTable, oSaved);
-        },
-
-        _applyTableLayout: function (oSmartTable, oPresentationVariant) {
-            this._bRestoringTableLayout = true;
-            try {
-                oSmartTable.setUiState(new UIState({
-                    presentationVariant: oPresentationVariant,
-                    selectionVariant: {}
-                }));
-            } catch (e) {
-                // saved layout no longer matches the table (e.g. a column was removed) -> ignore it
-                try {
-                    window.localStorage.removeItem(this._sTableConfigStorageKey);
-                } catch (e2) { /* ignore */ }
-            }
-            // release the guard after the table has finished reacting
-            setTimeout(() => {
-                this._bRestoringTableLayout = false;
-            }, 500);
-        },
-
-        // "Reset Layout" button in the table toolbar
-        onResetTableLayout: function () {
-            const oSmartTable = this.byId("idSmartTable");
-
-            try {
-                window.localStorage.removeItem(this._sTableConfigStorageKey);
-            } catch (e) { /* ignore */ }
-
-            if (oSmartTable && this._oDefaultTableLayout) {
-                this._applyTableLayout(oSmartTable, this._oDefaultTableLayout);
-                oSmartTable.rebindTable(true);
-            }
-            sap.m.MessageToast.show("Table layout reset to default.");
+        // SmartTable 'initialise' event: fires once, before the first real bind.
+        // Layout (columns / sort / group) is restored by SmartTable variant management,
+        // so nothing has to be done here. Kept as a hook for future needs.
+        onSmartTableInitialise: function () {
         },
 
         // IconTabBar select handler for the status tabs

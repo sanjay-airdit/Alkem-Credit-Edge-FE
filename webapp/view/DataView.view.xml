@@ -588,6 +588,10 @@
                     id="listViewBox"
                     visible="true"
                 >
+                    <!-- Variant management enabled:
+                         - useVariantManagement: shows the variant dropdown (Standard / My Views / Save As / Manage)
+                         - useTablePersonalisation: column / sort / filter / group settings dialog
+                         - persistencyKey: unique key the variants are stored under (must be unique in the app) -->
                     <smartTable:SmartTable
                         id="idSmartTable"
                         entitySet="ZC_CE_OrdersOnHoldSet"
@@ -598,8 +602,10 @@
                         showRowCount="true"
                         enableAutoBinding="true"
                         enableAutoColumnWidth="true"
+                        useVariantManagement="true"
+                        useTablePersonalisation="true"
+                        persistencyKey="creditedge.DataView.idSmartTable"
                         initialise="onSmartTableInitialise"
-                        uiStateChange="onSmartTableUiStateChange"
                         beforeRebindTable="onBeforeRebindTable"
                         height="100%"
                         width="100%"
