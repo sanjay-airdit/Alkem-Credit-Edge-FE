@@ -11,7 +11,7 @@
     <VBox>
         <HBox
             class="kpiRow sapUiTinyMargin"
-            wrap="Wrap"
+            wrap="NoWrap"
         >
             <!-- Total Orders -->
             <VBox class="kpiCard kpiCard--blue">
@@ -115,6 +115,27 @@
                 <Text
                     text="{kpiModel>/HighRiskOrders}"
                     class="kpiValue kpiValue--teal"
+                />
+            </VBox>
+
+            <!-- Auto Released (second last KPI) -->
+            <VBox class="kpiCard kpiCard--indigo">
+                <HBox
+                    justifyContent="SpaceBetween"
+                    alignItems="Center"
+                >
+                    <Text
+                        text="Auto Released"
+                        class="kpiTitle"
+                    />
+                    <core:Icon
+                        src="sap-icon://process"
+                        class="kpiIcon kpiIcon--indigo"
+                    />
+                </HBox>
+                <Text
+                    text="{kpiModel>/AutoReleaseCount}"
+                    class="kpiValue kpiValue--indigo"
                 />
             </VBox>
 
@@ -399,6 +420,49 @@
                     </MultiInput>
                 </VBox>
 
+                <!-- PLANT  (I_Plant) : Plant + PlantName -->
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/plant}"
+                >
+                    <Label
+                        text="Plant"
+                        labelFor="idPlantFilter"
+                    />
+                    <MultiInput
+                        id="idPlantFilter"
+                        width="14rem"
+                        placeholder="Plant"
+                        showValueHelp="true"
+                        showSuggestion="true"
+                        filterSuggests="false"
+                        startSuggestion="1"
+                        valueHelpRequest="onPlantValueHelp"
+                        suggest="onPlantSuggest"
+                        suggestionRows="{
+                            path: '/I_Plant',
+                            length: 10
+                        }"
+                    >
+                        <suggestionColumns>
+                            <Column>
+                                <Label text="Plant" />
+                            </Column>
+                            <Column>
+                                <Label text="Plant Name" />
+                            </Column>
+                        </suggestionColumns>
+                        <suggestionRows>
+                            <ColumnListItem>
+                                <cells>
+                                    <Label text="{Plant}" />
+                                    <Label text="{PlantName}" />
+                                </cells>
+                            </ColumnListItem>
+                        </suggestionRows>
+                    </MultiInput>
+                </VBox>
+
                 <!-- DIVISION  (I_Division) -->
                 <VBox
                     class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
@@ -552,6 +616,32 @@
                         />
                     </MultiComboBox>
                 </VBox>
+
+                <!-- APPROVAL TYPE (multi-select: AUTO / MANUAL) -->
+                <VBox
+                    class="sapUiTinyMarginEnd sapUiSmallMarginBottom"
+                    visible="{filterConfigModel>/visible/approvalType}"
+                >
+                    <Label
+                        text="Approval Type"
+                        labelFor="idApprovalTypeFilter"
+                    />
+                    <MultiComboBox
+                        id="idApprovalTypeFilter"
+                        width="12rem"
+                        placeholder="Approval Type"
+                        selectedKeys="{filterModel>/approvalType}"
+                    >
+                        <core:Item
+                            key="AUTO"
+                            text="AUTO"
+                        />
+                        <core:Item
+                            key="MANUAL"
+                            text="MANUAL"
+                        />
+                    </MultiComboBox>
+                </VBox>
             </FlexBox>
         </Panel>
 
@@ -591,7 +681,10 @@
                     <!-- Variant management enabled:
                          - useVariantManagement: shows the variant dropdown (Standard / My Views / Save As / Manage)
                          - useTablePersonalisation: column / sort / filter / group settings dialog
-                         - persistencyKey: unique key the variants are stored under (must be unique in the app) -->
+                         - persistencyKey: unique key the variants are stored under (must be unique in the app)
+                         - requestAtLeastFields: OverallStatus (row highlight) and ApprovalType are always
+                           requested, even though OverallStatus has no column and ApprovalType is only
+                           shown on the Approved tab -->
                     <smartTable:SmartTable
                         id="idSmartTable"
                         entitySet="ZC_CE_OrdersOnHoldSet"
@@ -605,6 +698,7 @@
                         useVariantManagement="true"
                         useTablePersonalisation="true"
                         persistencyKey="creditedge.DataView.idSmartTable"
+                        requestAtLeastFields="OverallStatus,ApprovalType"
                         initialise="onSmartTableInitialise"
                         beforeRebindTable="onBeforeRebindTable"
                         height="100%"
@@ -678,7 +772,7 @@
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
-                                            value='\{"columnKey": "AISopValueScore","leadingProperty": "AISopValueScore", "sortProperty": "AISopValueScore", "filterProperty": "AISopValueScore", "columnIndex": "4"}'
+                                            value='\{"columnKey": "AISopValueScore","leadingProperty": "AISopValueScore", "sortProperty": "AISopValueScore", "filterProperty": "AISopValueScore", "columnIndex": "5"}'
                                         />
                                     </customData>
                                     <Label
@@ -690,7 +784,7 @@
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
-                                            value='\{"columnKey": "AIAverageDelayScore","leadingProperty": "AIAverageDelayScore", "sortProperty": "AIAverageDelayScore", "filterProperty": "AIAverageDelayScore", "columnIndex": "5"}'
+                                            value='\{"columnKey": "AIAverageDelayScore","leadingProperty": "AIAverageDelayScore", "sortProperty": "AIAverageDelayScore", "filterProperty": "AIAverageDelayScore", "columnIndex": "6"}'
                                         />
                                     </customData>
                                     <Label
@@ -702,11 +796,46 @@
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
-                                            value='\{"columnKey": "AIUtilPercentageScore","leadingProperty": "AIUtilPercentageScore", "sortProperty": "AIUtilPercentageScore", "filterProperty": "AIUtilPercentageScore", "columnIndex": "6"}'
+                                            value='\{"columnKey": "AIUtilPercentageScore","leadingProperty": "AIUtilPercentageScore", "sortProperty": "AIUtilPercentageScore", "filterProperty": "AIUtilPercentageScore", "columnIndex": "7"}'
                                         />
                                     </customData>
                                     <Label
                                         text="Utilization % Score"
+                                        wrapping="false"
+                                    />
+                                </Column>
+
+                                <!-- APPROVAL TYPE: shown only on the "Approved" tab.
+                                     Visibility is switched by the controller
+                                     (_updateApprovalTypeColumn) on tab change / rebind. -->
+                                <Column
+                                    id="idApprovalTypeColumn"
+                                    hAlign="Center"
+                                    width="9rem"
+                                    visible="false"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="p13nData"
+                                            value='\{"columnKey": "ApprovalType","leadingProperty": "ApprovalType", "sortProperty": "ApprovalType", "filterProperty": "ApprovalType", "columnIndex": "8"}'
+                                        />
+                                    </customData>
+                                    <Label
+                                        text="Approval Type"
+                                        wrapping="false"
+                                    />
+                                </Column>
+
+                                <!-- PLANT: Plant + PlantName shown together, like Customer -->
+                                <Column width="12rem">
+                                    <customData>
+                                        <core:CustomData
+                                            key="p13nData"
+                                            value='\{"columnKey": "Plant","leadingProperty": "Plant", "additionalProperty": "PlantName", "sortProperty": "Plant", "filterProperty": "Plant", "columnIndex": "9"}'
+                                        />
+                                    </customData>
+                                    <Label
+                                        text="Plant"
                                         wrapping="false"
                                     />
                                 </Column>
@@ -729,7 +858,12 @@
                             </columns>
 
                             <items>
-                                <ColumnListItem vAlign="Middle">
+                                <!-- highlight: OverallStatus = 'B' -> standard UI5 row highlight (Warning).
+                                     Change 'Warning' to Error / Information / Success if you prefer another colour. -->
+                                <ColumnListItem
+                                    vAlign="Middle"
+                                    highlight="{= ${OverallStatus} === 'B' ? 'Warning' : 'None' }"
+                                >
                                     <cells>
                                         <!-- SUMMARY CELL: Read more / Show Less (per row) -->
                                         <VBox>
@@ -797,6 +931,13 @@
                                             percentValue="{path: 'AIUtilPercentageScore', formatter: '.formatter.percentValue'}"
                                             state="{path: 'AIUtilPercentageScore', formatter: '.formatter.stateValue'}"
                                             showValue="false"
+                                        />
+                                        <!-- Approval Type (column visible on the Approved tab only) -->
+                                        <Text text="{ApprovalType}" />
+                                        <!-- Plant: "PlantName (Plant)" -->
+                                        <Text
+                                            text="{= ${PlantName} ? ${PlantName} + ' (' + ${Plant} + ')' : ${Plant} }"
+                                            tooltip="{= ${PlantName} ? ${PlantName} + ' (' + ${Plant} + ')' : ${Plant} }"
                                         />
                                         <HBox justifyContent="SpaceAround">
                                             <Button

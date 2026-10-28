@@ -40,15 +40,15 @@ sap.ui.define([
         // Name of the OData model (manifest.json) for ZC_CE_ORDER_KPI_QUERY_CDS
         _sKpiModelName: "ZC_CE_ORDER_KPI_QUERY_CDS",
 
-        _oDefaultCompanyCode: {
-            key: "1000",
-            text: "ALKEM LABORATORIES LTD. (1000)"
-        },
-
         // _oDefaultCompanyCode: {
-        //     key: "3600",
-        //     text: "Alkem Wellness Limited (3600)"
+        //     key: "1000",
+        //     text: "ALKEM LABORATORIES LTD. (1000)"
         // },
+
+        _oDefaultCompanyCode: {
+            key: "3600",
+            text: "Alkem Wellness Limited (3600)"
+        },
 
         // Becomes true once 'CanChangeCompanyCode' has been read and applied.
         // Until then the SmartTable bind is held back (see onBeforeRebindTable).
@@ -72,11 +72,13 @@ sap.ui.define([
             { key: "companyCode", label: "Company Code" },
             { key: "orderNumber", label: "Order Number" },
             { key: "customer", label: "Customer" },
+            { key: "plant", label: "Plant" },
             { key: "division", label: "Division" },
             { key: "businessArea", label: "Business Area" },
             { key: "utilization", label: "Utilization %" },
             { key: "outstanding", label: "Outstanding Amount" },
-            { key: "recommendation", label: "Recommendation" }
+            { key: "recommendation", label: "Recommendation" },
+            { key: "approvalType", label: "Approval Type" }
         ],
 
         // Visible by default
@@ -86,11 +88,13 @@ sap.ui.define([
             companyCode: true,
             orderNumber: true,
             customer: true,
+            plant: true,
             division: false,
             businessArea: false,
             utilization: false,
             outstanding: false,
-            recommendation: false
+            recommendation: false,
+            approvalType: false
         },
 
         _getDefaultFilterDates: function () {
@@ -112,6 +116,7 @@ sap.ui.define([
                 ApprovedOrders: 0,
                 RejectedOrders: 0,
                 HighRiskOrders: 0,
+                AutoReleaseCount: 0,
                 DelayRanges: [
                     { label: "1-10", count: 0 },
                     { label: "11-20", count: 0 },
@@ -136,6 +141,7 @@ sap.ui.define([
                 fromDate: oDefaultDates.fromDate,
                 toDate: oDefaultDates.toDate,
                 recommendation: [],
+                approvalType: [],
                 statusTab: this._sDefaultStatusTab
             });
             this.getView().setModel(oFilterModel, "filterModel");
@@ -192,6 +198,20 @@ sap.ui.define([
                         { field: "CustomerName", label: "Customer Name" }
                     ],
                     searchFields: ["Customer", "CustomerName"]
+                },
+                plant: {
+                    inputId: "idPlantFilter",
+                    filterPath: "Plant",
+                    title: "Plant",
+                    entitySet: "/I_Plant",
+                    key: "Plant",
+                    descriptionKey: "PlantName",
+                    maxLength: 4,
+                    columns: [
+                        { field: "Plant", label: "Plant" },
+                        { field: "PlantName", label: "Plant Name" }
+                    ],
+                    searchFields: ["Plant", "PlantName"]
                 },
                 division: {
                     inputId: "idDivisionFilter",
@@ -475,6 +495,21 @@ sap.ui.define([
                 .filter((oOrder) => oOrder && oOrder.OrderNumber);
         },
 
+        // "Approval Type" column is only relevant on the Approved tab.
+        // Called on tab change, on SmartTable initialise and before every rebind
+        // (so a restored variant cannot leave it in the wrong state).
+        _updateApprovalTypeColumn: function () {
+            const oColumn = this.byId("idApprovalTypeColumn");
+            const oFilterModel = this.getView().getModel("filterModel");
+            if (!oColumn || !oFilterModel) {
+                return;
+            }
+            const bShow = oFilterModel.getProperty("/statusTab") === "APPROVED";
+            if (oColumn.getVisible() !== bShow) {
+                oColumn.setVisible(bShow);
+            }
+        },
+
 
         _createValidator: function (cfg) {
             return function (oArgs) {
@@ -509,6 +544,7 @@ sap.ui.define([
         onCompanyCodeValueHelp: function () { this._openValueHelp("companyCode"); },
         onOrderNumberValueHelp: function () { this._openValueHelp("orderNumber"); },
         onCustomerValueHelp: function () { this._openValueHelp("customer"); },
+        onPlantValueHelp: function () { this._openValueHelp("plant"); },
         onDivisionValueHelp: function () { this._openValueHelp("division"); },
         onBusinessAreaValueHelp: function () { this._openValueHelp("businessArea"); },
         onUtilizationValueHelp: function () { this._openValueHelp("utilization"); },
@@ -518,6 +554,7 @@ sap.ui.define([
         onCompanyCodeSuggest: function (oEvent) { this._onSuggest(oEvent, "companyCode"); },
         onOrderNumberSuggest: function (oEvent) { this._onSuggest(oEvent, "orderNumber"); },
         onCustomerSuggest: function (oEvent) { this._onSuggest(oEvent, "customer"); },
+        onPlantSuggest: function (oEvent) { this._onSuggest(oEvent, "plant"); },
         onDivisionSuggest: function (oEvent) { this._onSuggest(oEvent, "division"); },
         onBusinessAreaSuggest: function (oEvent) { this._onSuggest(oEvent, "businessArea"); },
 
@@ -928,7 +965,22 @@ sap.ui.define([
                 );
             }
 
-            // Value-help based filters (Company Code, Order Number, Customer, Division,
+            // Approval Type (multi-select AUTO / MANUAL) -> OR between the selected values
+            if (Array.isArray(oData.approvalType) && oData.approvalType.length) {
+                const aApprFilters = oData.approvalType.map((sKey) => new Filter({
+                    path: "ApprovalType",
+                    operator: FilterOperator.EQ,
+                    value1: sKey
+                }));
+
+                aFilters.push(
+                    aApprFilters.length === 1
+                        ? aApprFilters[0]
+                        : new Filter({ filters: aApprFilters, and: false })
+                );
+            }
+
+            // Value-help based filters (Company Code, Order Number, Customer, Plant, Division,
             // Business Area, Utilization %, Outstanding Amount)
             Object.keys(this._mVHConfig).forEach((sName) => {
                 const oFilter = this._buildTokenFilter(this._mVHConfig[sName]);
@@ -966,6 +1018,9 @@ sap.ui.define([
                 oEvent.getParameter("bindingParams").preventTableBind = true;
                 return;
             }
+
+            // Make sure the Approval Type column matches the current status tab
+            this._updateApprovalTypeColumn();
 
             const oSmartTable = oEvent.getSource();
             const mBindingParams = oEvent.getParameter("bindingParams");
@@ -1024,6 +1079,7 @@ sap.ui.define([
                 fromDate: oDefaultDates.fromDate,
                 toDate: oDefaultDates.toDate,
                 recommendation: [],
+                approvalType: [],
                 statusTab: oFilterModel.getProperty("/statusTab") || this._sDefaultStatusTab // keep current tab on clear
             });
 
@@ -1183,6 +1239,12 @@ sap.ui.define([
                 return aCurrent.length > 0;
             }
 
+            if (sKey === "approvalType") {
+                const aCurrent = oFilterModel.getProperty("/approvalType") || [];
+                oFilterModel.setProperty("/approvalType", []);
+                return aCurrent.length > 0;
+            }
+
             const cfg = this._mVHConfig[sKey];
             const oInput = cfg && this.byId(cfg.inputId);
             if (!oInput) {
@@ -1205,9 +1267,10 @@ sap.ui.define([
         },
 
         // SmartTable 'initialise' event: fires once, before the first real bind.
-        // Layout (columns / sort / group) is restored by SmartTable variant management,
-        // so nothing has to be done here. Kept as a hook for future needs.
+        // Layout (columns / sort / group) is restored by SmartTable variant management.
+        // Only the status-dependent "Approval Type" column is synced here.
         onSmartTableInitialise: function () {
+            this._updateApprovalTypeColumn();
         },
 
         // IconTabBar select handler for the status tabs
@@ -1215,6 +1278,7 @@ sap.ui.define([
             const sKey = oEvent.getParameter("key");
             const oFilterModel = this.getView().getModel("filterModel");
             oFilterModel.setProperty("/statusTab", sKey);
+            this._updateApprovalTypeColumn();
             this.onFilterSearch();
         },
 
@@ -1365,6 +1429,7 @@ sap.ui.define([
                         "ApprovedOrders",
                         "RejectedOrders",
                         "HighRiskOrders",
+                        "AutoReleaseCount",
                         "CreatedDayRange_1_10",
                         "CreatedDayRange_11_20",
                         "CreatedDayRange_21_31",
@@ -1385,6 +1450,7 @@ sap.ui.define([
                     let iApproved = 0;
                     let iRejected = 0;
                     let iHighRisk = 0;
+                    let iAutoRelease = 0;
                     let iRange1 = 0;
                     let iRange2 = 0;
                     let iRange3 = 0;
@@ -1395,6 +1461,7 @@ sap.ui.define([
                         iApproved += this._toNumber(oRow.ApprovedOrders);
                         iRejected += this._toNumber(oRow.RejectedOrders);
                         iHighRisk += this._toNumber(oRow.HighRiskOrders);
+                        iAutoRelease += this._toNumber(oRow.AutoReleaseCount);
                         iRange1 += this._toNumber(oRow.CreatedDayRange_1_10);
                         iRange2 += this._toNumber(oRow.CreatedDayRange_11_20);
                         iRange3 += this._toNumber(oRow.CreatedDayRange_21_31);
@@ -1408,6 +1475,7 @@ sap.ui.define([
                         ApprovedOrders: iApproved,
                         RejectedOrders: iRejected,
                         HighRiskOrders: iHighRisk,
+                        AutoReleaseCount: iAutoRelease,
                         DelayRanges: [
                             { label: "1-10", count: iRange1 },
                             { label: "11-20", count: iRange2 },
