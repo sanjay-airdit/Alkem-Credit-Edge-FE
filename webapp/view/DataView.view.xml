@@ -678,13 +678,6 @@
                     id="listViewBox"
                     visible="true"
                 >
-                    <!-- Variant management enabled:
-                         - useVariantManagement: shows the variant dropdown (Standard / My Views / Save As / Manage)
-                         - useTablePersonalisation: column / sort / filter / group settings dialog
-                         - persistencyKey: unique key the variants are stored under (must be unique in the app)
-                         - requestAtLeastFields: OverallStatus (row highlight), ApprovalType and Grade are
-                           always requested, even though OverallStatus has no column, ApprovalType is only
-                           shown on the Approved tab and Grade is not shown as its own column -->
                     <smartTable:SmartTable
                         id="idSmartTable"
                         entitySet="ZC_CE_OrdersOnHoldSet"
@@ -698,7 +691,7 @@
                         useVariantManagement="true"
                         useTablePersonalisation="true"
                         persistencyKey="creditedge.DataView.idSmartTable"
-                        requestAtLeastFields="OverallStatus,ApprovalType,Grade"
+                        requestAtLeastFields="OverallStatus,ApprovalType"
                         initialise="onSmartTableInitialise"
                         beforeRebindTable="onBeforeRebindTable"
                         height="100%"
@@ -857,7 +850,7 @@
                                     <customData>
                                         <core:CustomData
                                             key="p13nData"
-                                            value='\{"columnKey": "Grade","leadingProperty": "Grade", "sortProperty": "Grade", "filterProperty": "Grade", "columnIndex": "50"}'
+                                            value='\{"columnKey": "Action","leadingProperty": "Action", "sortProperty": "Action", "filterProperty": "Action", "columnIndex": "50"}'
                                         />
                                     </customData>
                                     <Label
