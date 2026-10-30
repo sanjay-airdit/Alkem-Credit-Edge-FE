@@ -128,7 +128,7 @@ sap.ui.define([
             this._sSearchQuery = "";
             this._iKpiRequestId = 0;
 
-            // --- Selection model (drives enabled state of the toolbar Approve / Reject buttons) ---
+            // --- Selection model (drives enabled state of the toolbar Re Predict / Approve / Reject buttons) ---
             this.getView().setModel(new JSONModel({ count: 0 }), "selectionModel");
 
             // --- Filter bar model (shared by List + Grid views) ---
@@ -930,9 +930,10 @@ sap.ui.define([
             });
         },
 
-        // bExcludeStatusTab: true -> the status tab (On Hold / Approved / Rejected) is NOT
-        // added to the filters. Used for the KPI call, which must always cover all statuses.
-        _buildFilterBarFilters: function (bExcludeStatusTab) {
+        // bForKpi: true -> filters for the KPI call. The KPI cards must always cover all
+        // statuses and all approval types, so the status tab filter (On Hold / Approved /
+        // Rejected) and the Approval Type filter (AUTO / MANUAL) are NOT added.
+        _buildFilterBarFilters: function (bForKpi) {
             const oFilterModel = this.getView().getModel("filterModel");
             if (!oFilterModel) {
                 return [];
@@ -942,7 +943,7 @@ sap.ui.define([
             const aFilters = [];
 
             // Status tab filter (On Hold / Approved / Rejected) - list + grid only
-            if (!bExcludeStatusTab && oData.statusTab) {
+            if (!bForKpi && oData.statusTab) {
                 aFilters.push(new Filter({
                     path: "status",
                     operator: FilterOperator.EQ,
@@ -966,7 +967,8 @@ sap.ui.define([
             }
 
             // Approval Type (multi-select AUTO / MANUAL) -> OR between the selected values
-            if (Array.isArray(oData.approvalType) && oData.approvalType.length) {
+            // list + grid only (the KPI call does not use this filter)
+            if (!bForKpi && Array.isArray(oData.approvalType) && oData.approvalType.length) {
                 const aApprFilters = oData.approvalType.map((sKey) => new Filter({
                     path: "ApprovalType",
                     operator: FilterOperator.EQ,
@@ -992,8 +994,8 @@ sap.ui.define([
             return aFilters;
         },
 
-        // bExcludeStatusTab: true -> same filters, but without the status tab filter (KPI)
-        _buildODataFilters: function (bExcludeStatusTab) {
+        // bForKpi: true -> same filters, but without the status tab and Approval Type filters (KPI)
+        _buildODataFilters: function (bForKpi) {
             const aAndFilters = [];
 
             const oSearchFilter = this._buildSearchFilter();
@@ -1001,7 +1003,7 @@ sap.ui.define([
                 aAndFilters.push(oSearchFilter);
             }
 
-            aAndFilters.push(...this._buildFilterBarFilters(bExcludeStatusTab));
+            aAndFilters.push(...this._buildFilterBarFilters(bForKpi));
 
             if (aAndFilters.length === 0) {
                 return null;
@@ -1398,7 +1400,8 @@ sap.ui.define([
         },
 
         // Loads KPI data with the SAME filters as the list / grid, EXCEPT the status tab
-        // (On Hold / Approved / Rejected): the KPI cards always show all statuses.
+        // (On Hold / Approved / Rejected) and the Approval Type filter (AUTO / MANUAL):
+        // the KPI cards always show all statuses and all approval types.
         // (recommendation, search, company code, order number, customer, division,
         //  business area, utilization %, outstanding amount are still applied)
         _loadKpiData: function () {
@@ -1412,7 +1415,7 @@ sap.ui.define([
             }
 
             const aFilters = [];
-            // true -> do not send the status tab filter to the KPI service
+            // true -> do not send the status tab / Approval Type filters to the KPI service
             const oCombinedFilter = this._buildODataFilters(true);
             if (oCombinedFilter) {
                 aFilters.push(oCombinedFilter);
@@ -1688,6 +1691,81 @@ sap.ui.define([
                 title: `Reject ${aOrders.length} Order(s)`,
                 confirmButtonText: "Reject"
             });
+        },
+
+        // Toolbar "Re Predict" button (On Hold tab only): confirmation popup first,
+        // the backend call is made only after the user confirms.
+        onMultiRePredict: function () {
+            const aOrders = this._getSelectedOrders();
+
+            if (!aOrders.length) {
+                MessageBox.warning("Please select at least one order.");
+                return;
+            }
+
+            const sRePredict = "Re Predict";
+            const sMessage = aOrders.length === 1
+                ? `Do you want to re-predict Order ${aOrders[0].OrderNumber}?`
+                : `Do you want to re-predict the ${aOrders.length} selected orders?`;
+
+            MessageBox.confirm(sMessage, {
+                title: "Confirm Re Predict",
+                actions: [sRePredict, MessageBox.Action.CANCEL],
+                emphasizedAction: sRePredict,
+                onClose: (sAction) => {
+                    if (sAction === sRePredict) {
+                        this._executeRePredict(aOrders);
+                    }
+                }
+            });
+        },
+
+        // ONE backend call: ZUI_CE_APPR_MATRIX_SB /reprediction with Vbeln = [ "...", "..." ]
+        _executeRePredict: async function (aOrders) {
+            const aActionOrders = this._toActionOrders(aOrders);
+
+            if (!aActionOrders.length) {
+                MessageBox.error("No order selected.");
+                return;
+            }
+
+            const oModel = this.getView().getModel("ZUI_CE_APPR_MATRIX_SB");
+            const aOrderNumbers = aActionOrders.map((oOrder) => oOrder.OrderNumber);
+
+            BusyIndicator.show(0);
+
+            try {
+                const { oResponse } = await this._callFunctionImport(
+                    oModel,
+                    "/reprediction",
+                    {
+                        Vbeln: this._buildVbelnParam(aOrderNumbers)
+                    }
+                );
+
+                const oSapMessage = this._parseSapMessage(oResponse);
+
+                BusyIndicator.hide();
+                // refresh so the lists show the new prediction (also after a partial failure)
+                this._refreshAllViews();
+
+                if (oSapMessage.hasError) {
+                    MessageBox.error(oSapMessage.message || "Failed to re-predict order(s).");
+                    return;
+                }
+
+                if (aActionOrders.length === 1) {
+                    MessageBox.success(`Order Number - ${aActionOrders[0].OrderNumber} Re-predicted`);
+                } else {
+                    MessageBox.success(`${aActionOrders.length} order(s) Re-predicted`);
+                }
+            } catch (oError) {
+                BusyIndicator.hide();
+                const sFallback = aActionOrders.length === 1
+                    ? `Failed to re-predict order ${aActionOrders[0].OrderNumber}`
+                    : `Failed to re-predict ${aActionOrders.length} order(s)`;
+                MessageBox.error(this._getErrorMessage(oError, sFallback));
+            }
         },
 
         // Promise wrapper around a function import call

@@ -682,9 +682,9 @@
                          - useVariantManagement: shows the variant dropdown (Standard / My Views / Save As / Manage)
                          - useTablePersonalisation: column / sort / filter / group settings dialog
                          - persistencyKey: unique key the variants are stored under (must be unique in the app)
-                         - requestAtLeastFields: OverallStatus (row highlight) and ApprovalType are always
-                           requested, even though OverallStatus has no column and ApprovalType is only
-                           shown on the Approved tab -->
+                         - requestAtLeastFields: OverallStatus (row highlight), ApprovalType and Grade are
+                           always requested, even though OverallStatus has no column, ApprovalType is only
+                           shown on the Approved tab and Grade is not shown as its own column -->
                     <smartTable:SmartTable
                         id="idSmartTable"
                         entitySet="ZC_CE_OrdersOnHoldSet"
@@ -698,7 +698,7 @@
                         useVariantManagement="true"
                         useTablePersonalisation="true"
                         persistencyKey="creditedge.DataView.idSmartTable"
-                        requestAtLeastFields="OverallStatus,ApprovalType"
+                        requestAtLeastFields="OverallStatus,ApprovalType,Grade"
                         initialise="onSmartTableInitialise"
                         beforeRebindTable="onBeforeRebindTable"
                         height="100%"
@@ -707,6 +707,16 @@
                         <smartTable:customToolbar>
                             <Toolbar>
                                 <ToolbarSpacer />
+                                <!-- Re Predict: enabled only when at least one row is selected
+                                     and the current tab is "On Hold". Placed left of Approve. -->
+                                <Button
+                                    icon="sap-icon://synchronize"
+                                    class="sapUiTinyMarginEnd"
+                                    type="Emphasized"
+                                    text="Re Predict"
+                                    enabled="{= ${selectionModel>/count} > 0 &amp;&amp; ${filterModel>/statusTab} === 'HOLD' }"
+                                    press="onMultiRePredict"
+                                />
                                 <!-- Enabled only when at least one row is selected
                                      and the current tab is "On Hold" (not Approved / Rejected) -->
                                 <Button
