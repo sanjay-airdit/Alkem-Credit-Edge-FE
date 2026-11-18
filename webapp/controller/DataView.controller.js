@@ -109,6 +109,36 @@ sap.ui.define([
         // used in _buildFilterBarFilters (currently status).
         _sDefaultStatusTab: "HOLD",
 
+        // Entity used by the list (SmartTable) and grid for each status tab.
+        //   entity       : parameterised CDS entity (same p_from_date / p_date parameters, navigation 'Set')
+        //   statusFilter : true  -> the 'status' field exists and the status = <tab> filter is sent
+        //                  false -> the entity has no 'status' field (or already contains only this
+        //                           status), so no status filter is sent and 'status' is not selected
+        _mOrdersEntityByTab: {
+            HOLD: { entity: "ZC_CE_OrdersOnHold", statusFilter: true },
+            APPROVED: { entity: "ZI_CE_OrdersOnApprove", statusFilter: true },
+            REJECTED: { entity: "ZC_CE_OrdersOnHold", statusFilter: true }
+        },
+
+        _getCurrentStatusTab: function () {
+            const oFilterModel = this.getView().getModel("filterModel");
+            return (oFilterModel && oFilterModel.getProperty("/statusTab")) || this._sDefaultStatusTab;
+        },
+
+        // Entity configuration for the current status tab (falls back to the On Hold entity)
+        _getOrdersEntityConfig: function () {
+            return this._mOrdersEntityByTab[this._getCurrentStatusTab()]
+                || this._mOrdersEntityByTab[this._sDefaultStatusTab];
+        },
+
+        // Full binding path for list + grid, e.g.
+        // /ZI_CE_OrdersOnApprove(p_from_date=datetime'2026-11-01T00:00:00',p_date=datetime'2026-11-18T00:00:00')/Set
+        _getOrdersEntityPath: function () {
+            const oDates = this._getFormattedFilterDates();
+            const sEntity = this._getOrdersEntityConfig().entity;
+            return `/${sEntity}(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`;
+        },
+
         onInit: function () {
             const oKpiModel = new JSONModel({
                 TotalOrders: 0,
@@ -127,6 +157,7 @@ sap.ui.define([
             this.getView().setModel(oKpiModel, "kpiModel");
             this._sSearchQuery = "";
             this._iKpiRequestId = 0;
+            this._iGridRequestId = 0;
 
             // --- Selection model (drives enabled state of the toolbar Re Predict / Approve / Reject buttons) ---
             this.getView().setModel(new JSONModel({ count: 0 }), "selectionModel");
@@ -942,8 +973,9 @@ sap.ui.define([
             const oData = oFilterModel.getData();
             const aFilters = [];
 
-            // Status tab filter (On Hold / Approved / Rejected) - list + grid only
-            if (!bForKpi && oData.statusTab) {
+            // Status tab filter (On Hold / Approved / Rejected) - list + grid only,
+            // and only if the entity of the current tab has the 'status' field
+            if (!bForKpi && oData.statusTab && this._getOrdersEntityConfig().statusFilter) {
                 aFilters.push(new Filter({
                     path: "status",
                     operator: FilterOperator.EQ,
@@ -1026,11 +1058,9 @@ sap.ui.define([
 
             const oSmartTable = oEvent.getSource();
             const mBindingParams = oEvent.getParameter("bindingParams");
-            const oDates = this._getFormattedFilterDates();
 
-            oSmartTable.setTableBindingPath(
-                `/ZC_CE_OrdersOnHold(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`
-            );
+            // On Hold / Rejected -> ZC_CE_OrdersOnHold, Approved -> ZI_CE_OrdersOnApprove
+            oSmartTable.setTableBindingPath(this._getOrdersEntityPath());
 
             const oCombinedFilter = this._buildODataFilters();
             if (oCombinedFilter) {
@@ -1275,7 +1305,9 @@ sap.ui.define([
             this._updateApprovalTypeColumn();
         },
 
-        // IconTabBar select handler for the status tabs
+        // IconTabBar select handler for the status tabs.
+        // Changing the tab also changes the entity (Approved -> ZI_CE_OrdersOnApprove),
+        // which is picked up by onBeforeRebindTable / _loadGridPage via _getOrdersEntityPath.
         onStatusTabSelect: function (oEvent) {
             const sKey = oEvent.getParameter("key");
             const oFilterModel = this.getView().getModel("filterModel");
@@ -1308,9 +1340,9 @@ sap.ui.define([
             }
         },
 
+        // Grid uses the same entity as the list for the current tab
         _getGridEntityPath: function () {
-            const oDates = this._getFormattedFilterDates();
-            return `/ZC_CE_OrdersOnHold(p_from_date=datetime'${oDates.from}T00:00:00',p_date=datetime'${oDates.to}T00:00:00')/Set`;
+            return this._getOrdersEntityPath();
         },
 
         _loadGridPage: function (iPage) {
@@ -1348,9 +1380,15 @@ sap.ui.define([
                 "OutstandingAmount",
                 "CreditEsposure",
                 "SDDocumentCategory",
-                "Grade",
-                "status"
+                "Grade"
             ];
+            // 'status' only if the entity of the current tab has it
+            if (this._getOrdersEntityConfig().statusFilter) {
+                aSelectFields.push("status");
+            }
+
+            // Ignore responses of outdated requests (user switches tab / filters quickly)
+            const iRequestId = ++this._iGridRequestId;
 
             oModel.read(sPath, {
                 urlParameters: {
@@ -1361,6 +1399,9 @@ sap.ui.define([
                 },
                 filters: aFilters,
                 success: (oData) => {
+                    if (iRequestId !== this._iGridRequestId) {
+                        return;
+                    }
                     this._bGridLoaded = true;
                     const aResults = (oData && oData.results) || [];
                     const iTotalCount = oData && oData.__count ? parseInt(oData.__count, 10) : aResults.length;
@@ -1379,6 +1420,9 @@ sap.ui.define([
 
                 },
                 error: (oError) => {
+                    if (iRequestId !== this._iGridRequestId) {
+                        return;
+                    }
                     oOrdersModel.setProperty("/busy", false);
                     oOrdersModel.setProperty("/orders", []);
                     oOrdersModel.setProperty("/noData", true);
